@@ -25,10 +25,13 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
   }
 
   bool _isPinComplete() {
-    return _pinControllers.every((controller) => controller.text.isNotEmpty);
+    bool complete = _pinControllers.every((controller) => controller.text.isNotEmpty);
+    debugPrint('PIN complete: $complete');
+    return complete;
   }
 
   void _onPinInput(int index, String value) {
+    setState(() {});
     if (value.isNotEmpty && index < 3) {
       _focusNodes[index + 1].requestFocus();
     }
@@ -136,6 +139,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                       child: ElevatedButton(
                         onPressed: _isPinComplete()
                             ? () {
+                                debugPrint('Navigating to /wash-progress with args: $routeArgs');
                                 Navigator.pushNamed(
                                   context,
                                   '/wash-progress',

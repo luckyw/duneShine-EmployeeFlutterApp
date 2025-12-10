@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../constants/colors.dart';
 
 class WashProgressScreen extends StatefulWidget {
@@ -80,14 +81,15 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                             ),
                           ],
                         ),
-                        child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 20),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 _formatDuration(_stopwatch.elapsed),
                                 style: const TextStyle(
-                                  fontSize: 48,
+                                  fontSize: 40,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.white,
                                 ),
@@ -109,6 +111,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                 ),
               ),
               Container(
+                width: double.infinity,
                 decoration: const BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.only(

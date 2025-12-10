@@ -9,7 +9,6 @@ class JobDetailsScreen extends StatefulWidget {
 }
 
 class _JobDetailsScreenState extends State<JobDetailsScreen> {
-  bool _photoUploaded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -113,65 +112,6 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               _buildTaskItem('Exterior Foam Wash'),
               _buildTaskItem('Tyre Polishing'),
               _buildTaskItem('Window Cleaning'),
-              const SizedBox(height: 24),
-              const Text(
-                'Vehicle Condition',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.darkNavy,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Take a photo of the car before starting.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.lightGray,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.lightGray,
-                    style: BorderStyle.solid,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  color: AppColors.veryLightGray,
-                ),
-                child: _photoUploaded
-                    ? Center(
-                        child: Image.asset('assets/placeholder.png'),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _photoUploaded = true;
-                              });
-                            },
-                            child: const Icon(
-                              Icons.camera_alt,
-                              size: 48,
-                              color: AppColors.gold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Tap to Upload Photo',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.lightGray,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
