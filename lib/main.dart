@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'constants/colors.dart';
 import 'screens/MPINfillinfScreen.dart';
-import 'screens/accountScreen.dart';
-import 'screens/availabilityScreen.dart';
 import 'screens/employee_home_screen.dart';
 import 'screens/jobCOmpleteOTPScreen.dart';
 import 'screens/jobCOmpletionProofPhto.dart';
@@ -33,9 +31,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/employee-home',
       routes: {
         '/employee-home': (context) => const EmployeeHomeScreen(),
-        '/availability': (context) => const AvailabilityCalendarScreen(),
-        '/employee-account': (context) => const EmployeeAccountScreen(),
-        '/account': (context) => const EmployeeAccountScreen(),
         '/job-details': (context) => const JobDetailsScreen(),
         '/navigate-to-job': (context) => const NavigateToJobScreen(),
         '/job-verification': (context) => const JobVerificationScreen(),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import 'availability_widget.dart';
+import 'account_widget.dart';
 
 class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({Key? key}) : super(key: key);
@@ -12,6 +14,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _currentIndex = 0;
+  Set<int> availableDates = {};
+  int selectedDate = 1;
 
   @override
   void initState() {
@@ -29,154 +33,194 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A3A52),
-        elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Good Morning, Ahmed',
-              style: TextStyle(
-                color: AppColors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Row(
-              children: [
-                const Text(
-                  '☁️',
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '25°C',
-                  style: TextStyle(
-                    color: AppColors.white.withOpacity(0.8),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.gold, width: 2),
-                borderRadius: BorderRadius.circular(12),
-                color: const Color(0xFFFEF5E7),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: const Text(
-                      "Today's Jobs: 5",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.darkNavy,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: RichText(
-                      text: const TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'Total ',
-                            style: TextStyle(
-                              color: AppColors.darkNavy,
-                              fontSize: 14,
-                            ),
-                          ),
-                          TextSpan(
-                            text: '| 2 Done',
-                            style: TextStyle(
-                              color: AppColors.primaryTeal,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: AppColors.veryLightGray,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: AppColors.primaryTeal,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                labelColor: AppColors.white,
-                unselectedLabelColor: AppColors.darkNavy,
-                tabs: const [
-                  Tab(text: 'Upcoming'),
-                  Tab(text: 'Completed'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  _buildJobCard(
-                    time: 'NEXT JOB - 09:00 AM',
-                    car: 'Toyota Camry - White',
-                    location: 'Building A, Parking B1, Slot 12',
-                    status: '',
-                    bgColor: AppColors.primaryTeal,
-                    onNavigate: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/job-details',
-                        arguments: {
-                          'jobId': 'JOB-56392',
-                          'carModel': 'Toyota Camry',
-                          'carColor': 'White',
-                          'employeeName': 'Ahmed',
-                          'earnedAmount': 120.0,
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  _buildJobCard(
-                    time: 'UPCOMING - 11:00 AM',
-                    car: 'Honda Accord - Black',
-                    location: 'Building A, Parking B1, Slot 12',
-                    status: 'Pending',
-                    statusColor: AppColors.primaryTeal,
-                    bgColor: const Color(0xFF1A3A52),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: _getAppBar(),
+      body: _getBody(),
       bottomNavigationBar: _buildBottomNav(),
     );
+  }
+
+  AppBar? _getAppBar() {
+    debugPrint('Building appBar for index: $_currentIndex');
+    switch (_currentIndex) {
+      case 0:
+        return AppBar(
+          backgroundColor: const Color(0xFF1A3A52),
+          elevation: 0,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Good Morning, Ahmed',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                children: [
+                  const Text(
+                    '☁️',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '25°C',
+                    style: TextStyle(
+                      color: AppColors.white.withOpacity(0.8),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      case 1:
+        return AppBar(
+          title: const Text('Mark Availability'),
+          centerTitle: true,
+        );
+      case 2:
+        return AppBar(
+          title: const Text('My Account'),
+          centerTitle: true,
+        );
+      default:
+        return null;
+    }
+  }
+
+  Widget _getBody() {
+    switch (_currentIndex) {
+      case 0:
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.gold, width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFFEF5E7),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: const Text(
+                        "Today's Jobs: 5",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.darkNavy,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: RichText(
+                        text: const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Total ',
+                              style: TextStyle(
+                                color: AppColors.darkNavy,
+                                fontSize: 14,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '| 2 Done',
+                              style: TextStyle(
+                                color: AppColors.primaryTeal,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.veryLightGray,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicator: BoxDecoration(
+                    color: AppColors.primaryTeal,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: AppColors.white,
+                  unselectedLabelColor: AppColors.darkNavy,
+                  tabs: const [
+                    Tab(text: 'Upcoming'),
+                    Tab(text: 'Completed'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _buildJobCard(
+                      time: 'NEXT JOB - 09:00 AM',
+                      car: 'Toyota Camry - White',
+                      location: 'Building A, Parking B1, Slot 12',
+                      status: '',
+                      bgColor: AppColors.primaryTeal,
+                      onNavigate: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/job-details',
+                          arguments: {
+                            'jobId': 'JOB-56392',
+                            'carModel': 'Toyota Camry',
+                            'carColor': 'White',
+                            'employeeName': 'Ahmed',
+                            'earnedAmount': 120.0,
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildJobCard(
+                      time: 'UPCOMING - 11:00 AM',
+                      car: 'Honda Accord - Black',
+                      location: 'Building A, Parking B1, Slot 12',
+                      status: 'Pending',
+                      statusColor: AppColors.primaryTeal,
+                      bgColor: const Color(0xFF1A3A52),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      case 1:
+        return AvailabilityWidget(
+          availableDates: availableDates,
+          selectedDate: selectedDate,
+          onDateSelected: (date) => setState(() => selectedDate = date),
+          onSetAvailable: () => setState(() => availableDates.add(selectedDate)),
+          onSetUnavailable: () => setState(() => availableDates.remove(selectedDate)),
+        );
+      case 2:
+        return const AccountWidget();
+      default:
+        return Container();
+    }
   }
 
   Widget _buildJobCard({
@@ -293,14 +337,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     return BottomNavigationBar(
       currentIndex: _currentIndex,
       onTap: (index) {
-        setState(() {
-          _currentIndex = index;
-        });
-        if (index == 1) {
-          Navigator.pushNamed(context, '/availability');
-        } else if (index == 2) {
-          Navigator.pushNamed(context, '/employee-account');
-        }
+        debugPrint('Bottom nav tapped: $index');
+        setState(() => _currentIndex = index);
       },
       items: [
         BottomNavigationBarItem(
