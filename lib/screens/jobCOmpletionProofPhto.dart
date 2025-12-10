@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:employeapplication/constants/colors.dart';
 
 class JobCompletionProofScreen extends StatefulWidget {
@@ -10,7 +12,25 @@ class JobCompletionProofScreen extends StatefulWidget {
 }
 
 class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
-  bool _photoUploaded = false;
+  File? _capturedPhoto;
+  final ImagePicker _picker = ImagePicker();
+  bool _isPhotoUploaded = false;
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(source: source);
+      if (image != null) {
+        setState(() {
+          _capturedPhoto = File(image.path);
+          _isPhotoUploaded = true;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +68,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
               const SizedBox(height: 32),
               Container(
                 height: 300,
+                width: double.infinity,
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: AppColors.darkNavy,
@@ -56,47 +77,82 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                   borderRadius: BorderRadius.circular(16),
                   color: AppColors.veryLightGray,
                 ),
-                child: _photoUploaded
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.check_circle,
-                                color: AppColors.primaryTeal, size: 64),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Photo Uploaded',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.darkNavy,
+                child: _isPhotoUploaded && _capturedPhoto != null
+                    ? GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) => Container(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ListTile(
+                                    leading: const Icon(Icons.camera_alt),
+                                    title: const Text('Take Photo'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _pickImage(ImageSource.camera);
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.image),
+                                    title: const Text('Choose from Gallery'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _pickImage(ImageSource.gallery);
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _photoUploaded = false;
-                                });
-                              },
-                              child: const Text(
-                                'Change Photo',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.primaryTeal,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
+                          );
+                        },
+                        child: Container(
+                          height: 300,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppColors.darkNavy,
+                              width: 2,
                             ),
-                          ],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Image.file(
+                            _capturedPhoto!,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       )
                     : GestureDetector(
                         onTap: () {
-                          setState(() {
-                            _photoUploaded = true;
-                          });
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) => Container(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ListTile(
+                                    leading: const Icon(Icons.camera_alt),
+                                    title: const Text('Take Photo'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _pickImage(ImageSource.camera);
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.image),
+                                    title: const Text('Choose from Gallery'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      _pickImage(ImageSource.gallery);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
                         },
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -159,9 +215,11 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _photoUploaded
+                  onPressed: _isPhotoUploaded
                       ? () {
-                          Navigator.pushNamed(context, '/job-completion-otp');
+                          Navigator.pushNamed(context, '/job-completion-otp', arguments: {
+                            'photoPath': _capturedPhoto?.path,
+                          });
                         }
                       : null,
                   style: ElevatedButton.styleFrom(

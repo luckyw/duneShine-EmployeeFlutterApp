@@ -111,7 +111,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                 ),
               ),
               Container(
-                width: double.infinity,
+                width: MediaQuery.of(context).size.width,
                 decoration: const BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.only(
@@ -123,6 +123,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                 child: Column(
                   children: [
                     Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.veryLightGray,

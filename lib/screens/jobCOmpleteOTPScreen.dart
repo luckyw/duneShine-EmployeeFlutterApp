@@ -26,7 +26,12 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
   }
 
   bool _isOtpComplete() {
-    return _otpControllers.every((controller) => controller.text.isNotEmpty);
+    bool complete = _otpControllers.every((controller) => controller.text.isNotEmpty);
+    print('OTP Complete Check: $complete');
+    for (int i = 0; i < _otpControllers.length; i++) {
+      print('OTP Field $i: "${_otpControllers[i].text}"');
+    }
+    return complete;
   }
 
   void _onOtpInput(int index, String value) {
