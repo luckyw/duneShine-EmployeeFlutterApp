@@ -18,26 +18,47 @@ class JobCompletedScreen extends StatefulWidget {
 }
 
 class _JobCompletedScreenState extends State<JobCompletedScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
+    with TickerProviderStateMixin {
+  late AnimationController _checkController;
+  late AnimationController _fadeController;
+  late Animation<double> _checkAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+    
+    // Check mark animation
+    _checkController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _checkAnimation = CurvedAnimation(
+      parent: _checkController,
+      curve: Curves.elasticOut,
+    );
+    
+    // Fade in animation
+    _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeIn,
     );
-    _animationController.forward();
+    
+    // Start animations
+    _checkController.forward();
+    Future.delayed(const Duration(milliseconds: 200), () {
+      _fadeController.forward();
+    });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _checkController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
@@ -57,155 +78,218 @@ class _JobCompletedScreenState extends State<JobCompletedScreen>
         return false;
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 40),
-                  ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.teal,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        size: 70,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 200,
-                        height: 200,
-                      ),
-                      for (int i = 0; i < 8; i++)
-                        Transform.rotate(
-                          angle: (i * 45) * 3.14159 / 180,
-                          child: Container(
-                            margin: const EdgeInsets.only(top: 60),
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              color: AppColors.yellow.withOpacity(0.7),
-                              borderRadius: BorderRadius.circular(2),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 60),
+                    
+                    // Animated Check Mark Circle
+                    ScaleTransition(
+                      scale: _checkAnimation,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primaryTeal,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryTeal.withOpacity(0.3),
+                              blurRadius: 30,
+                              spreadRadius: 5,
                             ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          size: 60,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 48),
+                    
+                    // Title
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: const Text(
+                        'Job Completed',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w300,
+                          color: AppColors.darkNavy,
+                          letterSpacing: -0.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Subtitle
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Text(
+                        'Well done, ${widget.employeeName}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.lightGray,
+                          letterSpacing: 0.2,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 60),
+                    
+                    // Divider
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Container(
+                        width: 60,
+                        height: 1,
+                        color: AppColors.lightGray.withOpacity(0.3),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 40),
+                    
+                    // Earnings Card
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 32,
+                          horizontal: 24,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.veryLightGray,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.lightGray.withOpacity(0.3),
+                            width: 1,
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Job Completed!',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.darkBlue,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Great work, ${widget.employeeName}. The job is now marked as complete.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade700,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 40),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.yellow.withOpacity(0.2),
-                          ),
-                          child: const Icon(
-                            Icons.attach_money,
-                            color: AppColors.yellow,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
                           children: [
                             const Text(
-                              'Amount Added',
+                              'EARNINGS',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.lightGray,
+                                letterSpacing: 1.5,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '+ ${widget.earnedAmount.toStringAsFixed(2)} AED',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.darkBlue,
-                              ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    '+',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w300,
+                                      color: AppColors.gold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  widget.earnedAmount.toStringAsFixed(0),
+                                  style: const TextStyle(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.w300,
+                                    color: AppColors.darkNavy,
+                                    letterSpacing: -1,
+                                  ),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8, left: 4),
+                                  child: Text(
+                                    'AED',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                      color: AppColors.lightGray,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              'added to your earnings',
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Added to your account',
                               style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                color: AppColors.lightGray,
                               ),
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 50),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _backToHome,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.yellow,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    
+                    const SizedBox(height: 60),
+                    
+                    // Back to Home Button
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: _backToHome,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            backgroundColor: AppColors.darkNavy,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Back to Home',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Back to Home',
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Job ID
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Text(
+                        'Job ID: ${widget.jobId}',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darkBlue,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.lightGray.withOpacity(0.6),
+                          letterSpacing: 0.3,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
-                ],
+                    
+                    const SizedBox(height: 60),
+                  ],
+                ),
               ),
             ),
           ),

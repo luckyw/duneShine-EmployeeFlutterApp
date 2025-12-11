@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
 import '../constants/colors.dart';
 
 class NavigateToJobScreen extends StatefulWidget {
@@ -10,6 +12,53 @@ class NavigateToJobScreen extends StatefulWidget {
 
 class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   bool _hasArrived = false;
+  final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
+  
+  // Job location coordinates (Building A, Parking B1, Slot 12)
+  // Using a sample location - you can adjust these coordinates
+  static const LatLng _jobLocation = LatLng(25.2048, 55.2708); // Dubai example
+  
+  // Initial camera position
+  static const CameraPosition _initialPosition = CameraPosition(
+    target: _jobLocation,
+    zoom: 16.0,
+  );
+  
+  // Markers set
+  final Set<Marker> _markers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _createMarker();
+  }
+
+  void _createMarker() {
+    _markers.add(
+      Marker(
+        markerId: const MarkerId('job_location'),
+        position: _jobLocation,
+        infoWindow: const InfoWindow(
+          title: 'Job Location',
+          snippet: 'Building A, Parking B1, Slot 12',
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+      ),
+    );
+  }
+
+  Future<void> _animateToJobLocation() async {
+    final GoogleMapController controller = await _mapController.future;
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        const CameraPosition(
+          target: _jobLocation,
+          zoom: 17.0,
+          tilt: 45.0,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,41 +86,31 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.my_location, color: AppColors.white),
+            onPressed: _animateToJobLocation,
+            tooltip: 'Center on job location',
+          ),
+        ],
       ),
       body: Stack(
         children: [
-          Container(
-            color: const Color(0xFFF5F5F5),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Container(
-                    color: const Color(0xFFE8E8E8),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.map,
-                            size: 80,
-                            color: AppColors.lightGray,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Google Maps Integration',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.lightGray,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          // Google Maps Widget
+          GoogleMap(
+            mapType: MapType.normal,
+            initialCameraPosition: _initialPosition,
+            markers: _markers,
+            onMapCreated: (GoogleMapController controller) {
+              _mapController.complete(controller);
+            },
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            compassEnabled: true,
+            mapToolbarEnabled: false,
           ),
+          // Bottom sheet with job details
           Positioned(
             bottom: 0,
             left: 0,
@@ -93,6 +132,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
               padding: const EdgeInsets.all(24),
               child: _hasArrived
                   ? Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text(
                           'You Have Arrived',
@@ -147,6 +187,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                       ],
                     )
                   : Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
@@ -163,11 +204,43 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                             const Icon(Icons.directions_car,
                                 color: AppColors.primaryTeal, size: 20),
                             const SizedBox(width: 8),
+                            Text(
+                              '$carModel - $carColor',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppColors.darkNavy,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time,
+                                color: AppColors.primaryTeal, size: 20),
+                            const SizedBox(width: 8),
                             const Text(
                               'Estimated Time: 12 mins',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppColors.darkNavy,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on,
+                                color: AppColors.primaryTeal, size: 20),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: Text(
+                                'Building A, Parking B1, Slot 12',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.darkNavy,
+                                ),
                               ),
                             ),
                           ],
@@ -205,5 +278,10 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

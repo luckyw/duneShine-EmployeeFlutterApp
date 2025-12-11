@@ -10,9 +10,11 @@ class AccountWidget extends StatelessWidget {
       child: Column(
         children: [
           Container(
+            width: double.infinity,
             color: const Color(0xFF1A3A52),
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(vertical: 24),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Stack(
                   children: [
@@ -54,42 +56,40 @@ class AccountWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD4AF37),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Weekly Earnings',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.darkNavy,
-                    ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD4AF37),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Weekly Earnings',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.darkNavy,
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '350.00 AED',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '350.00 AED',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '12 Jobs Completed',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.darkNavy,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '12 Jobs Completed',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.darkNavy,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),

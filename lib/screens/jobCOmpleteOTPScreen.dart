@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 
 class JobCompletionOtpScreen extends StatefulWidget {
@@ -13,6 +14,16 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
   final List<TextEditingController> _otpControllers =
       List.generate(4, (index) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
+
+  @override
+  void initState() {
+    super.initState();
+    for (var controller in _otpControllers) {
+      controller.addListener(() {
+        setState(() {});
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -103,34 +114,45 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                         (index) => SizedBox(
                           width: 60,
                           height: 60,
-                          child: TextField(
-                            controller: _otpControllers[index],
-                            focusNode: _focusNodes[index],
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            maxLength: 1,
-                            onChanged: (value) => _onOtpInput(index, value),
-                            decoration: InputDecoration(
-                              counterText: '',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.darkNavy,
-                                  width: 2,
+                          child: RawKeyboardListener(
+                            focusNode: FocusNode(),
+                            onKey: (event) {
+                              if (event.isKeyPressed(LogicalKeyboardKey.backspace)) {
+                                if (index > 0 && _otpControllers[index].text.isEmpty) {
+                                  _otpControllers[index - 1].clear();
+                                  _focusNodes[index - 1].requestFocus();
+                                }
+                              }
+                            },
+                            child: TextField(
+                              controller: _otpControllers[index],
+                              focusNode: _focusNodes[index],
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              maxLength: 1,
+                              onChanged: (value) => _onOtpInput(index, value),
+                              decoration: InputDecoration(
+                                counterText: '',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.darkNavy,
+                                    width: 2,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.darkNavy,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.darkNavy,
-                                  width: 2,
-                                ),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.darkNavy,
                               ),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.darkNavy,
                             ),
                           ),
                         ),
