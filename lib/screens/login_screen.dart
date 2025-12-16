@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -11,11 +13,22 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _pinController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String _selectedCountryCode = '+971';
   bool _isLoading = false;
-  bool _obscurePin = true;
+
+  final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
+
+  // 6 OTP digit controllers and focus nodes
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (index) => TextEditingController(),
+  );
+  final List<FocusNode> _otpFocusNodes = List.generate(
+    6,
+    (index) => FocusNode(),
+  );
 
   final List<Map<String, String>> _countryCodes = [
     {'code': '+971', 'country': 'UAE'},
@@ -27,24 +40,75 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
+      // Check OTP is complete
+      if (!_isOtpComplete()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Please enter all 6 OTP digits'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      // Construct full phone number with country code
+      final phoneNumber = '+971${_phoneController.text}';
+      // Combine all 6 OTP digits
+      final otp = _otpControllers.map((c) => c.text).join();
+
+      // Call login API
+      final result = await _apiService.login(
+        phone: phoneNumber,
+        otp: otp,
+      );
 
       setState(() {
         _isLoading = false;
       });
 
       if (mounted) {
-        // Direct navigation to home screen
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/employee-home',
-          (route) => false,
-        );
+        if (result['success'] == true && result['data']?['success'] == true) {
+          // Extract employee data and token from response
+          final responseData = result['data']['data'];
+          final token = responseData['token'] as String;
+          final employeeData = responseData['employee'] as Map<String, dynamic>;
+
+          // Store auth data
+          _authService.setAuthData(
+            token: token,
+            employeeData: employeeData,
+          );
+
+          // Navigate to home screen
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/employee-home',
+            (route) => false,
+          );
+        } else {
+          // Show error message
+          final message = result['data']?['message'] ?? result['message'] ?? 'Login failed';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
       }
     }
   }
@@ -52,8 +116,66 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _phoneController.dispose();
-    _pinController.dispose();
+    for (var controller in _otpControllers) {
+      controller.dispose();
+    }
+    for (var focusNode in _otpFocusNodes) {
+      focusNode.dispose();
+    }
     super.dispose();
+  }
+
+  /// Build a single OTP digit box
+  Widget _buildOtpBox(int index) {
+    return Container(
+      width: 48,
+      height: 56,
+      decoration: BoxDecoration(
+        color: AppColors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _otpFocusNodes[index].hasFocus
+              ? AppColors.primaryTeal
+              : AppColors.white.withOpacity(0.2),
+          width: _otpFocusNodes[index].hasFocus ? 2 : 1,
+        ),
+      ),
+      child: TextField(
+        controller: _otpControllers[index],
+        focusNode: _otpFocusNodes[index],
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        maxLength: 1,
+        style: const TextStyle(
+          color: AppColors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+        ],
+        decoration: const InputDecoration(
+          counterText: '',
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
+        ),
+        onChanged: (value) {
+          if (value.isNotEmpty && index < 5) {
+            // Move to next box
+            _otpFocusNodes[index + 1].requestFocus();
+          } else if (value.isEmpty && index > 0) {
+            // Move to previous box on delete
+            _otpFocusNodes[index - 1].requestFocus();
+          }
+          setState(() {}); // Rebuild to update border color
+        },
+      ),
+    );
+  }
+
+  /// Check if all OTP boxes are filled
+  bool _isOtpComplete() {
+    return _otpControllers.every((c) => c.text.isNotEmpty);
   }
 
   @override
@@ -217,9 +339,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  // Key (PIN) label
+                  // OTP Key label
                   Text(
-                    'Key',
+                    'Enter OTP Key',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -227,79 +349,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Key (PIN) input
-                  TextFormField(
-                    controller: _pinController,
-                    keyboardType: TextInputType.number,
-                    obscureText: _obscurePin,
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontSize: 16,
-                      letterSpacing: 4, // Spacing for PIN
+                  // 6 OTP boxes
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(
+                      6,
+                      (index) => _buildOtpBox(index),
                     ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(4),
-                    ],
-                    decoration: InputDecoration(
-                      hintText: 'Enter 4-digit Key',
-                      hintStyle: TextStyle(
-                        color: AppColors.white.withOpacity(0.4),
-                        letterSpacing: 0, // Reset spacing for hint
-                      ),
-                      filled: true,
-                      fillColor: AppColors.white.withOpacity(0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.white.withOpacity(0.2),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.white.withOpacity(0.2),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppColors.primaryTeal,
-                          width: 2,
-                        ),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Colors.red,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePin ? Icons.visibility : Icons.visibility_off,
-                          color: AppColors.white.withOpacity(0.5),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePin = !_obscurePin;
-                          });
-                        },
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your Key';
-                      }
-                      if (value.length < 4) {
-                        return 'Key must be 4 digits';
-                      }
-                      return null;
-                    },
                   ),
+                  // Error message for OTP validation
+                  if (!_isOtpComplete() && _otpControllers.any((c) => c.text.isNotEmpty))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        'Please enter all 6 digits',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red.shade300,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 40),
                   // Login button
                   SizedBox(

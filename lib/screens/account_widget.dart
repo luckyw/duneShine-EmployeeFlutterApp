@@ -1,8 +1,71 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
-class AccountWidget extends StatelessWidget {
+class AccountWidget extends StatefulWidget {
   const AccountWidget({Key? key}) : super(key: key);
+
+  @override
+  State<AccountWidget> createState() => _AccountWidgetState();
+}
+
+class _AccountWidgetState extends State<AccountWidget> {
+  final ApiService _apiService = ApiService();
+  final AuthService _authService = AuthService();
+  bool _isLoggingOut = false;
+
+  Future<void> _performLogout() async {
+    final token = _authService.token;
+    if (token == null) {
+      // No token, just clear and navigate
+      _authService.clearAuthData();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (route) => false,
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    final result = await _apiService.logout(token: token);
+
+    setState(() {
+      _isLoggingOut = false;
+    });
+
+    if (mounted) {
+      // Clear auth data regardless of API response
+      _authService.clearAuthData();
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Logged out successfully'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+
+      // Navigate to login screen
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +88,20 @@ class AccountWidget extends StatelessWidget {
                         shape: BoxShape.circle,
                         color: AppColors.lightGray,
                       ),
-                      child: const Icon(Icons.person,
-                          size: 60, color: AppColors.white),
+                      child: _authService.employeeProfileImage != null
+                          ? ClipOval(
+                              child: Image.network(
+                                _authService.employeeProfileImage!,
+                                fit: BoxFit.cover,
+                                width: 100,
+                                height: 100,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.person,
+                                        size: 60, color: AppColors.white),
+                              ),
+                            )
+                          : const Icon(Icons.person,
+                              size: 60, color: AppColors.white),
                     ),
                     Positioned(
                       bottom: 0,
@@ -44,9 +119,9 @@ class AccountWidget extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Ahmed',
-                  style: TextStyle(
+                Text(
+                  _authService.employeeName,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: AppColors.white,
@@ -128,53 +203,62 @@ class AccountWidget extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Log Out?'),
-                      content: const Text(
-                          'Are you sure you want to log out?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Logged out')),
-                            );
-                          },
-                          child: const Text('Log Out'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                onPressed: _isLoggingOut
+                    ? null
+                    : () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Log Out?'),
+                            content: const Text(
+                                'Are you sure you want to log out?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _performLogout();
+                                },
+                                child: const Text('Log Out'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
+                  disabledBackgroundColor: Colors.red.withOpacity(0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.logout, color: AppColors.white),
-                    SizedBox(width: 8),
-                    Text(
-                      'Log Out',
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                child: _isLoggingOut
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: AppColors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout, color: AppColors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            'Log Out',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
