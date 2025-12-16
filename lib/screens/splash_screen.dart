@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -13,6 +14,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -38,12 +40,31 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    // Navigate to onboarding after delay
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
+    // Check authentication and navigate accordingly
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    // Wait for animation to complete partially
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Initialize auth service and check if user is logged in
+    final isLoggedIn = await _authService.initialize();
+
+    if (mounted) {
+      // Add small delay for smooth transition
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (isLoggedIn) {
+        // User is already logged in, go to home screen
+        debugPrint('User already logged in, navigating to home...');
+        Navigator.pushReplacementNamed(context, '/employee-home');
+      } else {
+        // User not logged in, go to onboarding
+        debugPrint('User not logged in, navigating to onboarding...');
         Navigator.pushReplacementNamed(context, '/onboarding');
       }
-    });
+    }
   }
 
   @override

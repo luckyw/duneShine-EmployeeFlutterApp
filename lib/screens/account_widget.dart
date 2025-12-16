@@ -19,7 +19,7 @@ class _AccountWidgetState extends State<AccountWidget> {
     final token = _authService.token;
     if (token == null) {
       // No token, just clear and navigate
-      _authService.clearAuthData();
+      await _authService.clearAuthData();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -41,8 +41,8 @@ class _AccountWidgetState extends State<AccountWidget> {
     });
 
     if (mounted) {
-      // Clear auth data regardless of API response
-      _authService.clearAuthData();
+      // Clear auth data from secure storage
+      await _authService.clearAuthData();
 
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(

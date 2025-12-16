@@ -82,8 +82,8 @@ class _LoginScreenState extends State<LoginScreen> {
           final token = responseData['token'] as String;
           final employeeData = responseData['employee'] as Map<String, dynamic>;
 
-          // Store auth data
-          _authService.setAuthData(
+          // Store auth data securely (persistent storage)
+          await _authService.setAuthData(
             token: token,
             employeeData: employeeData,
           );
