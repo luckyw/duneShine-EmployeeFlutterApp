@@ -7,8 +7,12 @@ import 'screens/jobCOmpleteOTPScreen.dart';
 import 'screens/jobCOmpletionProofPhto.dart';
 import 'screens/jobCompletedScreen.dart';
 import 'screens/job_details_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/navigate_to_job_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/otp_verification_screen.dart';
 import 'screens/screenToFillUserPin.dart';
+import 'screens/splash_screen.dart';
 import 'screens/washProgressShowingScreen.dart';
 
 void main() {
@@ -28,8 +32,12 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.white,
         useMaterial3: true,
       ),
-      initialRoute: '/employee-home',
+      initialRoute: '/splash',
       routes: {
+        '/splash': (context) => const SplashScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/otp-verification': (context) => const OtpVerificationScreen(),
         '/employee-home': (context) => const EmployeeHomeScreen(),
         '/job-details': (context) => const JobDetailsScreen(),
         '/navigate-to-job': (context) => const NavigateToJobScreen(),
