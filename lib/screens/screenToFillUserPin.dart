@@ -45,10 +45,10 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
             {};
     if (_isPhotoUploaded) {
-      // Navigate to Job Verification (PIN) Screen
+      // Navigate to Wash Progress Screen (service start)
       Navigator.pushNamed(
         context,
-        '/job-verification',
+        '/wash-progress',
         arguments: {
           ...routeArgs,
           'jobId': widget.jobId,
@@ -68,7 +68,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.darkBlue,
+        backgroundColor: AppColors.darkTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -102,7 +102,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                     const Icon(
                       Icons.directions_car,
                       size: 40,
-                      color: AppColors.teal,
+                      color: AppColors.primaryTeal,
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -113,7 +113,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.darkBlue,
+                            color: AppColors.darkTeal,
                           ),
                         ),
                         Text(
@@ -134,7 +134,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.darkBlue,
+                  color: AppColors.darkTeal,
                 ),
               ),
               const SizedBox(height: 8),
@@ -152,7 +152,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                   height: 300,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.teal, width: 2),
+                    border: Border.all(color: AppColors.primaryTeal, width: 2),
                   ),
                   child: Image.file(
                     _capturedPhoto!,
@@ -229,7 +229,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                 child: ElevatedButton(
                   onPressed: _isPhotoUploaded ? _verifyAndProceed : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
+                    backgroundColor: AppColors.gold,
                     disabledBackgroundColor: Colors.grey.shade300,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -242,7 +242,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: _isPhotoUploaded
-                          ? AppColors.darkBlue
+                          ? AppColors.darkTeal
                           : Colors.grey.shade600,
                     ),
                   ),

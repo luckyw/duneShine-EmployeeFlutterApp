@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryTeal),
         scaffoldBackgroundColor: AppColors.white,
         useMaterial3: true,
+        fontFamily: 'Manrope',
       ),
       initialRoute: '/splash',
       routes: {

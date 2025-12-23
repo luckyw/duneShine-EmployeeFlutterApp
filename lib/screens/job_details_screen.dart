@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 
 class JobDetailsScreen extends StatefulWidget {
   const JobDetailsScreen({Key? key}) : super(key: key);
@@ -22,18 +23,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A3A52),
+        backgroundColor: AppColors.primaryTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Job Details',
-          style: TextStyle(
+          style: AppTextStyles.headline(context).copyWith(
             color: AppColors.white,
             fontSize: 20,
-            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -51,7 +51,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -66,7 +66,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.gold.withOpacity(0.15),
+                            color: AppColors.gold.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(Icons.directions_car,
@@ -79,9 +79,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                             children: [
                               Text(
                                 carModel,
-                                style: const TextStyle(
+                                style: AppTextStyles.title(context).copyWith(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.bold,
                                   color: AppColors.darkNavy,
                                 ),
                               ),
@@ -111,8 +110,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                   const SizedBox(width: 6),
                                   Text(
                                     carColor,
-                                    style: TextStyle(
-                                      fontSize: 14,
+                                    style: AppTextStyles.body(context).copyWith(
                                       color: AppColors.lightGray,
                                     ),
                                   ),
@@ -125,15 +123,14 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryTeal.withOpacity(0.1),
+                            color: AppColors.primaryTeal.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             jobId,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                            style: AppTextStyles.caption(context).copyWith(
                               color: AppColors.primaryTeal,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -149,7 +146,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
@@ -163,19 +160,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Service Location',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.lightGray,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
+                              Text(
                                 '123 Main Street, Downtown',
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: AppTextStyles.body(context).copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.darkNavy,
                                 ),
@@ -183,9 +178,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 'Dubai, UAE',
-                                style: TextStyle(
-                                  fontSize: 13,
+                                style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.lightGray,
+                                  fontSize: 13,
                                 ),
                               ),
                             ],
@@ -206,7 +201,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -219,11 +214,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Today\'s Task',
-                          style: TextStyle(
+                          style: AppTextStyles.title(context).copyWith(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
                             color: AppColors.darkNavy,
                           ),
                         ),
@@ -234,19 +228,19 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                             gradient: LinearGradient(
                               colors: [
                                 AppColors.gold,
-                                AppColors.gold.withOpacity(0.8),
+                                AppColors.gold.withValues(alpha: 0.8),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.gold.withOpacity(0.3),
+                                color: AppColors.gold.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
@@ -257,9 +251,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                               SizedBox(width: 6),
                               Text(
                                 'Premium Wash',
-                                style: TextStyle(
+                                style: AppTextStyles.caption(context).copyWith(
                                   color: Colors.white,
-                                  fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -302,12 +295,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Navigate to Job',
-                    style: TextStyle(
+                    style: AppTextStyles.button(context).copyWith(
                       color: AppColors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -337,7 +328,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withOpacity(0.1),
+                color: AppColors.primaryTeal.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: AppColors.primaryTeal, size: 20),
@@ -346,8 +337,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             Expanded(
               child: Text(
                 task,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: AppTextStyles.body(context).copyWith(
                   fontWeight: FontWeight.w500,
                   color: AppColors.darkNavy,
                 ),
@@ -355,7 +345,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             ),
             Icon(
               Icons.check_circle,
-              color: AppColors.primaryTeal.withOpacity(0.3),
+              color: AppColors.primaryTeal.withValues(alpha: 0.3),
               size: 22,
             ),
           ],

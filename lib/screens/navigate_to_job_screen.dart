@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 
 class NavigateToJobScreen extends StatefulWidget {
   const NavigateToJobScreen({Key? key}) : super(key: key);
@@ -72,18 +73,17 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1A3A52),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A3A52),
+        backgroundColor: AppColors.primaryTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Navigate to Job',
-          style: TextStyle(
+          style: AppTextStyles.headline(context).copyWith(
             color: AppColors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 20, // AppBar size override
           ),
         ),
         actions: [
@@ -124,7 +124,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                   ),
                 ],
@@ -134,19 +134,17 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                   ? Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
+                        Text(
                           'You Have Arrived',
-                          style: TextStyle(
+                          style: AppTextStyles.headline(context).copyWith(
                             fontSize: 20,
-                            fontWeight: FontWeight.bold,
                             color: AppColors.darkNavy,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Ready to start the job',
-                          style: TextStyle(
-                            fontSize: 14,
+                          style: AppTextStyles.body(context).copyWith(
                             color: AppColors.lightGray,
                           ),
                         ),
@@ -158,7 +156,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                             onPressed: () {
                               Navigator.pushNamed(
                                 context,
-                                '/job-arrival-photo',
+                                '/job-verification',
                                 arguments: {
                                   'jobId': jobId,
                                   'carModel': carModel,
@@ -174,12 +172,10 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Proceed to Job',
-                              style: TextStyle(
+                              style: AppTextStyles.button(context).copyWith(
                                 color: AppColors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
@@ -190,11 +186,10 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'En Route to Building A',
-                          style: TextStyle(
+                          style: AppTextStyles.title(context).copyWith(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
                             color: AppColors.darkNavy,
                           ),
                         ),
@@ -206,8 +201,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                             const SizedBox(width: 8),
                             Text(
                               '$carModel - $carColor',
-                              style: const TextStyle(
-                                fontSize: 14,
+                              style: AppTextStyles.body(context).copyWith(
                                 color: AppColors.darkNavy,
                               ),
                             ),
@@ -219,10 +213,9 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                             const Icon(Icons.access_time,
                                 color: AppColors.primaryTeal, size: 20),
                             const SizedBox(width: 8),
-                            const Text(
+                            Text(
                               'Estimated Time: 12 mins',
-                              style: TextStyle(
-                                fontSize: 14,
+                              style: AppTextStyles.body(context).copyWith(
                                 color: AppColors.darkNavy,
                               ),
                             ),
@@ -234,11 +227,10 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                             const Icon(Icons.location_on,
                                 color: AppColors.primaryTeal, size: 20),
                             const SizedBox(width: 8),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'Building A, Parking B1, Slot 12',
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: AppTextStyles.body(context).copyWith(
                                   color: AppColors.darkNavy,
                                 ),
                               ),
@@ -261,12 +253,10 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'I Have Arrived',
-                              style: TextStyle(
+                              style: AppTextStyles.button(context).copyWith(
                                 color: AppColors.darkNavy,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),

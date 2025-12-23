@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 import 'availability_widget.dart';
 import 'account_widget.dart';
 
@@ -44,17 +45,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     switch (_currentIndex) {
       case 0:
         return AppBar(
-          backgroundColor: const Color(0xFF1A3A52),
+          backgroundColor: AppColors.primaryTeal,
           elevation: 0,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Good Morning, Ahmed',
-                style: TextStyle(
+                style: AppTextStyles.headline(context).copyWith(
                   color: AppColors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 20, // AppBar size override
                 ),
               ),
               Row(
@@ -66,9 +66,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   const SizedBox(width: 4),
                   Text(
                     '25°C',
-                    style: TextStyle(
-                      color: AppColors.white.withOpacity(0.8),
-                      fontSize: 14,
+                    style: AppTextStyles.body(context).copyWith(
+                      color: AppColors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -112,11 +111,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       children: [
                         Align(
                           alignment: Alignment.centerLeft,
-                          child: const Text(
+                          child: Text(
                             "Today's Jobs: 5",
-                            style: TextStyle(
+                            style: AppTextStyles.title(context).copyWith(
                               fontSize: 18,
-                              fontWeight: FontWeight.bold,
                               color: AppColors.darkNavy,
                             ),
                           ),
@@ -125,20 +123,18 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         Align(
                           alignment: Alignment.centerLeft,
                           child: RichText(
-                            text: const TextSpan(
+                            text: TextSpan(
                               children: [
                                 TextSpan(
                                   text: 'Total ',
-                                  style: TextStyle(
+                                  style: AppTextStyles.body(context).copyWith(
                                     color: AppColors.darkNavy,
-                                    fontSize: 14,
                                   ),
                                 ),
                                 TextSpan(
                                   text: '| 2 Done',
-                                  style: TextStyle(
+                                  style: AppTextStyles.body(context).copyWith(
                                     color: AppColors.primaryTeal,
-                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -210,8 +206,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             car: 'Honda Accord - Black',
                             location: 'Building A, Parking B1, Slot 12',
                             status: 'Pending',
-                            statusColor: AppColors.primaryTeal,
-                            bgColor: const Color(0xFF1A3A52),
+                            statusColor: AppColors.white,
+                            bgColor: AppColors.white,
+                            borderColor: AppColors.primaryTeal,
+                            textColor: AppColors.textDark,
+                            iconColor: AppColors.primaryTeal,
                           ),
                           const SizedBox(height: 12),
                           _buildJobCard(
@@ -219,8 +218,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             car: 'BMW X5 - Blue',
                             location: 'Building C, Parking B2, Slot 25',
                             status: 'Pending',
-                            statusColor: AppColors.primaryTeal,
-                            bgColor: const Color(0xFF1A3A52),
+                            statusColor: AppColors.white,
+                            bgColor: AppColors.white,
+                            borderColor: AppColors.primaryTeal,
+                            textColor: AppColors.textDark,
+                            iconColor: AppColors.primaryTeal,
                           ),
                         ],
                       ),
@@ -294,12 +296,18 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     required String status,
     Color bgColor = AppColors.primaryTeal,
     Color statusColor = Colors.transparent,
+    Color textColor = AppColors.white,
+    Color borderColor = Colors.transparent,
+    Color iconColor = AppColors.white,
     VoidCallback? onNavigate,
   }) {
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
+        border: borderColor != Colors.transparent
+            ? Border.all(color: borderColor, width: 1.5)
+            : null,
       ),
       child: Column(
         children: [
@@ -310,24 +318,21 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               children: [
                 Text(
                   time,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 14,
+                  style: AppTextStyles.body(context).copyWith(
+                    color: textColor,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.directions_car,
-                        color: AppColors.white, size: 20),
+                    Icon(Icons.directions_car, color: iconColor, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         car,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 14,
+                        style: AppTextStyles.body(context).copyWith(
+                          color: textColor,
                         ),
                       ),
                     ),
@@ -336,14 +341,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.2),
+                          color: statusColor == AppColors.white
+                              ? AppColors.darkNavy.withValues(alpha: 0.8)
+                              : statusColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           status,
-                          style: TextStyle(
+                          style: AppTextStyles.caption(context).copyWith(
                             color: statusColor,
-                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -353,15 +359,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.location_on,
-                        color: AppColors.white, size: 20),
+                    Icon(Icons.location_on, color: iconColor, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         location,
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 12,
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: textColor,
                         ),
                       ),
                     ),
@@ -382,12 +386,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Navigate',
-                  style: TextStyle(
+                  style: AppTextStyles.button(context).copyWith(
                     color: AppColors.darkNavy,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -406,8 +408,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50), // Green color for completed jobs
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.lightGray, width: 1.5),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -418,23 +421,21 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             children: [
               Text(
                 time,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontSize: 14,
+                style: AppTextStyles.body(context).copyWith(
+                  color: AppColors.textGray,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.white.withOpacity(0.2),
+                  color: AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text(
+                child: Text(
                   '✓ Done',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 12,
+                  style: AppTextStyles.caption(context).copyWith(
+                    color: AppColors.success,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -445,14 +446,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           Row(
             children: [
               const Icon(Icons.directions_car,
-                  color: AppColors.white, size: 20),
+                  color: AppColors.textGray, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   car,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 14,
+                  style: AppTextStyles.body(context).copyWith(
+                    color: AppColors.textGray,
                   ),
                 ),
               ),
@@ -462,14 +462,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           Row(
             children: [
               const Icon(Icons.location_on,
-                  color: AppColors.white, size: 20),
+                  color: AppColors.textGray, size: 20),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   location,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 12,
+                  style: AppTextStyles.caption(context).copyWith(
+                    color: AppColors.textGray,
                   ),
                 ),
               ),
@@ -479,7 +478,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.white.withOpacity(0.15),
+              color: AppColors.veryLightGray,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -488,13 +487,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 Row(
                   children: [
                     const Icon(Icons.check_circle,
-                        color: AppColors.white, size: 16),
+                        color: AppColors.success, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       completedTime,
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontSize: 12,
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: AppColors.textGray,
                       ),
                     ),
                   ],
@@ -505,9 +503,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         color: AppColors.gold, size: 16),
                     Text(
                       earnings,
-                      style: const TextStyle(
+                      style: AppTextStyles.body(context).copyWith(
                         color: AppColors.gold,
-                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

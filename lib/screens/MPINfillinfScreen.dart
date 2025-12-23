@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 
 class JobVerificationScreen extends StatefulWidget {
   const JobVerificationScreen({Key? key}) : super(key: key);
@@ -30,33 +32,25 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
     return complete;
   }
 
-  void _onPinInput(int index, String value) {
-    setState(() {});
-    if (value.isNotEmpty && index < 3) {
-      _focusNodes[index + 1].requestFocus();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final routeArgs =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
             {};
     return Scaffold(
-      backgroundColor: const Color(0xFF1A3A52),
+      backgroundColor: AppColors.primaryTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A3A52),
+        backgroundColor: AppColors.primaryTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Job Verification',
-          style: TextStyle(
+          style: AppTextStyles.headline(context).copyWith(
             color: AppColors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 20, // AppBar size override
           ),
         ),
       ),
@@ -74,20 +68,18 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Enter Customer PIN',
-                      style: TextStyle(
+                      style: AppTextStyles.headline(context).copyWith(
                         fontSize: 20,
-                        fontWeight: FontWeight.bold,
                         color: AppColors.darkNavy,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Ask the customer for the 4-digit PIN\nto start the wash.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: AppTextStyles.body(context).copyWith(
                         color: AppColors.lightGray,
                       ),
                     ),
@@ -99,34 +91,61 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                         (index) => SizedBox(
                           width: 60,
                           height: 60,
-                          child: TextField(
-                            controller: _pinControllers[index],
-                            focusNode: _focusNodes[index],
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            maxLength: 1,
-                            onChanged: (value) => _onPinInput(index, value),
-                            decoration: InputDecoration(
-                              counterText: '',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.darkNavy,
-                                  width: 2,
+                          child: KeyboardListener(
+                            focusNode: FocusNode(), // Node for listener
+                            onKeyEvent: (event) {
+                              if (event is KeyDownEvent &&
+                                  event.logicalKey ==
+                                      LogicalKeyboardKey.backspace) {
+                                if (_pinControllers[index].text.isEmpty &&
+                                    index > 0) {
+                                  _focusNodes[index - 1].requestFocus();
+                                }
+                              }
+                            },
+                            child: TextField(
+                              controller: _pinControllers[index],
+                              focusNode: _focusNodes[index],
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              maxLength: 1,
+                              onChanged: (value) {
+                                if (value.isNotEmpty) {
+                                  if (index < 3) {
+                                    _focusNodes[index + 1].requestFocus();
+                                  } else {
+                                    // Last digit entered, dismiss keyboard
+                                    _focusNodes[index].unfocus();
+                                  }
+                                } else {
+                                  // Value became empty
+                                  if (index > 0) {
+                                    _focusNodes[index - 1].requestFocus();
+                                  }
+                                }
+                                setState(() {});
+                              },
+                              decoration: InputDecoration(
+                                counterText: '',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.darkNavy,
+                                    width: 2,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.darkNavy,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.darkNavy,
-                                  width: 2,
-                                ),
+                              style: AppTextStyles.title(context).copyWith(
+                                fontSize: 24,
+                                color: AppColors.darkNavy,
                               ),
-                            ),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.darkNavy,
                             ),
                           ),
                         ),
@@ -139,10 +158,10 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                       child: ElevatedButton(
                         onPressed: _isPinComplete()
                             ? () {
-                                debugPrint('Navigating to /wash-progress with args: $routeArgs');
+                                debugPrint('Navigating to /job-arrival-photo with args: $routeArgs');
                                 Navigator.pushNamed(
                                   context,
-                                  '/wash-progress',
+                                  '/job-arrival-photo',
                                   arguments: routeArgs,
                                 );
                               }
@@ -150,17 +169,15 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFC107),
                           disabledBackgroundColor:
-                              const Color(0xFFFFC107).withOpacity(0.5),
+                              const Color(0xFFFFC107).withValues(alpha: 0.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Verify & Start Wash',
-                          style: TextStyle(
+                          style: AppTextStyles.button(context).copyWith(
                             color: AppColors.darkNavy,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -172,11 +189,10 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                           const SnackBar(content: Text('PIN resent')),
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         'Resend PIN',
-                        style: TextStyle(
+                        style: AppTextStyles.body(context).copyWith(
                           color: AppColors.primaryTeal,
-                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           decoration: TextDecoration.underline,
                         ),

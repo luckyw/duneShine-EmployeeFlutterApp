@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/auth_service.dart';
+import '../constants/text_styles.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -55,6 +56,8 @@ class _SplashScreenState extends State<SplashScreen>
       // Add small delay for smooth transition
       await Future.delayed(const Duration(milliseconds: 500));
 
+      if (!mounted) return;
+
       if (isLoggedIn) {
         // User is already logged in, go to home screen
         debugPrint('User already logged in, navigating to home...');
@@ -76,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.darkNavy,
+      backgroundColor: AppColors.primaryTeal,
       body: Center(
         child: AnimatedBuilder(
           animation: _animationController,
@@ -93,10 +96,11 @@ class _SplashScreenState extends State<SplashScreen>
                       width: 200,
                       height: 200,
                       decoration: BoxDecoration(
+                        color: AppColors.primaryTeal,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryTeal.withOpacity(0.3),
+                            color: AppColors.darkNavy.withValues(alpha: 0.3),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),
@@ -114,14 +118,13 @@ class _SplashScreenState extends State<SplashScreen>
                     // App Name
                     Text(
                       'DuneShine',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.headline(context).copyWith(
                         color: AppColors.white,
+                        fontSize: 36, // Branding override
                         letterSpacing: 2,
                         shadows: [
                           Shadow(
-                            color: AppColors.primaryTeal.withOpacity(0.5),
+                            color: AppColors.darkNavy.withValues(alpha: 0.5),
                             blurRadius: 10,
                           ),
                         ],
@@ -130,9 +133,9 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 8),
                     Text(
                       'Employee',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: AppTextStyles.subtitle(context).copyWith(
                         color: AppColors.gold,
+                        fontSize: 18, // Branding override
                         letterSpacing: 4,
                         fontWeight: FontWeight.w300,
                       ),

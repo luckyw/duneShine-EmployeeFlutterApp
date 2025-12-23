@@ -57,9 +57,9 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
             {};
     return Scaffold(
-      backgroundColor: const Color(0xFF1A3A52),
+      backgroundColor: AppColors.primaryTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A3A52),
+        backgroundColor: AppColors.primaryTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
@@ -182,7 +182,7 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD4AF37),
                           disabledBackgroundColor:
-                              const Color(0xFFD4AF37).withOpacity(0.5),
+                              const Color(0xFFD4AF37).withValues(alpha: 0.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

@@ -35,9 +35,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A3A52),
+      backgroundColor: AppColors.primaryTeal,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A3A52),
+        backgroundColor: AppColors.primaryTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
@@ -78,53 +78,75 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                   color: AppColors.veryLightGray,
                 ),
                 child: _isPhotoUploaded && _capturedPhoto != null
-                    ? GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (context) => Container(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ListTile(
-                                    leading: const Icon(Icons.camera_alt),
-                                    title: const Text('Take Photo'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _pickImage(ImageSource.camera);
-                                    },
+                    ? Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.file(
+                              _capturedPhoto!,
+                              fit: BoxFit.cover,
+                              height: 300,
+                              width: double.infinity,
+                            ),
+                          ),
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: GestureDetector(
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => Container(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ListTile(
+                                          leading: const Icon(Icons.camera_alt),
+                                          title: const Text('Take Photo'),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            _pickImage(ImageSource.camera);
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(Icons.image),
+                                          title: const Text('Choose from Gallery'),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            _pickImage(ImageSource.gallery);
+                                          },
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  ListTile(
-                                    leading: const Icon(Icons.image),
-                                    title: const Text('Choose from Gallery'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _pickImage(ImageSource.gallery);
-                                    },
-                                  ),
-                                ],
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.edit,
+                                  color: AppColors.primaryTeal,
+                                  size: 24,
+                                ),
                               ),
                             ),
-                          );
-                        },
-                        child: Container(
-                          height: 300,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: AppColors.darkNavy,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Image.file(
-                            _capturedPhoto!,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                        ],
                       )
                     : GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: () {
                           showModalBottomSheet(
                             context: context,
@@ -225,7 +247,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFC107),
                     disabledBackgroundColor:
-                        const Color(0xFFFFC107).withOpacity(0.5),
+                        const Color(0xFFFFC107).withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

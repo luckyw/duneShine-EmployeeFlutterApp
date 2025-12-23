@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
-class JobCompletedScreen extends StatefulWidget {
+class JobCompletedScreen extends StatelessWidget {
   final String employeeName;
   final double earnedAmount;
   final String jobId;
@@ -13,56 +13,7 @@ class JobCompletedScreen extends StatefulWidget {
     required this.jobId,
   }) : super(key: key);
 
-  @override
-  State<JobCompletedScreen> createState() => _JobCompletedScreenState();
-}
-
-class _JobCompletedScreenState extends State<JobCompletedScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _checkController;
-  late AnimationController _fadeController;
-  late Animation<double> _checkAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    
-    // Check mark animation
-    _checkController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _checkAnimation = CurvedAnimation(
-      parent: _checkController,
-      curve: Curves.elasticOut,
-    );
-    
-    // Fade in animation
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    );
-    
-    // Start animations
-    _checkController.forward();
-    Future.delayed(const Duration(milliseconds: 200), () {
-      _fadeController.forward();
-    });
-  }
-
-  @override
-  void dispose() {
-    _checkController.dispose();
-    _fadeController.dispose();
-    super.dispose();
-  }
-
-  void _backToHome() {
+  void _backToHome(BuildContext context) {
     Navigator.pushNamedAndRemoveUntil(
       context,
       '/employee-home',
@@ -72,225 +23,155 @@ class _JobCompletedScreenState extends State<JobCompletedScreen>
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        _backToHome();
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _backToHome(context);
+        }
       },
       child: Scaffold(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.primaryTeal,
         body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 60),
-                    
-                    // Animated Check Mark Circle
-                    ScaleTransition(
-                      scale: _checkAnimation,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primaryTeal,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryTeal.withOpacity(0.3),
-                              blurRadius: 30,
-                              spreadRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          size: 60,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 48),
-                    
-                    // Title
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: const Text(
-                        'Job Completed',
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              children: [
+                const Spacer(),
+                
+                // Success Icon
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.white,
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    size: 60,
+                    color: AppColors.primaryTeal,
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Title
+                const Text(
+                  'Job Completed!',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Subtitle
+                Text(
+                  'Great work, $employeeName!',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.white.withValues(alpha: 0.8),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 48),
+                
+                // Earnings Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'You Earned',
                         style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w300,
-                          color: AppColors.darkNavy,
-                          letterSpacing: -0.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Subtitle
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Text(
-                        'Well done, ${widget.employeeName}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
                           color: AppColors.lightGray,
-                          letterSpacing: 0.2,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    
-                    const SizedBox(height: 60),
-                    
-                    // Divider
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Container(
-                        width: 60,
-                        height: 1,
-                        color: AppColors.lightGray.withOpacity(0.3),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            '+${earnedAmount.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryTeal,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            'AED',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.darkNavy,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Earnings Card
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Container(
+                      const SizedBox(height: 16),
+                      Container(
                         padding: const EdgeInsets.symmetric(
-                          vertical: 32,
-                          horizontal: 24,
+                          horizontal: 12,
+                          vertical: 6,
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.veryLightGray,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppColors.lightGray.withOpacity(0.3),
-                            width: 1,
-                          ),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'EARNINGS',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.lightGray,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    '+',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w300,
-                                      color: AppColors.gold,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  widget.earnedAmount.toStringAsFixed(0),
-                                  style: const TextStyle(
-                                    fontSize: 48,
-                                    fontWeight: FontWeight.w300,
-                                    color: AppColors.darkNavy,
-                                    letterSpacing: -1,
-                                  ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8, left: 4),
-                                  child: Text(
-                                    'AED',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w400,
-                                      color: AppColors.lightGray,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Added to your account',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                                color: AppColors.lightGray,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 60),
-                    
-                    // Back to Home Button
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: TextButton(
-                          onPressed: _backToHome,
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            backgroundColor: AppColors.darkNavy,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Back to Home',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.white,
-                              letterSpacing: 0.5,
-                            ),
+                        child: Text(
+                          'Job ID: $jobId',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.lightGray,
                           ),
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Job ID
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Text(
-                        'Job ID: ${widget.jobId}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.lightGray.withOpacity(0.6),
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 60),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
+                
+                const Spacer(),
+                
+                // Back to Home Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () => _backToHome(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Back to Home',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkNavy,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+              ],
             ),
           ),
         ),

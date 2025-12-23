@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:ui';
+
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 
 class WashProgressScreen extends StatefulWidget {
   const WashProgressScreen({Key? key}) : super(key: key);
@@ -80,20 +81,19 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
             {};
     return Scaffold(
-      backgroundColor: const Color(0xFF1A3A52),
+      backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A3A52),
+        backgroundColor: AppColors.primaryTeal,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Wash in Progress',
-          style: TextStyle(
+          style: AppTextStyles.headline(context).copyWith(
             color: AppColors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 20, // AppBar size override
           ),
         ),
       ),
@@ -114,7 +114,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                         child: CircularProgressIndicator(
                           value: _getProgress(),
                           strokeWidth: 8,
-                          backgroundColor: AppColors.primaryTeal.withOpacity(0.2),
+                          backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.2),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             _remainingSeconds > 60
                                 ? AppColors.primaryTeal
@@ -136,7 +136,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                               color: (_remainingSeconds > 0
                                       ? AppColors.primaryTeal
                                       : Colors.red)
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
@@ -149,9 +149,8 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                             children: [
                               Text(
                                 _formatDuration(_remainingSeconds),
-                                style: TextStyle(
+                                style: AppTextStyles.headline(context).copyWith(
                                   fontSize: 40,
-                                  fontWeight: FontWeight.bold,
                                   color: AppColors.white,
                                   fontFeatures: const [
                                     FontFeature.tabularFigures()
@@ -163,8 +162,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                                 _remainingSeconds > 0
                                     ? 'Time Remaining'
                                     : 'Time\'s Up!',
-                                style: const TextStyle(
-                                  fontSize: 14,
+                                style: AppTextStyles.body(context).copyWith(
                                   color: AppColors.white,
                                 ),
                               ),
@@ -183,22 +181,21 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.2),
+                          color: Colors.orange.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.orange, width: 2),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.warning_amber_rounded,
+                            const Icon(Icons.warning_amber_rounded,
                                 color: Colors.orange, size: 20),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Text(
                               'Less than 1 minute remaining!',
-                              style: TextStyle(
+                              style: AppTextStyles.body(context).copyWith(
                                 color: Colors.orange,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -231,28 +228,25 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Job Details',
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: AppTextStyles.subtitle(context).copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.darkNavy,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         'Toyota Camry - White',
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: AppTextStyles.body(context).copyWith(
                           color: AppColors.darkNavy,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         'Weekly Wash (Exterior & Interior)',
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: AppTextStyles.caption(context).copyWith(
                           color: AppColors.lightGray,
                         ),
                       ),
@@ -277,12 +271,10 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Finish Wash & Take Photo',
-                      style: TextStyle(
+                      style: AppTextStyles.button(context).copyWith(
                         color: AppColors.darkNavy,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
