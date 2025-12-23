@@ -47,6 +47,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         return AppBar(
           backgroundColor: AppColors.primaryTeal,
           elevation: 0,
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.asset(
+              'assets/images/Gemini_Generated_Image_sx5ts1sx5ts1sx5t.png',
+              fit: BoxFit.contain,
+            ),
+          ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -211,6 +218,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             borderColor: AppColors.primaryTeal,
                             textColor: AppColors.textDark,
                             iconColor: AppColors.primaryTeal,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/job-details',
+                                arguments: {
+                                  'jobId': 'JOB-56393',
+                                  'carModel': 'Honda Accord',
+                                  'carColor': 'Black',
+                                  'employeeName': 'Ahmed',
+                                  'earnedAmount': 100.0,
+                                },
+                              );
+                            },
                           ),
                           const SizedBox(height: 12),
                           _buildJobCard(
@@ -223,6 +243,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             borderColor: AppColors.primaryTeal,
                             textColor: AppColors.textDark,
                             iconColor: AppColors.primaryTeal,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/job-details',
+                                arguments: {
+                                  'jobId': 'JOB-56394',
+                                  'carModel': 'BMW X5',
+                                  'carColor': 'Blue',
+                                  'employeeName': 'Ahmed',
+                                  'earnedAmount': 150.0,
+                                },
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -300,8 +333,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     Color borderColor = Colors.transparent,
     Color iconColor = AppColors.white,
     VoidCallback? onNavigate,
+    VoidCallback? onTap,
   }) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
@@ -395,6 +431,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               ),
             ),
         ],
+      ),
       ),
     );
   }

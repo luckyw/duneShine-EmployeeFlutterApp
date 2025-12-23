@@ -31,7 +31,7 @@ class JobCompletedScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.primaryTeal,
+        backgroundColor: AppColors.white,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -45,12 +45,12 @@ class JobCompletedScreen extends StatelessWidget {
                   height: 100,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.white,
+                    color: AppColors.success,
                   ),
                   child: const Icon(
                     Icons.check_rounded,
                     size: 60,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.white,
                   ),
                 ),
                 
@@ -62,7 +62,7 @@ class JobCompletedScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.white,
+                    color: AppColors.darkTeal,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -74,7 +74,7 @@ class JobCompletedScreen extends StatelessWidget {
                   'Great work, $employeeName!',
                   style: TextStyle(
                     fontSize: 16,
-                    color: AppColors.white.withValues(alpha: 0.8),
+                    color: AppColors.darkTeal.withOpacity(0.8),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -154,7 +154,8 @@ class JobCompletedScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => _backToHome(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.gold,
+                      backgroundColor: AppColors.darkTeal,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -164,7 +165,7 @@ class JobCompletedScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.darkNavy,
+                        color: Colors.white,
                       ),
                     ),
                   ),

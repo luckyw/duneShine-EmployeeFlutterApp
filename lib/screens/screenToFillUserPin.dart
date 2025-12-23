@@ -229,21 +229,21 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                 child: ElevatedButton(
                   onPressed: _isPhotoUploaded ? _verifyAndProceed : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.gold,
-                    disabledBackgroundColor: Colors.grey.shade300,
+                    backgroundColor: AppColors.darkTeal,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
+                    disabledForegroundColor: Colors.white.withOpacity(0.6),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Verify & Proceed',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: _isPhotoUploaded
-                          ? AppColors.darkTeal
-                          : Colors.grey.shade600,
+                      color: Colors.white,
                     ),
                   ),
                 ),

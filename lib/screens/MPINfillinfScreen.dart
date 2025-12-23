@@ -38,7 +38,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
             {};
     return Scaffold(
-      backgroundColor: AppColors.primaryTeal,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         elevation: 0,
@@ -65,6 +65,10 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.darkNavy,
+                    width: 2,
+                  ),
                 ),
                 child: Column(
                   children: [

@@ -35,7 +35,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryTeal,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         elevation: 0,
@@ -62,7 +62,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: AppColors.white,
+                  color: AppColors.darkTeal,
                 ),
               ),
               const SizedBox(height: 32),
@@ -226,7 +226,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                   'Skip Photo (Requires Reason)',
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.primaryTeal,
+                    color: AppColors.darkTeal,
                     fontWeight: FontWeight.bold,
                     decoration: TextDecoration.underline,
                   ),
@@ -245,9 +245,10 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFC107),
-                    disabledBackgroundColor:
-                        const Color(0xFFFFC107).withValues(alpha: 0.5),
+                    backgroundColor: AppColors.darkTeal,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
+                    disabledForegroundColor: Colors.white.withOpacity(0.6),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -255,7 +256,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                   child: const Text(
                     'Submit Job',
                     style: TextStyle(
-                      color: AppColors.darkNavy,
+                      color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),

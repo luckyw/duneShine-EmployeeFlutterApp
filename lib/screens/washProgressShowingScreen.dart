@@ -266,7 +266,8 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFC107),
+                      backgroundColor: AppColors.darkTeal,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -274,7 +275,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                     child: Text(
                       'Finish Wash & Take Photo',
                       style: AppTextStyles.button(context).copyWith(
-                        color: AppColors.darkNavy,
+                        color: Colors.white,
                       ),
                     ),
                   ),

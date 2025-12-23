@@ -57,7 +57,7 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
             {};
     return Scaffold(
-      backgroundColor: AppColors.primaryTeal,
+      backgroundColor: AppColors.white,
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         elevation: 0,
@@ -85,6 +85,10 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.darkNavy,
+                    width: 2,
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -180,9 +184,10 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                               }
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4AF37),
-                          disabledBackgroundColor:
-                              const Color(0xFFD4AF37).withValues(alpha: 0.5),
+                          backgroundColor: AppColors.darkTeal,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
+                          disabledForegroundColor: Colors.white.withOpacity(0.6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -190,7 +195,7 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                         child: const Text(
                           'Verify & Complete Job',
                           style: TextStyle(
-                            color: AppColors.darkNavy,
+                            color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
