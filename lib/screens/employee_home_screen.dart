@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../models/job_model.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import 'availability_widget.dart';
 import 'account_widget.dart';
 
@@ -18,10 +21,55 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   Set<int> availableDates = {};
   int selectedDate = 1;
 
+  // API state
+  bool _isLoading = true;
+  String? _errorMessage;
+  List<Job> _allJobs = [];
+  List<Job> get _upcomingJobs => _allJobs.where((job) => !job.isCompleted).toList();
+  List<Job> get _completedJobs => _allJobs.where((job) => job.isCompleted).toList();
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _fetchTodaysJobs();
+  }
+
+  Future<void> _fetchTodaysJobs() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final token = AuthService().token;
+    if (token == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Not authenticated. Please login again.';
+      });
+      return;
+    }
+
+    final response = await ApiService().getTodaysJobs(token: token);
+    debugPrint('Today\'s jobs response: $response');
+
+    if (response['success'] == true) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobsList = data['jobs'] as List<dynamic>? ?? [];
+      
+      setState(() {
+        _allJobs = jobsList
+            .map((json) => Job.fromJson(json as Map<String, dynamic>))
+            .toList();
+        _isLoading = false;
+      });
+      debugPrint('Loaded ${_allJobs.length} jobs');
+    } else {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = response['message'] ?? 'Failed to load jobs';
+      });
+    }
   }
 
   @override
@@ -58,7 +106,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Good Morning, Ahmed',
+                'Good Morning, ${AuthService().employeeName}',
                 style: AppTextStyles.headline(context).copyWith(
                   color: AppColors.white,
                   fontSize: 20, // AppBar size override
@@ -119,7 +167,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Today's Jobs: 5",
+                            "Today's Jobs: ${_allJobs.length}",
                             style: AppTextStyles.title(context).copyWith(
                               fontSize: 18,
                               color: AppColors.darkNavy,
@@ -139,7 +187,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                                   ),
                                 ),
                                 TextSpan(
-                                  text: '| 2 Done',
+                                  text: '| ${_completedJobs.length} Done',
                                   style: AppTextStyles.body(context).copyWith(
                                     color: AppColors.primaryTeal,
                                     fontWeight: FontWeight.bold,
@@ -182,126 +230,119 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 controller: _tabController,
                 children: [
                   // Upcoming Jobs Tab
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          _buildJobCard(
-                            time: 'NEXT JOB - 09:00 AM',
-                            car: 'Toyota Camry - White',
-                            location: 'Building A, Parking B1, Slot 12',
-                            status: '',
-                            bgColor: AppColors.primaryTeal,
-                            onNavigate: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/job-details',
-                                arguments: {
-                                  'jobId': 'JOB-56392',
-                                  'carModel': 'Toyota Camry',
-                                  'carColor': 'White',
-                                  'employeeName': 'Ahmed',
-                                  'earnedAmount': 120.0,
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildJobCard(
-                            time: 'UPCOMING - 11:00 AM',
-                            car: 'Honda Accord - Black',
-                            location: 'Building A, Parking B1, Slot 12',
-                            status: 'Pending',
-                            statusColor: AppColors.white,
-                            bgColor: AppColors.white,
-                            borderColor: AppColors.primaryTeal,
-                            textColor: AppColors.textDark,
-                            iconColor: AppColors.primaryTeal,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/job-details',
-                                arguments: {
-                                  'jobId': 'JOB-56393',
-                                  'carModel': 'Honda Accord',
-                                  'carColor': 'Black',
-                                  'employeeName': 'Ahmed',
-                                  'earnedAmount': 100.0,
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildJobCard(
-                            time: 'UPCOMING - 02:00 PM',
-                            car: 'BMW X5 - Blue',
-                            location: 'Building C, Parking B2, Slot 25',
-                            status: 'Pending',
-                            statusColor: AppColors.white,
-                            bgColor: AppColors.white,
-                            borderColor: AppColors.primaryTeal,
-                            textColor: AppColors.textDark,
-                            iconColor: AppColors.primaryTeal,
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/job-details',
-                                arguments: {
-                                  'jobId': 'JOB-56394',
-                                  'carModel': 'BMW X5',
-                                  'carColor': 'Blue',
-                                  'employeeName': 'Ahmed',
-                                  'earnedAmount': 150.0,
-                                },
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _errorMessage != null
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: AppColors.error,
+                                      size: 48,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      _errorMessage!,
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.body(context).copyWith(
+                                        color: AppColors.textGray,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ElevatedButton(
+                                      onPressed: _fetchTodaysJobs,
+                                      child: const Text('Retry'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : _upcomingJobs.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle_outline,
+                                        color: AppColors.primaryTeal,
+                                        size: 64,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No upcoming jobs',
+                                        style: AppTextStyles.title(context).copyWith(
+                                          color: AppColors.textGray,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : RefreshIndicator(
+                                  onRefresh: _fetchTodaysJobs,
+                                  child: SingleChildScrollView(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                                      child: Column(
+                                        children: [
+                                          for (int i = 0; i < _upcomingJobs.length; i++) ...[
+                                            _buildJobCardFromApi(
+                                              job: _upcomingJobs[i],
+                                              isNextJob: i == 0,
+                                            ),
+                                            if (i < _upcomingJobs.length - 1)
+                                              const SizedBox(height: 12),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                   // Completed Jobs Tab
-                  SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          _buildCompletedJobCard(
-                            time: 'COMPLETED - 08:00 AM',
-                            car: 'Mercedes-Benz C-Class - Silver',
-                            location: 'Building A, Parking B1, Slot 05',
-                            completedTime: 'Completed at 08:45 AM',
-                            earnings: '\$25.00',
+                  _completedJobs.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.inbox_outlined,
+                                color: AppColors.lightGray,
+                                size: 64,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No completed jobs yet',
+                                style: AppTextStyles.title(context).copyWith(
+                                  color: AppColors.textGray,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 12),
-                          _buildCompletedJobCard(
-                            time: 'COMPLETED - 07:00 AM',
-                            car: 'Audi A4 - Black',
-                            location: 'Building B, Parking B3, Slot 18',
-                            completedTime: 'Completed at 07:30 AM',
-                            earnings: '\$20.00',
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _fetchTodaysJobs,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: [
+                                  for (int i = 0; i < _completedJobs.length; i++) ...[
+                                    _buildCompletedJobCardFromApi(
+                                      job: _completedJobs[i],
+                                    ),
+                                    if (i < _completedJobs.length - 1)
+                                      const SizedBox(height: 12),
+                                  ],
+                                ],
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 12),
-                          _buildCompletedJobCard(
-                            time: 'COMPLETED - Yesterday',
-                            car: 'Tesla Model 3 - Red',
-                            location: 'Building A, Parking B1, Slot 30',
-                            completedTime: 'Completed at 05:15 PM',
-                            earnings: '\$30.00',
-                          ),
-                          const SizedBox(height: 12),
-                          _buildCompletedJobCard(
-                            time: 'COMPLETED - Yesterday',
-                            car: 'Lexus ES - White',
-                            location: 'Building C, Parking B2, Slot 42',
-                            completedTime: 'Completed at 03:20 PM',
-                            earnings: '\$22.00',
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
                 ],
               ),
             ),
@@ -327,6 +368,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     required String car,
     required String location,
     required String status,
+    String buttonText = 'Navigate',
     Color bgColor = AppColors.primaryTeal,
     Color statusColor = Colors.transparent,
     Color textColor = AppColors.white,
@@ -423,7 +465,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   ),
                 ),
                 child: Text(
-                  'Navigate',
+                  buttonText,
                   style: AppTextStyles.button(context).copyWith(
                     color: AppColors.darkNavy,
                   ),
@@ -552,6 +594,128 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           ),
         ],
       ),
+    );
+  }
+
+  /// Build a job card from API Job model
+  /// Dynamically changes button text and navigation based on job status
+  Widget _buildJobCardFromApi({
+    required Job job,
+    required bool isNextJob,
+  }) {
+    final vehicle = job.booking?.vehicle;
+    final apartment = job.booking?.apartment;
+    final timeSlot = job.timeSlot;
+    final booking = job.booking;
+    
+    final carName = vehicle?.displayName ?? 'Unknown Vehicle';
+    final location = apartment?.fullAddress ?? 'Unknown Location';
+    final timeLabel = isNextJob 
+        ? 'NEXT JOB - ${timeSlot?.formattedStartTime ?? ''}' 
+        : 'UPCOMING - ${timeSlot?.formattedStartTime ?? ''}';
+    
+    // Calculate total price from services
+    double totalPrice = 0;
+    if (booking != null) {
+      for (var service in booking.servicesPayload) {
+        totalPrice += double.tryParse(service.price) ?? 0;
+      }
+    }
+
+    // Common arguments for all navigations
+    final commonArgs = {
+      'jobId': 'JOB-${job.id}',
+      'carModel': vehicle?.brandName ?? 'Unknown',
+      'carColor': vehicle?.color ?? '',
+      'employeeName': AuthService().employeeName,
+      'earnedAmount': totalPrice,
+      'job': job,
+    };
+
+    // Determine button text and navigation route based on job status
+    String buttonText;
+    String navigationRoute;
+    
+    switch (job.status) {
+      case 'assigned':
+        buttonText = 'Navigate';
+        navigationRoute = '/job-details';
+        break;
+      case 'en_route':
+        buttonText = 'View Map';
+        navigationRoute = '/navigate-to-job';
+        break;
+      case 'arrived':
+        buttonText = 'Enter Start OTP';
+        navigationRoute = '/job-verification';
+        break;
+      case 'in_progress':
+        buttonText = 'View Progress';
+        navigationRoute = '/wash-progress';
+        break;
+      case 'washed':
+        buttonText = 'Complete Job';
+        navigationRoute = '/job-completion-otp';
+        break;
+      default:
+        buttonText = 'View Details';
+        navigationRoute = '/job-details';
+    }
+    
+    return _buildJobCard(
+      time: timeLabel,
+      car: carName,
+      location: location,
+      status: isNextJob ? job.displayStatus : job.displayStatus,
+      buttonText: buttonText,
+      bgColor: isNextJob ? AppColors.primaryTeal : AppColors.white,
+      statusColor: isNextJob ? AppColors.white : AppColors.white,
+      textColor: isNextJob ? AppColors.white : AppColors.textDark,
+      borderColor: isNextJob ? Colors.transparent : AppColors.primaryTeal,
+      iconColor: isNextJob ? AppColors.white : AppColors.primaryTeal,
+      onNavigate: isNextJob ? () {
+        Navigator.pushNamed(
+          context,
+          navigationRoute,
+          arguments: commonArgs,
+        );
+      } : null,
+      onTap: !isNextJob ? () {
+        Navigator.pushNamed(
+          context,
+          navigationRoute,
+          arguments: commonArgs,
+        );
+      } : null,
+    );
+  }
+
+  /// Build a completed job card from API Job model
+  Widget _buildCompletedJobCardFromApi({
+    required Job job,
+  }) {
+    final vehicle = job.booking?.vehicle;
+    final apartment = job.booking?.apartment;
+    final timeSlot = job.timeSlot;
+    final booking = job.booking;
+    
+    final carName = vehicle?.displayName ?? 'Unknown Vehicle';
+    final location = apartment?.fullAddress ?? 'Unknown Location';
+    
+    // Calculate total price from services
+    double totalPrice = 0;
+    if (booking != null) {
+      for (var service in booking.servicesPayload) {
+        totalPrice += double.tryParse(service.price) ?? 0;
+      }
+    }
+    
+    return _buildCompletedJobCard(
+      time: 'COMPLETED - ${timeSlot?.formattedStartTime ?? ''}',
+      car: carName,
+      location: location,
+      completedTime: 'Completed',
+      earnings: '\$${totalPrice.toStringAsFixed(2)}',
     );
   }
 

@@ -273,7 +273,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                       ),
                     ),
                     child: Text(
-                      'Finish Wash & Take Photo',
+                      'Take Photo & Finish Wash',
                       style: AppTextStyles.button(context).copyWith(
                         color: Colors.white,
                       ),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:employeapplication/constants/colors.dart';
+import '../models/job_model.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class JobCompletionProofScreen extends StatefulWidget {
   const JobCompletionProofScreen({Key? key}) : super(key: key);
@@ -15,6 +18,19 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
   File? _capturedPhoto;
   final ImagePicker _picker = ImagePicker();
   bool _isPhotoUploaded = false;
+  bool _isSubmitting = false;
+  Job? _job;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_job == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      if (args['job'] != null && args['job'] is Job) {
+        _job = args['job'] as Job;
+      }
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -29,6 +45,79 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error picking image: $e')),
       );
+    }
+  }
+
+  Future<void> _submitJob() async {
+    if (!_isPhotoUploaded || _capturedPhoto == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload a photo before submitting')),
+      );
+      return;
+    }
+
+    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    
+    // Get job ID - try from Job object first, then parse from args
+    int? jobId;
+    if (_job != null) {
+      jobId = _job!.id;
+    } else {
+      final jobIdStr = routeArgs['jobId']?.toString().replaceAll('JOB-', '') ?? '';
+      jobId = int.tryParse(jobIdStr);
+    }
+
+    if (jobId == null) {
+      // Fallback: navigate without API call
+      debugPrint('No valid job ID, navigating directly to OTP screen');
+      Navigator.pushNamed(context, '/job-completion-otp', arguments: {
+        ...routeArgs,
+        'photoPath': _capturedPhoto?.path,
+      });
+      return;
+    }
+
+    final token = AuthService().token;
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not authenticated. Please login again.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final response = await ApiService().finishWash(
+      jobId: jobId,
+      photoPath: _capturedPhoto!.path,
+      token: token,
+    );
+
+    setState(() {
+      _isSubmitting = false;
+    });
+
+    if (response['success'] == true) {
+      // Photo uploaded, navigate to end OTP screen
+      if (mounted) {
+        Navigator.pushNamed(context, '/job-completion-otp', arguments: {
+          ...routeArgs,
+          'photoPath': _capturedPhoto?.path,
+          'job': _job,
+          'finishWashResponse': response['data'],
+        });
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to submit job'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -237,13 +326,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: _isPhotoUploaded
-                      ? () {
-                          Navigator.pushNamed(context, '/job-completion-otp', arguments: {
-                            'photoPath': _capturedPhoto?.path,
-                          });
-                        }
-                      : null,
+                  onPressed: (_isPhotoUploaded && !_isSubmitting) ? _submitJob : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.darkTeal,
                     foregroundColor: Colors.white,
@@ -253,14 +336,23 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Submit Job',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Submit Job',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],

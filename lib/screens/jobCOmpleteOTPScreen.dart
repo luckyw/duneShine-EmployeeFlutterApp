@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
+import '../models/job_model.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class JobCompletionOtpScreen extends StatefulWidget {
   const JobCompletionOtpScreen({Key? key}) : super(key: key);
@@ -14,6 +17,8 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
   final List<TextEditingController> _otpControllers =
       List.generate(4, (index) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
+  bool _isVerifying = false;
+  Job? _job;
 
   @override
   void initState() {
@@ -22,6 +27,17 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
       controller.addListener(() {
         setState(() {});
       });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_job == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      if (args['job'] != null && args['job'] is Job) {
+        _job = args['job'] as Job;
+      }
     }
   }
 
@@ -37,12 +53,11 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
   }
 
   bool _isOtpComplete() {
-    bool complete = _otpControllers.every((controller) => controller.text.isNotEmpty);
-    print('OTP Complete Check: $complete');
-    for (int i = 0; i < _otpControllers.length; i++) {
-      print('OTP Field $i: "${_otpControllers[i].text}"');
-    }
-    return complete;
+    return _otpControllers.every((controller) => controller.text.isNotEmpty);
+  }
+
+  String _getEnteredOtp() {
+    return _otpControllers.map((c) => c.text).join();
   }
 
   void _onOtpInput(int index, String value) {
@@ -51,11 +66,96 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
     }
   }
 
+  Future<void> _verifyAndComplete() async {
+    if (!_isOtpComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter complete OTP'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    
+    // Get job ID
+    int? jobId;
+    if (_job != null) {
+      jobId = _job!.id;
+    } else {
+      final jobIdStr = routeArgs['jobId']?.toString().replaceAll('JOB-', '') ?? '';
+      jobId = int.tryParse(jobIdStr);
+    }
+
+    if (jobId == null) {
+      // Fallback: navigate without API call
+      debugPrint('No valid job ID, navigating directly');
+      Navigator.pushNamed(
+        context,
+        '/job-completed',
+        arguments: {
+          'employeeName': routeArgs['employeeName'] ?? 'Ahmed',
+          'earnedAmount': (routeArgs['earnedAmount'] ?? 120.0).toDouble(),
+          'jobId': routeArgs['jobId'] ?? 'JOB-56392',
+        },
+      );
+      return;
+    }
+
+    final token = AuthService().token;
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not authenticated. Please login again.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isVerifying = true;
+    });
+
+    final otp = _getEnteredOtp();
+    final response = await ApiService().completeJob(
+      jobId: jobId,
+      otp: otp,
+      token: token,
+    );
+
+    setState(() {
+      _isVerifying = false;
+    });
+
+    if (response['success'] == true) {
+      // Job completed, navigate to success screen
+      if (mounted) {
+        Navigator.pushNamed(
+          context,
+          '/job-completed',
+          arguments: {
+            'employeeName': routeArgs['employeeName'] ?? AuthService().employeeName,
+            'earnedAmount': (routeArgs['earnedAmount'] ?? 120.0).toDouble(),
+            'jobId': routeArgs['jobId'] ?? 'JOB-$jobId',
+            'job': _job,
+            'completeResponse': response['data'],
+          },
+        );
+      }
+    } else {
+      // Show error snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to complete job'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final routeArgs =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -118,10 +218,11 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                         (index) => SizedBox(
                           width: 60,
                           height: 60,
-                          child: RawKeyboardListener(
+                          child: KeyboardListener(
                             focusNode: FocusNode(),
-                            onKey: (event) {
-                              if (event.isKeyPressed(LogicalKeyboardKey.backspace)) {
+                            onKeyEvent: (event) {
+                              if (event is KeyDownEvent &&
+                                  event.logicalKey == LogicalKeyboardKey.backspace) {
                                 if (index > 0 && _otpControllers[index].text.isEmpty) {
                                   _otpControllers[index - 1].clear();
                                   _focusNodes[index - 1].requestFocus();
@@ -167,21 +268,8 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isOtpComplete()
-                            ? () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/job-completed',
-                                  arguments: {
-                                    'employeeName':
-                                        routeArgs['employeeName'] ?? 'Ahmed',
-                                    'earnedAmount':
-                                        (routeArgs['earnedAmount'] ?? 120.0)
-                                            .toDouble(),
-                                    'jobId': routeArgs['jobId'] ?? 'JOB-56392',
-                                  },
-                                );
-                              }
+                        onPressed: (_isOtpComplete() && !_isVerifying)
+                            ? _verifyAndComplete
                             : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.darkTeal,
@@ -192,14 +280,23 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Verify & Complete Job',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isVerifying
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Verify & Complete Job',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 16),

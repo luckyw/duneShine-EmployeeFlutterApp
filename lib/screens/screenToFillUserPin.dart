@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../constants/colors.dart';
+import '../models/job_model.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class JobArrivalPhotoScreen extends StatefulWidget {
   final String jobId;
@@ -23,6 +26,19 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
   File? _capturedPhoto;
   final ImagePicker _picker = ImagePicker();
   bool _isPhotoUploaded = false;
+  bool _isUploading = false;
+  Job? _job;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_job == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      if (args['job'] != null && args['job'] is Job) {
+        _job = args['job'] as Job;
+      }
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -40,12 +56,29 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
     }
   }
 
-  void _verifyAndProceed() {
-    final routeArgs =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
-    if (_isPhotoUploaded) {
-      // Navigate to Wash Progress Screen (service start)
+  Future<void> _verifyAndProceed() async {
+    if (!_isPhotoUploaded || _capturedPhoto == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please upload a photo before verifying')),
+      );
+      return;
+    }
+
+    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    
+    // Get job ID - try from Job object first, then from widget
+    int? jobId;
+    if (_job != null) {
+      jobId = _job!.id;
+    } else {
+      // Try to parse from widget.jobId (format: "JOB-1")
+      final idStr = widget.jobId.replaceAll('JOB-', '');
+      jobId = int.tryParse(idStr);
+    }
+
+    if (jobId == null) {
+      // Fallback: navigate without API call
+      debugPrint('No valid job ID, navigating directly');
       Navigator.pushNamed(
         context,
         '/wash-progress',
@@ -57,10 +90,63 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
           'photoPath': _capturedPhoto?.path,
         },
       );
-    } else {
+      return;
+    }
+
+    final token = AuthService().token;
+    if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload a photo before verifying')),
+        const SnackBar(content: Text('Not authenticated. Please login again.')),
       );
+      return;
+    }
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    final response = await ApiService().startWash(
+      jobId: jobId,
+      photoPath: _capturedPhoto!.path,
+      token: token,
+    );
+    
+    // Print response for debugging/analysis
+    debugPrint('=== START WASH API RESPONSE ===');
+    debugPrint('Success: ${response['success']}');
+    debugPrint('Data: ${response['data']}');
+    debugPrint('Message: ${response['message']}');
+    debugPrint('===============================');
+
+    setState(() {
+      _isUploading = false;
+    });
+
+    if (response['success'] == true) {
+      // Photo uploaded, navigate to wash progress screen
+      if (mounted) {
+        Navigator.pushNamed(
+          context,
+          '/wash-progress',
+          arguments: {
+            ...routeArgs,
+            'jobId': widget.jobId,
+            'carModel': widget.carModel,
+            'carColor': widget.carColor,
+            'photoPath': _capturedPhoto?.path,
+            'job': _job,
+          },
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to upload photo'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
@@ -147,17 +233,48 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
               ),
               const SizedBox(height: 24),
               if (_isPhotoUploaded && _capturedPhoto != null)
-                Container(
-                  width: double.infinity,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primaryTeal, width: 2),
-                  ),
-                  child: Image.file(
-                    _capturedPhoto!,
-                    fit: BoxFit.cover,
-                  ),
+                Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.primaryTeal, width: 2),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.file(
+                          _capturedPhoto!,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _capturedPhoto = null;
+                            _isPhotoUploaded = false;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 )
               else
                 GestureDetector(
@@ -227,7 +344,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isPhotoUploaded ? _verifyAndProceed : null,
+                  onPressed: (_isPhotoUploaded && !_isUploading) ? _verifyAndProceed : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.darkTeal,
                     foregroundColor: Colors.white,
@@ -238,14 +355,23 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Verify & Proceed',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: _isUploading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Verify & Proceed',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../models/job_model.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class JobVerificationScreen extends StatefulWidget {
   const JobVerificationScreen({Key? key}) : super(key: key);
@@ -14,6 +17,19 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
   final List<TextEditingController> _pinControllers =
       List.generate(4, (index) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
+  bool _isVerifying = false;
+  Job? _job;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_job == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      if (args['job'] != null && args['job'] is Job) {
+        _job = args['job'] as Job;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -28,15 +44,87 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
 
   bool _isPinComplete() {
     bool complete = _pinControllers.every((controller) => controller.text.isNotEmpty);
-    debugPrint('PIN complete: $complete');
     return complete;
+  }
+
+  String _getEnteredPin() {
+    return _pinControllers.map((c) => c.text).join();
+  }
+
+  Future<void> _verifyAndStart() async {
+    if (!_isPinComplete()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter complete PIN'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    
+    if (_job == null) {
+      // Fallback: navigate without API call
+      debugPrint('No job object, navigating directly');
+      Navigator.pushNamed(
+        context,
+        '/job-arrival-photo',
+        arguments: routeArgs,
+      );
+      return;
+    }
+
+    final token = AuthService().token;
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not authenticated. Please login again.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isVerifying = true;
+    });
+
+    final otp = _getEnteredPin();
+    final response = await ApiService().verifyStartOtp(
+      jobId: _job!.id,
+      otp: otp,
+      token: token,
+    );
+    debugPrint('Verify OTP response: $response');
+
+    setState(() {
+      _isVerifying = false;
+    });
+
+    if (response['success'] == true) {
+      // OTP verified, navigate to photo upload screen
+      if (mounted) {
+        Navigator.pushNamed(
+          context,
+          '/job-arrival-photo',
+          arguments: {
+            ...routeArgs,
+            'job': _job,
+          },
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'OTP verification failed'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final routeArgs =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -160,15 +248,8 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isPinComplete()
-                            ? () {
-                                debugPrint('Navigating to /job-arrival-photo with args: $routeArgs');
-                                Navigator.pushNamed(
-                                  context,
-                                  '/job-arrival-photo',
-                                  arguments: routeArgs,
-                                );
-                              }
+                        onPressed: (_isPinComplete() && !_isVerifying)
+                            ? _verifyAndStart
                             : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFC107),
@@ -178,12 +259,21 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text(
-                          'Verify & Start Wash',
-                          style: AppTextStyles.button(context).copyWith(
-                            color: AppColors.darkNavy,
-                          ),
-                        ),
+                        child: _isVerifying
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.darkNavy,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'Verify & Start Wash',
+                                style: AppTextStyles.button(context).copyWith(
+                                  color: AppColors.darkNavy,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 16),

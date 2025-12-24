@@ -3,6 +3,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../models/job_model.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class NavigateToJobScreen extends StatefulWidget {
   const NavigateToJobScreen({Key? key}) : super(key: key);
@@ -13,6 +16,8 @@ class NavigateToJobScreen extends StatefulWidget {
 
 class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   bool _hasArrived = false;
+  bool _isMarkingArrival = false;
+  Job? _job;
   final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
   
   // Job location coordinates (Building A, Parking B1, Slot 12)
@@ -32,6 +37,17 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   void initState() {
     super.initState();
     _createMarker();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_job == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      if (args['job'] != null && args['job'] is Job) {
+        _job = args['job'] as Job;
+      }
+    }
   }
 
   void _createMarker() {
@@ -61,6 +77,91 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     );
   }
 
+  Future<void> _handleArrival() async {
+    if (_job == null) {
+      // Fallback: just show arrived state without API
+      setState(() {
+        _hasArrived = true;
+      });
+      return;
+    }
+
+    final token = AuthService().token;
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not authenticated. Please login again.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isMarkingArrival = true;
+    });
+
+    final response = await ApiService().arrivedAtJob(
+      jobId: _job!.id,
+      token: token,
+    );
+    debugPrint('Arrived at job response: $response');
+
+    setState(() {
+      _isMarkingArrival = false;
+    });
+
+    if (response['success'] == true) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobJson = data['job'] as Map<String, dynamic>?;
+      
+      // Update local job with new status and OTP
+      Job updatedJob = _job!;
+      if (jobJson != null) {
+        updatedJob = Job.fromJson(jobJson);
+        setState(() {
+          _job = updatedJob;
+          _hasArrived = true;
+        });
+      }
+
+      // Navigate to OTP verification screen
+      if (mounted) {
+        final vehicle = updatedJob.booking?.vehicle;
+        final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
+        final carColor = vehicle?.color ?? 'Unknown';
+        final employeeName = AuthService().employeeName;
+        
+        double earnedAmount = 0;
+        if (updatedJob.booking != null) {
+          for (var service in updatedJob.booking!.servicesPayload) {
+            earnedAmount += double.tryParse(service.price) ?? 0;
+          }
+        }
+
+        Navigator.pushNamed(
+          context,
+          '/job-verification',
+          arguments: {
+            'jobId': 'JOB-${updatedJob.id}',
+            'carModel': carModel,
+            'carColor': carColor,
+            'employeeName': employeeName,
+            'earnedAmount': earnedAmount,
+            'job': updatedJob,
+            'startOtp': updatedJob.startOtp, // Pass the OTP from API response
+          },
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to mark arrival'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
@@ -69,6 +170,11 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     final String carColor = args['carColor'] ?? 'White';
     final String employeeName = args['employeeName'] ?? 'Ahmed';
     final double earnedAmount = (args['earnedAmount'] ?? 120.0).toDouble();
+
+    // Get apartment info from job if available
+    final apartment = _job?.booking?.apartment;
+    final locationName = apartment?.name ?? 'Building A';
+    final locationAddress = apartment?.fullAddress ?? 'Building A, Parking B1, Slot 12';
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A3A52),
@@ -163,6 +269,8 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                                   'carColor': carColor,
                                   'employeeName': employeeName,
                                   'earnedAmount': earnedAmount,
+                                  'job': _job,
+                                  'startOtp': _job?.startOtp,
                                 },
                               );
                             },
@@ -187,7 +295,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'En Route to Building A',
+                          'En Route to $locationName',
                           style: AppTextStyles.title(context).copyWith(
                             fontSize: 18,
                             color: AppColors.darkNavy,
@@ -229,7 +337,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Building A, Parking B1, Slot 12',
+                                locationAddress,
                                 style: AppTextStyles.body(context).copyWith(
                                   color: AppColors.darkNavy,
                                 ),
@@ -242,23 +350,28 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _hasArrived = true;
-                              });
-                            },
+                            onPressed: _isMarkingArrival ? null : _handleArrival,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFFC107),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: Text(
-                              'I Have Arrived',
-                              style: AppTextStyles.button(context).copyWith(
-                                color: AppColors.darkNavy,
-                              ),
-                            ),
+                            child: _isMarkingArrival
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.darkNavy,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Text(
+                                    'I Have Arrived',
+                                    style: AppTextStyles.button(context).copyWith(
+                                      color: AppColors.darkNavy,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
