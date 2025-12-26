@@ -11,12 +11,16 @@ class ApiConstants {
   /// API Endpoints
   static const String loginEndpoint = '/api/employee/login';
   static const String logoutEndpoint = '/api/employee/logout';
+  static const String profileEndpoint = '/api/employee/profile';
+  static const String availabilityEndpoint = '/api/employee/availability';
   static const String todaysJobsEndpoint = '/api/employee/jobs/today';
   static const String jobDetailsEndpoint = '/api/employee/jobs'; // /{id}
 
   /// Full URL helper methods
   static String get loginUrl => '$baseUrl$loginEndpoint';
   static String get logoutUrl => '$baseUrl$logoutEndpoint';
+  static String get profileUrl => '$baseUrl$profileEndpoint';
+  static String get availabilityUrl => '$baseUrl$availabilityEndpoint';
   static String get todaysJobsUrl => '$baseUrl$todaysJobsEndpoint';
   static String jobDetailsUrl(int jobId) => '$baseUrl$jobDetailsEndpoint/$jobId';
   static String navigateToJobUrl(int jobId) => '$baseUrl$jobDetailsEndpoint/$jobId/navigate';

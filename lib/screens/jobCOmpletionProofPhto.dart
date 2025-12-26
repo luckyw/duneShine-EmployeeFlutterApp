@@ -20,6 +20,8 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
   bool _isPhotoUploaded = false;
   bool _isSubmitting = false;
   Job? _job;
+  int? _washDurationSeconds;
+  String? _washDurationFormatted;
 
   @override
   void didChangeDependencies() {
@@ -28,6 +30,13 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
+      }
+      // Get wash duration from previous screen
+      if (args['washDurationSeconds'] != null) {
+        _washDurationSeconds = args['washDurationSeconds'] as int;
+      }
+      if (args['washDurationFormatted'] != null) {
+        _washDurationFormatted = args['washDurationFormatted'] as String;
       }
     }
   }
@@ -73,6 +82,8 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
       Navigator.pushNamed(context, '/job-completion-otp', arguments: {
         ...routeArgs,
         'photoPath': _capturedPhoto?.path,
+        'washDurationSeconds': _washDurationSeconds,
+        'washDurationFormatted': _washDurationFormatted,
       });
       return;
     }
@@ -93,6 +104,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
       jobId: jobId,
       photoPath: _capturedPhoto!.path,
       token: token,
+      durationSeconds: _washDurationSeconds,
     );
 
     setState(() {
@@ -146,6 +158,45 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
+              // Show wash duration if available
+              if (_washDurationFormatted != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primaryTeal),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.timer, color: AppColors.primaryTeal),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Wash Duration',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textGray,
+                            ),
+                          ),
+                          Text(
+                            _washDurationFormatted!,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryTeal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
               const Text(
                 'Please take a clear photo of the clean\ncar as proof of completion.',
                 textAlign: TextAlign.center,

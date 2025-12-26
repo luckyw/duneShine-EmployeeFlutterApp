@@ -163,6 +163,29 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     }
   }
 
+  /// Refresh job details from API (for pull-to-refresh)
+  Future<void> _refreshJobDetails() async {
+    final jobId = _job?.id ?? 0;
+    if (jobId == 0) return;
+
+    final token = AuthService().token;
+    if (token == null) return;
+
+    final response = await ApiService().getJobDetails(jobId: jobId, token: token);
+    debugPrint('Refreshed job details: $response');
+
+    if (response['success'] == true && mounted) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobJson = data['job'] as Map<String, dynamic>?;
+      
+      if (jobJson != null) {
+        setState(() {
+          _job = Job.fromJson(jobJson);
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,8 +282,11 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     final services = booking?.servicesPayload ?? [];
     final serviceName = services.isNotEmpty ? services.first.name : 'Car Wash';
 
-    return SingleChildScrollView(
-      child: Padding(
+    return RefreshIndicator(
+      onRefresh: _refreshJobDetails,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -640,6 +666,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

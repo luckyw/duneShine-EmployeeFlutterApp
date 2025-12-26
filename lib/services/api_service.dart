@@ -88,6 +88,131 @@ class ApiService {
     }
   }
 
+  /// Get employee profile information
+  /// Returns a map containing the employee profile data including vendor info
+  Future<Map<String, dynamic>> getProfile({
+    required String token,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.profileUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to fetch profile',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Set employee availability for specific dates
+  /// available_dates: List of date strings in 'YYYY-MM-DD' format
+  /// isAvailable: true to mark as available, false to mark as unavailable
+  Future<Map<String, dynamic>> setAvailability({
+    required String token,
+    required List<String> availableDates,
+    required bool isAvailable,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.availabilityUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'available_dates': availableDates,
+          'is_available': isAvailable,
+        }),
+      );
+
+      debugPrint('=== SET AVAILABILITY API RESPONSE ===');
+      debugPrint('Status: ${response.statusCode}');
+      debugPrint('Body: ${response.body}');
+      debugPrint('=====================================');
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to update availability',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      debugPrint('Set availability error: $e');
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Get employee availability dates
+  /// Returns a list of availability records with dates and status
+  Future<Map<String, dynamic>> getAvailability({
+    required String token,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.availabilityUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to fetch availability',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      debugPrint('Get availability error: $e');
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
   /// Get today's jobs for the authenticated employee
   /// Returns a map containing the response data with jobs list
   Future<Map<String, dynamic>> getTodaysJobs({
@@ -335,10 +460,12 @@ class ApiService {
 
   /// Finish wash with after photo upload
   /// Uses multipart form data to upload completion photo
+  /// Optionally sends duration in seconds
   Future<Map<String, dynamic>> finishWash({
     required int jobId,
     required String photoPath,
     required String token,
+    int? durationSeconds,
   }) async {
     try {
       final request = http.MultipartRequest(
@@ -355,6 +482,11 @@ class ApiService {
       request.files.add(
         await http.MultipartFile.fromPath('photo', photoPath),
       );
+      
+      // Add duration if provided
+      if (durationSeconds != null) {
+        request.fields['duration_seconds'] = durationSeconds.toString();
+      }
       
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);

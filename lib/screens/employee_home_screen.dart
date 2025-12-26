@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../models/job_model.dart';
+import '../models/employee_profile_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import 'availability_widget.dart';
@@ -18,21 +19,52 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _currentIndex = 0;
-  Set<int> availableDates = {};
-  int selectedDate = 1;
 
   // API state
   bool _isLoading = true;
   String? _errorMessage;
   List<Job> _allJobs = [];
-  List<Job> get _upcomingJobs => _allJobs.where((job) => !job.isCompleted).toList();
+  
+  // Shift state
+  bool _isShiftStarted = false;
+  
+  // Filter out cancelled jobs and sort by time (closest first)
+  List<Job> get _upcomingJobs {
+    return _allJobs
+        .where((job) => !job.isCompleted && job.status != 'cancelled')
+        .toList()
+      ..sort((a, b) {
+        // startTime is in HH:MM:SS format, which sorts lexicographically correctly
+        final aTime = a.timeSlot?.startTime ?? '99:99:99';
+        final bTime = b.timeSlot?.startTime ?? '99:99:99';
+        return aTime.compareTo(bTime);
+      });
+  }
+  
   List<Job> get _completedJobs => _allJobs.where((job) => job.isCompleted).toList();
+
+  // Profile state
+  EmployeeProfileModel? _profile;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _fetchTodaysJobs();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    final token = AuthService().token;
+    if (token == null) return;
+
+    final result = await ApiService().getProfile(token: token);
+    if (result['success'] == true && mounted) {
+      final userData = result['data']['user'] as Map<String, dynamic>;
+      setState(() {
+        _profile = EmployeeProfileModel.fromJson(userData);
+      });
+    }
   }
 
   Future<void> _fetchTodaysJobs() async {
@@ -106,7 +138,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Good Morning, ${AuthService().employeeName}',
+                'Good Morning, ${_profile?.name ?? AuthService().employeeName}',
                 style: AppTextStyles.headline(context).copyWith(
                   color: AppColors.white,
                   fontSize: 20, // AppBar size override
@@ -148,96 +180,131 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   Widget _getBody() {
     switch (_currentIndex) {
       case 0:
-        return Column(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.gold, width: 2),
-                      borderRadius: BorderRadius.circular(12),
-                      color: const Color(0xFFFEF5E7),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Today's Jobs: ${_allJobs.length}",
-                            style: AppTextStyles.title(context).copyWith(
-                              fontSize: 18,
-                              color: AppColors.darkNavy,
+        // If shift not started, show Start Shift button
+        if (!_isShiftStarted) {
+          return _buildStartShiftView();
+        }
+        // Shift started, show jobs with End Shift button
+        return RefreshIndicator(
+          onRefresh: _fetchTodaysJobs,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    // End Shift Button
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _isShiftStarted = false;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Shift ended successfully'),
+                              backgroundColor: Colors.orange,
                             ),
+                          );
+                        },
+                        icon: const Icon(Icons.stop_circle_outlined),
+                        label: const Text('End Shift'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Total ',
-                                  style: AppTextStyles.body(context).copyWith(
-                                    color: AppColors.darkNavy,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: '| ${_completedJobs.length} Done',
-                                  style: AppTextStyles.body(context).copyWith(
-                                    color: AppColors.primaryTeal,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.gold, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFFEF5E7),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Today's Jobs: ${_upcomingJobs.length + _completedJobs.length}",
+                              style: AppTextStyles.title(context).copyWith(
+                                fontSize: 18,
+                                color: AppColors.darkNavy,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Upcoming: ${_upcomingJobs.length} ',
+                                    style: AppTextStyles.body(context).copyWith(
+                                      color: AppColors.darkNavy,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: '| ${_completedJobs.length} Done',
+                                    style: AppTextStyles.body(context).copyWith(
+                                      color: AppColors.primaryTeal,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.veryLightGray,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        color: AppColors.primaryTeal,
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.veryLightGray,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      labelColor: AppColors.white,
-                      unselectedLabelColor: AppColors.darkNavy,
-                      tabs: const [
-                        Tab(text: 'Upcoming'),
-                        Tab(text: 'Completed'),
-                      ],
+                      child: TabBar(
+                        controller: _tabController,
+                        indicator: BoxDecoration(
+                          color: AppColors.primaryTeal,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        labelColor: AppColors.white,
+                        unselectedLabelColor: AppColors.darkNavy,
+                        tabs: const [
+                          Tab(text: 'Upcoming'),
+                          Tab(text: 'Completed'),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Upcoming Jobs Tab
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _errorMessage != null
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+              SliverFillRemaining(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // Upcoming Jobs Tab
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _errorMessage != null
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.error_outline,
@@ -281,31 +348,28 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                                     ],
                                   ),
                                 )
-                              : RefreshIndicator(
-                                  onRefresh: _fetchTodaysJobs,
-                                  child: SingleChildScrollView(
-                                    physics: const AlwaysScrollableScrollPhysics(),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      child: Column(
-                                        children: [
-                                          for (int i = 0; i < _upcomingJobs.length; i++) ...[
-                                            _buildJobCardFromApi(
-                                              job: _upcomingJobs[i],
-                                              isNextJob: i == 0,
-                                            ),
-                                            if (i < _upcomingJobs.length - 1)
-                                              const SizedBox(height: 12),
-                                          ],
+                              : SingleChildScrollView(
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                    child: Column(
+                                      children: [
+                                        for (int i = 0; i < _upcomingJobs.length; i++) ...[
+                                          _buildJobCardFromApi(
+                                            job: _upcomingJobs[i],
+                                            isNextJob: i == 0,
+                                          ),
+                                          if (i < _upcomingJobs.length - 1)
+                                            const SizedBox(height: 12),
                                         ],
-                                      ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                  // Completed Jobs Tab
-                  _completedJobs.isEmpty
-                      ? Center(
-                          child: Column(
+                    // Completed Jobs Tab
+                    _completedJobs.isEmpty
+                        ? Center(
+                            child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
@@ -323,23 +387,20 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             ],
                           ),
                         )
-                      : RefreshIndicator(
-                          onRefresh: _fetchTodaysJobs,
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
-                                children: [
-                                  for (int i = 0; i < _completedJobs.length; i++) ...[
-                                    _buildCompletedJobCardFromApi(
-                                      job: _completedJobs[i],
-                                    ),
-                                    if (i < _completedJobs.length - 1)
-                                      const SizedBox(height: 12),
-                                  ],
+                      : SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              children: [
+                                for (int i = 0; i < _completedJobs.length; i++) ...[
+                                  _buildCompletedJobCardFromApi(
+                                    job: _completedJobs[i],
+                                  ),
+                                  if (i < _completedJobs.length - 1)
+                                    const SizedBox(height: 12),
                                 ],
-                              ),
+                              ],
                             ),
                           ),
                         ),
@@ -347,20 +408,115 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               ),
             ),
           ],
-        );
+        ),
+      );
       case 1:
-        return AvailabilityWidget(
-          availableDates: availableDates,
-          selectedDate: selectedDate,
-          onDateSelected: (date) => setState(() => selectedDate = date),
-          onSetAvailable: () => setState(() => availableDates.add(selectedDate)),
-          onSetUnavailable: () => setState(() => availableDates.remove(selectedDate)),
-        );
+        return const AvailabilityWidget();
       case 2:
         return const AccountWidget();
       default:
         return Container();
     }
+  }
+
+  Widget _buildStartShiftView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.work_outline,
+                size: 80,
+                color: AppColors.primaryTeal,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              'Ready to start your day?',
+              style: AppTextStyles.headline(context).copyWith(
+                color: AppColors.darkNavy,
+                fontSize: 24,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Start your shift to see today\'s jobs',
+              style: AppTextStyles.body(context).copyWith(
+                color: AppColors.textGray,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _isShiftStarted = true;
+                  });
+                  _fetchTodaysJobs();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Shift started! Good luck today!'),
+                      backgroundColor: AppColors.primaryTeal,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.play_circle_filled, size: 28),
+                label: const Text(
+                  'Start Shift',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryTeal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            if (_isLoading)
+              const CircularProgressIndicator()
+            else if (_allJobs.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.info_outline, color: AppColors.gold),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${_upcomingJobs.length} jobs waiting for you',
+                      style: TextStyle(
+                        color: AppColors.darkNavy,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildJobCard({

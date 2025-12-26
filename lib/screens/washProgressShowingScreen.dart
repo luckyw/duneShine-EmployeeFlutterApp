@@ -3,6 +3,7 @@ import 'dart:async';
 
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../models/job_model.dart';
 
 class WashProgressScreen extends StatefulWidget {
   const WashProgressScreen({Key? key}) : super(key: key);
@@ -13,48 +14,47 @@ class WashProgressScreen extends StatefulWidget {
 
 class _WashProgressScreenState extends State<WashProgressScreen> {
   late Timer _timer;
-  int _remainingSeconds = 900; // 15 minutes = 900 seconds
-  static const int _initialSeconds = 900;
+  int _elapsedSeconds = 0; // Stopwatch starts from 0
+  bool _isRunning = true;
+  Job? _job;
 
   @override
   void initState() {
     super.initState();
-    _startCountdown();
+    _startStopwatch();
   }
 
-  void _startCountdown() {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_job == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      if (args['job'] != null && args['job'] is Job) {
+        _job = args['job'] as Job;
+      }
+    }
+  }
+
+  void _startStopwatch() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds > 0) {
+      if (_isRunning) {
         setState(() {
-          _remainingSeconds--;
+          _elapsedSeconds++;
         });
-      } else {
-        _timer.cancel();
-        // Timer has reached 00:00:00
-        _showTimerCompleteDialog();
       }
     });
   }
 
-  void _showTimerCompleteDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Time\'s Up!'),
-          content: const Text('The 15-minute wash timer has completed.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
+  void _pauseStopwatch() {
+    setState(() {
+      _isRunning = false;
+    });
+  }
+
+  void _resumeStopwatch() {
+    setState(() {
+      _isRunning = true;
+    });
   }
 
   @override
@@ -71,15 +71,28 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
   }
 
-  double _getProgress() {
-    return (_initialSeconds - _remainingSeconds) / _initialSeconds;
+  void _finishWash() {
+    // Stop the timer
+    _pauseStopwatch();
+    
+    // Navigate to photo proof screen with elapsed time
+    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    Navigator.pushNamed(
+      context,
+      '/job-completion-proof',
+      arguments: {
+        ...routeArgs,
+        'washDurationSeconds': _elapsedSeconds,
+        'washDurationFormatted': _formatDuration(_elapsedSeconds),
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final routeArgs =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
+    final vehicle = _job?.booking?.vehicle;
+    final services = _job?.booking?.servicesPayload ?? [];
+    
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -93,7 +106,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
           'Wash in Progress',
           style: AppTextStyles.headline(context).copyWith(
             color: AppColors.white,
-            fontSize: 20, // AppBar size override
+            fontSize: 20,
           ),
         ),
       ),
@@ -104,104 +117,64 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Progress ring
-                      SizedBox(
-                        width: 220,
-                        height: 220,
-                        child: CircularProgressIndicator(
-                          value: _getProgress(),
-                          strokeWidth: 8,
-                          backgroundColor: AppColors.primaryTeal.withValues(alpha: 0.2),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            _remainingSeconds > 60
-                                ? AppColors.primaryTeal
-                                : Colors.orange,
-                          ),
+                  // Stopwatch display
+                  Container(
+                    width: 220,
+                    height: 220,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primaryTeal,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryTeal.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
                         ),
-                      ),
-                      // Timer display
-                      Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _remainingSeconds > 0
-                              ? AppColors.primaryTeal
-                              : Colors.red,
-                          boxShadow: [
-                            BoxShadow(
-                              color: (_remainingSeconds > 0
-                                      ? AppColors.primaryTeal
-                                      : Colors.red)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            ),
-                          ],
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          size: 32,
+                          color: AppColors.white.withValues(alpha: 0.8),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 20),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                _formatDuration(_remainingSeconds),
-                                style: AppTextStyles.headline(context).copyWith(
-                                  fontSize: 40,
-                                  color: AppColors.white,
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures()
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _remainingSeconds > 0
-                                    ? 'Time Remaining'
-                                    : 'Time\'s Up!',
-                                style: AppTextStyles.body(context).copyWith(
-                                  color: AppColors.white,
-                                ),
-                              ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _formatDuration(_elapsedSeconds),
+                          style: AppTextStyles.headline(context).copyWith(
+                            fontSize: 42,
+                            color: AppColors.white,
+                            fontFeatures: const [
+                              FontFeature.tabularFigures()
                             ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  if (_remainingSeconds <= 60 && _remainingSeconds > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                        const SizedBox(height: 8),
+                        Text(
+                          _isRunning ? 'Washing...' : 'Paused',
+                          style: AppTextStyles.body(context).copyWith(
+                            color: AppColors.white,
+                            fontSize: 16,
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.orange, width: 2),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.warning_amber_rounded,
-                                color: Colors.orange, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Less than 1 minute remaining!',
-                              style: AppTextStyles.body(context).copyWith(
-                                color: Colors.orange,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Pause/Resume Button
+                  TextButton.icon(
+                    onPressed: _isRunning ? _pauseStopwatch : _resumeStopwatch,
+                    icon: Icon(
+                      _isRunning ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                      color: AppColors.primaryTeal,
+                    ),
+                    label: Text(
+                      _isRunning ? 'Pause Timer' : 'Resume Timer',
+                      style: TextStyle(color: AppColors.primaryTeal),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -237,7 +210,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Toyota Camry - White',
+                        vehicle?.displayName ?? 'Unknown Vehicle',
                         style: AppTextStyles.body(context).copyWith(
                           color: AppColors.darkNavy,
                           fontWeight: FontWeight.w500,
@@ -245,7 +218,9 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Weekly Wash (Exterior & Interior)',
+                        services.isNotEmpty 
+                            ? services.map((s) => s.name).join(', ')
+                            : 'Car Wash Service',
                         style: AppTextStyles.caption(context).copyWith(
                           color: AppColors.lightGray,
                         ),
@@ -258,13 +233,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/job-completion-proof',
-                        arguments: routeArgs,
-                      );
-                    },
+                    onPressed: _finishWash,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.darkTeal,
                       foregroundColor: Colors.white,

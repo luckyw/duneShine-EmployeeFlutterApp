@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../models/employee_profile_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 
@@ -14,6 +15,46 @@ class _AccountWidgetState extends State<AccountWidget> {
   final ApiService _apiService = ApiService();
   final AuthService _authService = AuthService();
   bool _isLoggingOut = false;
+  bool _isLoadingProfile = true;
+  EmployeeProfileModel? _profile;
+  String? _profileError;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    setState(() {
+      _isLoadingProfile = true;
+      _profileError = null;
+    });
+
+    final token = _authService.token;
+    if (token == null) {
+      setState(() {
+        _isLoadingProfile = false;
+        _profileError = 'Not authenticated';
+      });
+      return;
+    }
+
+    final result = await _apiService.getProfile(token: token);
+
+    if (result['success'] == true) {
+      final userData = result['data']['user'] as Map<String, dynamic>;
+      setState(() {
+        _profile = EmployeeProfileModel.fromJson(userData);
+        _isLoadingProfile = false;
+      });
+    } else {
+      setState(() {
+        _isLoadingProfile = false;
+        _profileError = result['message'] ?? 'Failed to load profile';
+      });
+    }
+  }
 
   Future<void> _performLogout() async {
     final token = _authService.token;
@@ -69,209 +110,306 @@ class _AccountWidgetState extends State<AccountWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            color: const Color(0xFF1A3A52),
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Stack(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.lightGray,
-                      ),
-                      child: _authService.employeeProfileImage != null
-                          ? ClipOval(
-                              child: Image.network(
-                                _authService.employeeProfileImage!,
-                                fit: BoxFit.cover,
-                                width: 100,
-                                height: 100,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.person,
-                                        size: 60, color: AppColors.white),
-                              ),
-                            )
-                          : const Icon(Icons.person,
-                              size: 60, color: AppColors.white),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.white,
-                        ),
-                        child: const Icon(Icons.edit,
-                            size: 20, color: AppColors.primaryTeal),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _authService.employeeName,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD4AF37),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                const Text(
-                  'Weekly Earnings',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.darkNavy,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  '350.00 AED',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  '12 Jobs Completed',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.darkNavy,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                _buildMenuItem(
-                  icon: Icons.history,
-                  title: 'Job History',
-                  onTap: () {},
-                ),
-                _buildMenuItem(
-                  icon: Icons.star,
-                  title: 'Performance Rating',
-                  subtitle: '4.8/5.0',
-                  onTap: () {},
-                ),
-                _buildMenuItem(
-                  icon: Icons.build,
-                  title: 'Equipment Support',
-                  onTap: () {},
-                ),
-                _buildMenuItem(
-                  icon: Icons.settings,
-                  title: 'Settings',
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SizedBox(
+    return RefreshIndicator(
+      onRefresh: _fetchProfile,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            Container(
               width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoggingOut
-                    ? null
-                    : () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Log Out?'),
-                            content: const Text(
-                                'Are you sure you want to log out?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _performLogout();
-                                },
-                                child: const Text('Log Out'),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  disabledBackgroundColor: Colors.red.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isLoggingOut
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: AppColors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.logout, color: AppColors.white),
-                          SizedBox(width: 8),
-                          Text(
-                            'Log Out',
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1A3A52),
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: _isLoadingProfile
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(40),
+                        child: CircularProgressIndicator(color: AppColors.white),
+                      ),
+                    )
+                  : _profileError != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                const Icon(Icons.error_outline,
+                                    color: Colors.red, size: 48),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _profileError!,
+                                  style: const TextStyle(color: AppColors.white),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: _fetchProfile,
+                                  child: const Text('Retry'),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Stack(
+                              children: [
+                                Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.lightGray,
+                                  ),
+                                  child: _profile?.idProofImageUrl != null
+                                      ? ClipOval(
+                                          child: Image.network(
+                                            _profile!.idProofImageUrl!,
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    const Icon(Icons.person,
+                                                        size: 60,
+                                                        color: AppColors.white),
+                                          ),
+                                        )
+                                      : const Icon(Icons.person,
+                                          size: 60, color: AppColors.white),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppColors.white,
+                                    ),
+                                    child: const Icon(Icons.edit,
+                                        size: 20, color: AppColors.primaryTeal),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _profile?.name ?? _authService.employeeName,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            if (_profile?.email != null &&
+                                _profile!.email.isNotEmpty)
+                              Text(
+                                _profile!.email,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.white.withValues(alpha: 0.8),
+                                ),
+                              ),
+                            if (_profile?.phone != null &&
+                                _profile!.phone!.isNotEmpty)
+                              Text(
+                                _profile!.phone!,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.white.withValues(alpha: 0.8),
+                                ),
+                              ),
+                            const SizedBox(height: 12),
+                            if (_profile?.vendor != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.gold.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (_profile!.vendorLogoUrl != null)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 8),
+                                        child: ClipOval(
+                                          child: Image.network(
+                                            _profile!.vendorLogoUrl!,
+                                            width: 24,
+                                            height: 24,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    const Icon(
+                                                        Icons.business,
+                                                        size: 16,
+                                                        color: AppColors.gold),
+                                          ),
+                                        ),
+                                      ),
+                                    Text(
+                                      _profile!.vendorName,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.gold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD4AF37),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Weekly Earnings',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.darkNavy,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '350.00 AED',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '12 Jobs Completed',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.darkNavy,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'App Version 1.2.0',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.lightGray,
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    icon: Icons.history,
+                    title: 'Job History',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.star,
+                    title: 'Performance Rating',
+                    subtitle: '4.8/5.0',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.build,
+                    title: 'Equipment Support',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.settings,
+                    title: 'Settings',
+                    onTap: () {},
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-        ],
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoggingOut
+                      ? null
+                      : () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Log Out?'),
+                              content: const Text(
+                                  'Are you sure you want to log out?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _performLogout();
+                                  },
+                                  child: const Text('Log Out'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    disabledBackgroundColor: Colors.red.withValues(alpha: 0.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isLoggingOut
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: AppColors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.logout, color: AppColors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Log Out',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'App Version 1.2.0',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.lightGray,
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
