@@ -118,7 +118,7 @@ class _AccountWidgetState extends State<AccountWidget> {
           children: [
             Container(
               width: double.infinity,
-              color: const Color(0xFF1A3A52),
+              color: AppColors.darkBlue,
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: _isLoadingProfile
                   ? const Center(
@@ -204,15 +204,6 @@ class _AccountWidgetState extends State<AccountWidget> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            if (_profile?.email != null &&
-                                _profile!.email.isNotEmpty)
-                              Text(
-                                _profile!.email,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.white.withValues(alpha: 0.8),
-                                ),
-                              ),
                             if (_profile?.phone != null &&
                                 _profile!.phone!.isNotEmpty)
                               Text(
@@ -267,43 +258,25 @@ class _AccountWidgetState extends State<AccountWidget> {
                           ],
                         ),
             ),
-            const SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD4AF37),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Weekly Earnings',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.darkNavy,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '350.00 AED',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '12 Jobs Completed',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.darkNavy,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // TODO: Uncomment when earnings API is integrated
+            // const SizedBox(height: 24),
+            // Container(
+            //   width: double.infinity,
+            //   padding: const EdgeInsets.all(20),
+            //   decoration: BoxDecoration(
+            //     color: AppColors.gold,
+            //     borderRadius: BorderRadius.circular(16),
+            //   ),
+            //   child: Column(
+            //     children: [
+            //       const Text('Weekly Earnings', style: TextStyle(fontSize: 14, color: AppColors.darkNavy)),
+            //       const SizedBox(height: 8),
+            //       const Text('350.00 AED', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.white)),
+            //       const SizedBox(height: 8),
+            //       const Text('12 Jobs Completed', style: TextStyle(fontSize: 14, color: AppColors.darkNavy)),
+            //     ],
+            //   ),
+            // ),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -317,7 +290,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                   _buildMenuItem(
                     icon: Icons.star,
                     title: 'Performance Rating',
-                    subtitle: '4.8/5.0',
+                    // TODO: Add real rating when API is ready
                     onTap: () {},
                   ),
                   _buildMenuItem(

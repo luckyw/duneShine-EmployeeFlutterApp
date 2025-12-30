@@ -177,7 +177,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     final locationAddress = apartment?.fullAddress ?? 'Building A, Parking B1, Slot 12';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A3A52),
+      backgroundColor: AppColors.darkBlue,
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         elevation: 0,
@@ -352,7 +352,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                           child: ElevatedButton(
                             onPressed: _isMarkingArrival ? null : _handleArrival,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFFC107),
+                              backgroundColor: AppColors.amber,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),

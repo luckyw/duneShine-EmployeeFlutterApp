@@ -15,7 +15,18 @@ class AppColors {
   static const Color textDark = Color(0xFF2C3E50);
   static const Color textGray = Color(0xFF7F8C8D);
   
-  // Additional
+  // Semantic Colors
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Color(0xFFE53935);
+
+  // Card-specific colors
+  static const Color onDemandCardBg = Color(0xFFEEFFEE);
+  static const Color subscriptionCardBg = Color(0xFFFFFFEE);
+  static const Color subscriptionBorder = Color(0xFFE8D4B8);
+  static const Color onDemandBorder = Color(0xFFB8E0DC);
+
+  // Accent colors
+  static const Color amber = Color(0xFFFFC107);
+  static const Color darkBlue = Color(0xFF1A3A52);
+  static const Color creamBg = Color(0xFFFEF5E7);
 }

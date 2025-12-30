@@ -192,7 +192,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                               : AppColors.lightGray,
                       border: isSelected
                           ? Border.all(
-                              color: const Color(0xFFFFC107),
+                              color: AppColors.amber,
                               width: 3,
                             )
                           : null,

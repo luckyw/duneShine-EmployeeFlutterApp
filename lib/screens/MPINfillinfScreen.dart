@@ -252,9 +252,9 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                             ? _verifyAndStart
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFC107),
+                          backgroundColor: AppColors.amber,
                           disabledBackgroundColor:
-                              const Color(0xFFFFC107).withValues(alpha: 0.5),
+                              AppColors.amber.withOpacity(0.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
