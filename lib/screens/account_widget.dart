@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
+import '../utils/responsive_utils.dart';
 import '../models/employee_profile_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import 'job_history_screen.dart';
+import 'performance_rating_screen.dart';
+import 'equipment_support_screen.dart';
+import 'settings_screen.dart';
+import 'help_support_screen.dart';
+import 'about_screen.dart';
 
 class AccountWidget extends StatefulWidget {
   const AccountWidget({Key? key}) : super(key: key);
@@ -118,7 +126,7 @@ class _AccountWidgetState extends State<AccountWidget> {
           children: [
             Container(
               width: double.infinity,
-              color: AppColors.darkBlue,
+              color: AppColors.primaryTeal,
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: _isLoadingProfile
                   ? const Center(
@@ -197,9 +205,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                             const SizedBox(height: 16),
                             Text(
                               _profile?.name ?? _authService.employeeName,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.headline(context).copyWith(
                                 color: AppColors.white,
                               ),
                             ),
@@ -208,8 +214,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                                 _profile!.phone!.isNotEmpty)
                               Text(
                                 _profile!.phone!,
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: AppTextStyles.body(context).copyWith(
                                   color: AppColors.white.withValues(alpha: 0.8),
                                 ),
                               ),
@@ -246,8 +251,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                                       ),
                                     Text(
                                       _profile!.vendorName,
-                                      style: const TextStyle(
-                                        fontSize: 12,
+                                      style: AppTextStyles.caption(context).copyWith(
                                         fontWeight: FontWeight.w500,
                                         color: AppColors.gold,
                                       ),
@@ -285,23 +289,74 @@ class _AccountWidgetState extends State<AccountWidget> {
                   _buildMenuItem(
                     icon: Icons.history,
                     title: 'Job History',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const JobHistoryScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.star,
                     title: 'Performance Rating',
-                    // TODO: Add real rating when API is ready
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PerformanceRatingScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.build,
                     title: 'Equipment Support',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EquipmentSupportScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.settings,
                     title: 'Settings',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.help_outline,
+                    title: 'Help & Support',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpSupportScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.info_outline,
+                    title: 'About DuneShine',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AboutScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -354,17 +409,15 @@ class _AccountWidgetState extends State<AccountWidget> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Row(
+                      : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.logout, color: AppColors.white),
-                            SizedBox(width: 8),
+                            const Icon(Icons.logout, color: AppColors.white),
+                            const SizedBox(width: 8),
                             Text(
                               'Log Out',
-                              style: TextStyle(
+                              style: AppTextStyles.button(context).copyWith(
                                 color: AppColors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -375,8 +428,7 @@ class _AccountWidgetState extends State<AccountWidget> {
             const SizedBox(height: 16),
             Text(
               'App Version 1.2.0',
-              style: TextStyle(
-                fontSize: 12,
+              style: AppTextStyles.caption(context).copyWith(
                 color: AppColors.lightGray,
               ),
             ),
@@ -415,8 +467,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: AppTextStyles.body(context).copyWith(
                       fontWeight: FontWeight.w500,
                       color: AppColors.darkNavy,
                     ),
@@ -424,8 +475,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                   if (subtitle != null)
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: AppTextStyles.caption(context).copyWith(
                         color: AppColors.lightGray,
                       ),
                     ),

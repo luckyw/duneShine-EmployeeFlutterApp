@@ -10,50 +10,25 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+class _SplashScreenState extends State<SplashScreen> {
   final AuthService _authService = AuthService();
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
-      ),
-    );
-
-    _animationController.forward();
-
     // Check authentication and navigate accordingly
     _checkAuthAndNavigate();
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Wait for animation to complete partially
+    // Wait for splash to display
     await Future.delayed(const Duration(seconds: 2));
 
     // Initialize auth service and check if user is logged in
     final isLoggedIn = await _authService.initialize();
 
     if (mounted) {
-      // Add small delay for smooth transition
+      // Add small delay before transition
       await Future.delayed(const Duration(milliseconds: 500));
 
       if (!mounted) return;
@@ -61,92 +36,92 @@ class _SplashScreenState extends State<SplashScreen>
       if (isLoggedIn) {
         // User is already logged in, go to home screen
         debugPrint('User already logged in, navigating to home...');
-        Navigator.pushReplacementNamed(context, '/employee-home');
+        _navigateWithSlide('/employee-home');
       } else {
         // User not logged in, go to onboarding
         debugPrint('User not logged in, navigating to onboarding...');
-        Navigator.pushReplacementNamed(context, '/onboarding');
+        _navigateWithSlide('/onboarding');
       }
     }
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+  void _navigateWithSlide(String routeName) {
+    Navigator.of(context).pushReplacementNamed(
+      routeName,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryTeal,
+      backgroundColor: AppColors.white,
       body: Center(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _fadeAnimation.value,
-              child: Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo
-                    Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryTeal,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.darkNavy.withValues(alpha: 0.3),
-                            blurRadius: 30,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'assets/images/splash_logo.png',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    // App Name
-                    Text(
-                      'DuneShine',
-                      style: AppTextStyles.headline(context).copyWith(
-                        color: AppColors.white,
-                        fontSize: 36, // Branding override
-                        letterSpacing: 2,
-                        shadows: [
-                          Shadow(
-                            color: AppColors.darkNavy.withValues(alpha: 0.5),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Employee',
-                      style: AppTextStyles.subtitle(context).copyWith(
-                        color: AppColors.gold,
-                        fontSize: 18, // Branding override
-                        letterSpacing: 4,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Static Logo
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/images/app_logo.png',
+                  fit: BoxFit.cover,
                 ),
               ),
-            );
-          },
+            ),
+            const SizedBox(height: 30),
+            // Static App Name
+            Text(
+              'DuneShine',
+              style: AppTextStyles.headline(context).copyWith(
+                color: AppColors.primaryTeal,
+                fontSize: 36,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Employee',
+              style: AppTextStyles.subtitle(context).copyWith(
+                color: AppColors.gold,
+                fontSize: 18,
+                letterSpacing: 4,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+// Custom slide transition for navigation
+class SlideUpPageRoute<T> extends PageRouteBuilder<T> {
+  final Widget page;
+
+  SlideUpPageRoute({required this.page})
+      : super(
+          pageBuilder: (context, animation, secondaryAnimation) => page,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0);
+            const end = Offset.zero;
+            const curve = Curves.easeOutCubic;
+
+            var tween = Tween(begin: begin, end: end).chain(
+              CurveTween(curve: curve),
+            );
+
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        );
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
+import '../utils/responsive_utils.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 
@@ -128,47 +130,61 @@ class _LoginScreenState extends State<LoginScreen> {
   /// Build a single OTP digit box
   Widget _buildOtpBox(int index) {
     return Container(
-      width: 48,
-      height: 56,
+      width: ResponsiveUtils.w(context, 46),
+      height: ResponsiveUtils.h(context, 56),
       decoration: BoxDecoration(
-        color: AppColors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.primaryTeal.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
         border: Border.all(
           color: _otpFocusNodes[index].hasFocus
               ? AppColors.primaryTeal
-              : AppColors.white.withOpacity(0.2),
+              : AppColors.primaryTeal.withValues(alpha: 0.3),
           width: _otpFocusNodes[index].hasFocus ? 2 : 1,
         ),
       ),
-      child: TextField(
-        controller: _otpControllers[index],
-        focusNode: _otpFocusNodes[index],
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        maxLength: 1,
-        style: const TextStyle(
-          color: AppColors.white,
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-        ),
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-        ],
-        decoration: const InputDecoration(
-          counterText: '',
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        onChanged: (value) {
-          if (value.isNotEmpty && index < 5) {
-            // Move to next box
-            _otpFocusNodes[index + 1].requestFocus();
-          } else if (value.isEmpty && index > 0) {
-            // Move to previous box on delete
-            _otpFocusNodes[index - 1].requestFocus();
+      child: KeyboardListener(
+        focusNode: FocusNode(),
+        onKeyEvent: (event) {
+          // Handle backspace key press
+          if (event is KeyDownEvent && 
+              event.logicalKey == LogicalKeyboardKey.backspace) {
+            if (_otpControllers[index].text.isEmpty && index > 0) {
+              // If current box is empty and backspace pressed, go to previous box
+              _otpControllers[index - 1].clear();
+              _otpFocusNodes[index - 1].requestFocus();
+              setState(() {});
+            }
           }
-          setState(() {}); // Rebuild to update border color
         },
+        child: TextField(
+          controller: _otpControllers[index],
+          focusNode: _otpFocusNodes[index],
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.center,
+          maxLength: 1,
+          style: AppTextStyles.title(context).copyWith(
+            color: AppColors.primaryTeal,
+            fontSize: ResponsiveUtils.sp(context, 20),
+          ),
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+          ],
+          decoration: const InputDecoration(
+            counterText: '',
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+          ),
+          onChanged: (value) {
+            if (value.isNotEmpty && index < 5) {
+              // Move to next box when digit entered
+              _otpFocusNodes[index + 1].requestFocus();
+            } else if (value.isEmpty && index > 0) {
+              // Move to previous box when deleted
+              _otpFocusNodes[index - 1].requestFocus();
+            }
+            setState(() {}); // Rebuild to update border color
+          },
+        ),
       ),
     );
   }
@@ -181,11 +197,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryTeal,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
             child: Form(
               key: _formKey,
               child: Column(
@@ -201,50 +217,39 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 100,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primaryTeal.withOpacity(0.3),
-                                blurRadius: 20,
-                                spreadRadius: 2,
-                              ),
-                            ],
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Image.asset(
-                              'assets/images/splash_logo.png',
+                              'assets/images/app_logo.png',
                               fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        const Text(
+                        SizedBox(height: ResponsiveUtils.h(context, 20)),
+                        Text(
                           'Welcome Back',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.white,
+                          style: AppTextStyles.headline(context).copyWith(
+                            color: AppColors.primaryTeal,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: ResponsiveUtils.h(context, 8)),
                         Text(
                           'Sign in to continue',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: AppColors.white.withOpacity(0.7),
+                          style: AppTextStyles.subtitle(context).copyWith(
+                            color: AppColors.primaryTeal.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  SizedBox(height: ResponsiveUtils.h(context, 60)),
                   // Phone number label
                   Text(
                     'Phone Number',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextStyles.body(context).copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.white.withOpacity(0.9),
+                      color: AppColors.primaryTeal,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -257,17 +262,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         height: 56,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.white.withOpacity(0.1),
+                          color: AppColors.primaryTeal.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.white.withOpacity(0.2),
+                            color: AppColors.primaryTeal.withValues(alpha: 0.3),
                           ),
                         ),
                         child: const Center(
                           child: Text(
                             '+971',
                             style: TextStyle(
-                              color: AppColors.white,
+                              color: AppColors.primaryTeal,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -281,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           style: const TextStyle(
-                            color: AppColors.white,
+                            color: AppColors.primaryTeal,
                             fontSize: 16,
                           ),
                           inputFormatters: [
@@ -291,20 +296,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             hintText: 'Enter phone number',
                             hintStyle: TextStyle(
-                              color: AppColors.white.withOpacity(0.4),
+                              color: AppColors.primaryTeal.withValues(alpha: 0.4),
                             ),
                             filled: true,
-                            fillColor: AppColors.white.withOpacity(0.1),
+                            fillColor: AppColors.primaryTeal.withValues(alpha: 0.05),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                color: AppColors.white.withOpacity(0.2),
+                                color: AppColors.primaryTeal.withValues(alpha: 0.3),
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                color: AppColors.white.withOpacity(0.2),
+                                color: AppColors.primaryTeal.withValues(alpha: 0.3),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
@@ -338,17 +343,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: ResponsiveUtils.h(context, 24)),
                   // OTP Key label
                   Text(
                     'Enter OTP Key',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextStyles.body(context).copyWith(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.white.withOpacity(0.9),
+                      color: AppColors.primaryTeal,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: ResponsiveUtils.h(context, 4)),
+                  // Professional message about vendor OTP
+                  Text(
+                    'Please enter the 6-digit OTP provided by your vendor',
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: AppColors.primaryTeal.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  SizedBox(height: ResponsiveUtils.h(context, 12)),
                   // 6 OTP boxes
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -363,17 +375,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         'Please enter all 6 digits',
-                        style: TextStyle(
-                          fontSize: 12,
+                        style: AppTextStyles.caption(context).copyWith(
                           color: Colors.red.shade300,
                         ),
                       ),
                     ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: ResponsiveUtils.h(context, 40)),
                   // Login button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: ResponsiveUtils.h(context, 56),
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
@@ -396,23 +407,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'Login',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.button(context).copyWith(
+                                fontSize: ResponsiveUtils.sp(context, 18),
                               ),
                             ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: ResponsiveUtils.h(context, 24)),
                   // Terms text
                   Center(
                     child: Text(
                       'By continuing, you agree to our Terms of Service\nand Privacy Policy',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.white.withOpacity(0.5),
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: AppColors.primaryTeal.withValues(alpha: 0.6),
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,

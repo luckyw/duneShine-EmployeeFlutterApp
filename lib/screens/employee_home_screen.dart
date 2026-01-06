@@ -130,7 +130,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Image.asset(
-              'assets/images/Gemini_Generated_Image_sx5ts1sx5ts1sx5t.png',
+              'assets/images/app_logo.png',
               fit: BoxFit.contain,
             ),
           ),
