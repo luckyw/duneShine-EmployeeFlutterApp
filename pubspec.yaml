@@ -38,6 +38,15 @@ dependencies:
   google_maps_flutter: ^2.14.0
   http: ^1.1.0
   flutter_secure_storage: ^9.0.0
+  
+  # Firebase
+  firebase_core: ^3.9.0
+  cloud_firestore: ^5.6.0
+  
+  # Location & Navigation
+  geolocator: ^13.0.2
+  flutter_polyline_points: ^2.1.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "41119840428",
+    "project_id": "duneshine-f30ed",
+    "storage_bucket": "duneshine-f30ed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:41119840428:android:c76f7c12e9247a965fc709",
+        "android_client_info": {
+          "package_name": "com.example.carwash"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVF3NMRKJl5SD0Es1HNs9KPDWQZlYl-hM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:41119840428:android:25730eb1e591f4cd5fc709",
+        "android_client_info": {
+          "package_name": "com.example.employeapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVF3NMRKJl5SD0Es1HNs9KPDWQZlYl-hM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
