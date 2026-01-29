@@ -111,6 +111,17 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     super.dispose();
   }
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Good Morning';
+    } else if (hour < 17) {
+      return 'Good Afternoon';
+    } else {
+      return 'Good Evening';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,7 +137,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     switch (_currentIndex) {
       case 0:
         return AppBar(
-          backgroundColor: AppColors.primaryTeal,
+          backgroundColor: AppColors.white,
           elevation: 0,
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -135,28 +146,34 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               fit: BoxFit.contain,
             ),
           ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Good Morning, ${_profile?.name ?? AuthService().employeeName}',
-                style: AppTextStyles.headline(context).copyWith(
-                  color: AppColors.white,
-                  fontSize: ResponsiveUtils.sp(context, 20), // AppBar size override
+          title: _isShiftStarted
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_getGreeting()}, ${_profile?.name ?? AuthService().employeeName}',
+                      style: AppTextStyles.headline(context).copyWith(
+                        color: AppColors.darkNavy,
+                        fontSize: ResponsiveUtils.sp(context, 18),
+                      ),
+                    ),
+                  ],
+                )
+              : RichText(
+                  text: TextSpan(
+                    style: AppTextStyles.headline(context).copyWith(
+                      color: AppColors.darkNavy,
+                      fontSize: ResponsiveUtils.sp(context, 26),
+                    ),
+                    children: const [
+                      TextSpan(text: 'Dune'),
+                      TextSpan(
+                        text: 'Shine',
+                        style: TextStyle(color: AppColors.gold),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              // TODO: Uncomment when weather API is integrated
-              // Row(
-              //   children: [
-              //     const Text('☁️', style: TextStyle(fontSize: 16)),
-              //     const SizedBox(width: 4),
-              //     Text('25°C', style: AppTextStyles.body(context).copyWith(
-              //       color: AppColors.white.withOpacity(0.8),
-              //     )),
-              //   ],
-              // ),
-            ],
-          ),
         );
       case 1:
         return AppBar(
@@ -472,22 +489,29 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ),
                     );
                   },
-                  icon: Icon(Icons.play_circle_filled, size: ResponsiveUtils.r(context, 28)),
+                  icon: Icon(Icons.play_circle_filled,
+                      size: ResponsiveUtils.r(context, 30),
+                      color: AppColors.primaryTeal),
                   label: Text(
                     'Start Shift',
                     style: TextStyle(
                       fontSize: ResponsiveUtils.sp(context, 18),
                       fontWeight: FontWeight.bold,
+                      color: AppColors.primaryTeal,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryTeal,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 18)),
+                    backgroundColor: AppColors.white,
+                    foregroundColor: AppColors.primaryTeal,
+                    padding: EdgeInsets.symmetric(
+                        vertical: ResponsiveUtils.h(context, 18)),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                      borderRadius:
+                          BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                      side: const BorderSide(
+                          color: AppColors.primaryTeal, width: 2),
                     ),
-                    elevation: 4,
+                    elevation: 0,
                   ),
                 ),
               ),
@@ -534,6 +558,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 ),
               ] else
                 Container(
+                  width: double.infinity,
                   padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
                   decoration: BoxDecoration(
                     color: AppColors.veryLightGray,
