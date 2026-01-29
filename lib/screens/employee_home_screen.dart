@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import 'availability_widget.dart';
 import 'account_widget.dart';
+import '../utils/responsive_utils.dart';
 
 class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({Key? key}) : super(key: key);
@@ -141,7 +142,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 'Good Morning, ${_profile?.name ?? AuthService().employeeName}',
                 style: AppTextStyles.headline(context).copyWith(
                   color: AppColors.white,
-                  fontSize: 20, // AppBar size override
+                  fontSize: ResponsiveUtils.sp(context, 20), // AppBar size override
                 ),
               ),
               // TODO: Uncomment when weather API is integrated
@@ -190,7 +191,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   children: [
                     // End Shift Button
                     Container(
-                      margin: const EdgeInsets.all(16),
+                      margin: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
@@ -209,19 +210,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                           ),
                         ),
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      padding: const EdgeInsets.all(16),
+                      margin: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
+                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                       decoration: BoxDecoration(
                         border: Border.all(color: AppColors.gold, width: 2),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                         color: AppColors.creamBg,
                       ),
                       child: Column(
@@ -264,16 +265,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ),
                     ),
                     Container(
-                      margin: const EdgeInsets.all(16),
+                      margin: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                       decoration: BoxDecoration(
                         color: AppColors.veryLightGray,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
                           color: AppColors.primaryTeal,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         labelColor: AppColors.white,
@@ -420,42 +421,42 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 20),
+              ResponsiveUtils.verticalSpace(context, 20),
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
                 decoration: BoxDecoration(
                   color: AppColors.primaryTeal.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.work_outline,
-                  size: 60,
+                  size: ResponsiveUtils.r(context, 60),
                   color: AppColors.primaryTeal,
                 ),
               ),
-              const SizedBox(height: 20),
+              ResponsiveUtils.verticalSpace(context, 20),
               Text(
                 'Ready to start your day?',
                 style: AppTextStyles.headline(context).copyWith(
                   color: AppColors.darkNavy,
-                  fontSize: 22,
+                  fontSize: ResponsiveUtils.sp(context, 22),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              ResponsiveUtils.verticalSpace(context, 8),
               Text(
                 'Start your shift to begin working',
                 style: AppTextStyles.body(context).copyWith(
                   color: AppColors.textGray,
-                  fontSize: 14,
+                  fontSize: ResponsiveUtils.sp(context, 14),
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              ResponsiveUtils.verticalSpace(context, 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -471,17 +472,20 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ),
                     );
                   },
-                  icon: const Icon(Icons.play_circle_filled, size: 28),
-                  label: const Text(
+                  icon: Icon(Icons.play_circle_filled, size: ResponsiveUtils.r(context, 28)),
+                  label: Text(
                     'Start Shift',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: ResponsiveUtils.sp(context, 18),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryTeal,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 18)),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
                     ),
                     elevation: 4,
                   ),
@@ -497,10 +501,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               else if (_upcomingJobs.isNotEmpty) ...[
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                   decoration: BoxDecoration(
                     color: AppColors.creamBg,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                     border: Border.all(color: AppColors.gold, width: 2),
                   ),
                   child: Column(
@@ -508,18 +512,18 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.calendar_today, color: AppColors.gold, size: 20),
-                          const SizedBox(width: 8),
+                          Icon(Icons.calendar_today, color: AppColors.gold, size: ResponsiveUtils.r(context, 20)),
+                          ResponsiveUtils.horizontalSpace(context, 8),
                           Text(
                             "Today's Jobs (${_upcomingJobs.length})",
                             style: AppTextStyles.title(context).copyWith(
-                              fontSize: 16,
+                              fontSize: ResponsiveUtils.sp(context, 16),
                               color: AppColors.darkNavy,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      ResponsiveUtils.verticalSpace(context, 12),
                       // Job list preview
                       ...List.generate(
                         _upcomingJobs.length,
@@ -530,15 +534,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 ),
               ] else
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
                   decoration: BoxDecoration(
                     color: AppColors.veryLightGray,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                   ),
                   child: Column(
                     children: [
-                      Icon(Icons.inbox_outlined, color: AppColors.lightGray, size: 40),
-                      const SizedBox(height: 8),
+                      Icon(Icons.inbox_outlined, color: AppColors.lightGray, size: ResponsiveUtils.r(context, 40)),
+                      ResponsiveUtils.verticalSpace(context, 8),
                       Text(
                         'No jobs scheduled for today',
                         style: AppTextStyles.body(context).copyWith(
@@ -562,24 +566,24 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     final timeSlot = job.timeSlot;
     
     return Container(
-      margin: EdgeInsets.only(top: index > 0 ? 10 : 0),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.only(top: index > 0 ? ResponsiveUtils.h(context, 10) : 0),
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 10)),
         border: Border.all(color: AppColors.lightGray.withOpacity(0.3)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(ResponsiveUtils.w(context, 8)),
             decoration: BoxDecoration(
               color: AppColors.primaryTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 8)),
             ),
-            child: Icon(Icons.directions_car, color: AppColors.primaryTeal, size: 20),
+            child: Icon(Icons.directions_car, color: AppColors.primaryTeal, size: ResponsiveUtils.r(context, 20)),
           ),
-          const SizedBox(width: 12),
+          ResponsiveUtils.horizontalSpace(context, 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,10 +608,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 10), vertical: ResponsiveUtils.h(context, 6)),
             decoration: BoxDecoration(
               color: AppColors.primaryTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 8)),
             ),
             child: Text(
               timeSlot?.formattedStartTime ?? '',
@@ -641,7 +645,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       child: Container(
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
         border: borderColor != Colors.transparent
             ? Border.all(color: borderColor, width: 1.5)
             : null,
@@ -649,7 +653,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -660,11 +664,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
+                ResponsiveUtils.verticalSpace(context, 12),
                 Row(
                   children: [
-                    Icon(Icons.directions_car, color: iconColor, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.directions_car, color: iconColor, size: ResponsiveUtils.r(context, 20)),
+                    ResponsiveUtils.horizontalSpace(context, 8),
                     Expanded(
                       child: Text(
                         car,
@@ -693,11 +697,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                ResponsiveUtils.verticalSpace(context, 8),
                 Row(
                   children: [
-                    Icon(Icons.location_on, color: iconColor, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.location_on, color: iconColor, size: ResponsiveUtils.r(context, 20)),
+                    ResponsiveUtils.horizontalSpace(context, 8),
                     Expanded(
                       child: Text(
                         location,
@@ -714,13 +718,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           if (onNavigate != null)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
               child: ElevatedButton(
                 onPressed: onNavigate,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.amber,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                   ),
                 ),
                 child: Text(
@@ -747,10 +751,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
         border: Border.all(color: AppColors.lightGray, width: 1.5),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

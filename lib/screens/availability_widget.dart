@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/responsive_utils.dart';
 
 class AvailabilityWidget extends StatefulWidget {
   const AvailabilityWidget({super.key});
@@ -138,10 +139,10 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isFetchingDates) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(48),
-          child: CircularProgressIndicator(),
+          padding: EdgeInsets.all(ResponsiveUtils.w(context, 48)),
+          child: const CircularProgressIndicator(),
         ),
       );
     }
@@ -151,26 +152,26 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '$_monthName $_currentYear',
-                style: const TextStyle(
-                  fontSize: 24,
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.sp(context, 24),
                   fontWeight: FontWeight.bold,
                   color: AppColors.darkNavy,
                 ),
               ),
-              const SizedBox(height: 24),
+              ResponsiveUtils.verticalSpace(context, 24),
               GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
+                crossAxisSpacing: ResponsiveUtils.w(context, 8),
+                mainAxisSpacing: ResponsiveUtils.h(context, 8),
               ),
               itemCount: _daysInMonth,
               itemBuilder: (context, index) {
@@ -193,7 +194,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                       border: isSelected
                           ? Border.all(
                               color: AppColors.amber,
-                              width: 3,
+                              width: ResponsiveUtils.w(context, 3),
                             )
                           : null,
                     ),
@@ -213,11 +214,11 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                 );
               },
             ),
-              const SizedBox(height: 32),
+              ResponsiveUtils.verticalSpace(context, 32),
               Text(
                 'Selected Date: $_monthName $_selectedDate, $_currentYear',
-                style: const TextStyle(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.sp(context, 16),
                   fontWeight: FontWeight.bold,
                   color: AppColors.darkNavy,
                 ),
@@ -228,13 +229,13 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                     ? 'Status: Available ✓'
                     : 'Status: Not set',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: ResponsiveUtils.sp(context, 14),
                   color: _availableDates.contains(_selectedDate)
                       ? AppColors.primaryTeal
                       : AppColors.textGray,
                 ),
               ),
-              const SizedBox(height: 24),
+              ResponsiveUtils.verticalSpace(context, 24),
               if (_isLoading)
                 const Center(
                   child: Padding(
@@ -251,9 +252,9 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryTeal,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
                         ),
                         child: const Text(
                           'Set Available',
@@ -264,7 +265,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    ResponsiveUtils.horizontalSpace(context, 12),
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => _setAvailability(false),
@@ -274,9 +275,9 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                             width: 2,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
                         ),
                         child: const Text(
                           'Set Unavailable',
@@ -289,13 +290,13 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                     ),
                   ],
                 ),
-              const SizedBox(height: 32),
+              ResponsiveUtils.verticalSpace(context, 32),
               // Legend
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLegendItem(AppColors.primaryTeal, 'Available'),
-                  const SizedBox(width: 24),
+                  ResponsiveUtils.horizontalSpace(context, 24),
                   _buildLegendItem(AppColors.lightGray, 'Not Set'),
                 ],
               ),
@@ -317,7 +318,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
             color: color,
           ),
         ),
-        const SizedBox(width: 8),
+        ResponsiveUtils.horizontalSpace(context, 8),
         Text(
           label,
           style: const TextStyle(

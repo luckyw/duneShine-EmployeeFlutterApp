@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../services/auth_service.dart';
 import '../constants/text_styles.dart';
+import '../utils/responsive_utils.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -126,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
                           text: 'Dune',
                           style: AppTextStyles.headline(context).copyWith(
                             color: AppColors.primaryTeal,
-                            fontSize: 32, 
+                            fontSize: ResponsiveUtils.sp(context, 32), 
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,
                           ),
@@ -135,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen>
                           text: 'Shine',
                           style: AppTextStyles.headline(context).copyWith(
                             color: AppColors.gold,
-                            fontSize: 32, 
+                            fontSize: ResponsiveUtils.sp(context, 32), 
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,
                           ),
@@ -143,20 +144,23 @@ class _SplashScreenState extends State<SplashScreen>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  ResponsiveUtils.verticalSpace(context, 12),
                    // Employee Tag
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 16),
+                      vertical: ResponsiveUtils.h(context, 6),
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.gold.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
                       border: Border.all(color: AppColors.gold.withOpacity(0.3)),
                     ),
                     child: Text(
                       'EMPLOYEE',
                       style: AppTextStyles.subtitle(context).copyWith(
                         color: AppColors.gold,
-                        fontSize: 12,
+                        fontSize: ResponsiveUtils.sp(context, 12),
                         letterSpacing: 2.5,
                         fontWeight: FontWeight.w600,
                       ),

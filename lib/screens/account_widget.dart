@@ -128,7 +128,7 @@ class _AccountWidgetState extends State<AccountWidget> {
             Container(
               width: double.infinity,
               color: AppColors.primaryTeal,
-              padding: const EdgeInsets.symmetric(vertical: 24),
+              padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 24)),
               child: _isLoadingProfile
                   ? const Center(
                       child: Padding(
@@ -144,13 +144,13 @@ class _AccountWidgetState extends State<AccountWidget> {
                               children: [
                                 const Icon(Icons.error_outline,
                                     color: Colors.red, size: 48),
-                                const SizedBox(height: 8),
+                                ResponsiveUtils.verticalSpace(context, 8),
                                 Text(
                                   _profileError!,
                                   style: const TextStyle(color: AppColors.white),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 16),
+                                ResponsiveUtils.verticalSpace(context, 16),
                                 ElevatedButton(
                                   onPressed: _fetchProfile,
                                   child: const Text('Retry'),
@@ -165,8 +165,8 @@ class _AccountWidgetState extends State<AccountWidget> {
                             Stack(
                               children: [
                                 Container(
-                                  width: 100,
-                                  height: 100,
+                                  width: ResponsiveUtils.r(context, 100),
+                                  height: ResponsiveUtils.r(context, 100),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: AppColors.lightGray,
@@ -176,41 +176,41 @@ class _AccountWidgetState extends State<AccountWidget> {
                                           child: Image.network(
                                             _profile!.idProofImageUrl!,
                                             fit: BoxFit.cover,
-                                            width: 100,
-                                            height: 100,
+                                            width: ResponsiveUtils.r(context, 100),
+                                            height: ResponsiveUtils.r(context, 100),
                                             errorBuilder:
                                                 (context, error, stackTrace) =>
-                                                    const Icon(Icons.person,
-                                                        size: 60,
+                                                    Icon(Icons.person,
+                                                        size: ResponsiveUtils.r(context, 60),
                                                         color: AppColors.white),
                                           ),
                                         )
-                                      : const Icon(Icons.person,
-                                          size: 60, color: AppColors.white),
+                                      : Icon(Icons.person,
+                                          size: ResponsiveUtils.r(context, 60), color: AppColors.white),
                                 ),
                                 Positioned(
                                   bottom: 0,
                                   right: 0,
                                   child: Container(
-                                    padding: const EdgeInsets.all(8),
+                                    padding: EdgeInsets.all(ResponsiveUtils.r(context, 8)),
                                     decoration: const BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: AppColors.white,
                                     ),
-                                    child: const Icon(Icons.edit,
-                                        size: 20, color: AppColors.primaryTeal),
+                                    child: Icon(Icons.edit,
+                                        size: ResponsiveUtils.r(context, 20), color: AppColors.primaryTeal),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            ResponsiveUtils.verticalSpace(context, 16),
                             Text(
                               _profile?.name ?? _authService.employeeName,
                               style: AppTextStyles.headline(context).copyWith(
                                 color: AppColors.white,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            ResponsiveUtils.verticalSpace(context, 8),
                             if (_profile?.phone != null &&
                                 _profile!.phone!.isNotEmpty)
                               Text(
@@ -219,7 +219,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                                   color: AppColors.white.withValues(alpha: 0.8),
                                 ),
                               ),
-                            const SizedBox(height: 12),
+                            ResponsiveUtils.verticalSpace(context, 12),
                             if (_profile?.vendor != null)
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -238,8 +238,8 @@ class _AccountWidgetState extends State<AccountWidget> {
                                         child: ClipOval(
                                           child: Image.network(
                                             _profile!.vendorLogoUrl!,
-                                            width: 24,
-                                            height: 24,
+                                            width: ResponsiveUtils.r(context, 24),
+                                            height: ResponsiveUtils.r(context, 24),
                                             fit: BoxFit.cover,
                                             errorBuilder:
                                                 (context, error, stackTrace) =>
@@ -282,9 +282,9 @@ class _AccountWidgetState extends State<AccountWidget> {
             //     ],
             //   ),
             // ),
-            const SizedBox(height: 24),
+            ResponsiveUtils.verticalSpace(context, 24),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
               child: Column(
                 children: [
                   _buildMenuItem(
@@ -374,12 +374,12 @@ class _AccountWidgetState extends State<AccountWidget> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            ResponsiveUtils.verticalSpace(context, 24),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: ResponsiveUtils.h(context, 56),
                 child: ElevatedButton(
                   onPressed: _isLoggingOut
                       ? null
@@ -410,7 +410,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                     backgroundColor: Colors.red,
                     disabledBackgroundColor: Colors.red.withValues(alpha: 0.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                     ),
                   ),
                   child: _isLoggingOut
@@ -425,8 +425,8 @@ class _AccountWidgetState extends State<AccountWidget> {
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.logout, color: AppColors.white),
-                            const SizedBox(width: 8),
+                            Icon(Icons.logout, color: AppColors.white, size: ResponsiveUtils.r(context, 24)),
+                            ResponsiveUtils.horizontalSpace(context, 8),
                             Text(
                               'Log Out',
                               style: AppTextStyles.button(context).copyWith(
@@ -438,14 +438,14 @@ class _AccountWidgetState extends State<AccountWidget> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            ResponsiveUtils.verticalSpace(context, 16),
             Text(
               'App Version 1.2.0',
               style: AppTextStyles.caption(context).copyWith(
                 color: AppColors.lightGray,
               ),
             ),
-            const SizedBox(height: 24),
+            ResponsiveUtils.verticalSpace(context, 24),
           ],
         ),
       ),
@@ -461,7 +461,9 @@ class _AccountWidgetState extends State<AccountWidget> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        padding: EdgeInsets.symmetric(
+            vertical: ResponsiveUtils.h(context, 16),
+            horizontal: ResponsiveUtils.w(context, 12)),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
@@ -472,8 +474,8 @@ class _AccountWidgetState extends State<AccountWidget> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primaryTeal, size: 24),
-            const SizedBox(width: 16),
+            Icon(icon, color: AppColors.primaryTeal, size: ResponsiveUtils.r(context, 24)),
+            ResponsiveUtils.horizontalSpace(context, 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,8 +497,8 @@ class _AccountWidgetState extends State<AccountWidget> {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios,
-                color: AppColors.lightGray, size: 16),
+            Icon(Icons.arrow_forward_ios,
+                color: AppColors.lightGray, size: ResponsiveUtils.r(context, 16)),
           ],
         ),
       ),

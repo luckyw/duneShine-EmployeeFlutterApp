@@ -207,19 +207,19 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 40),
+                  ResponsiveUtils.verticalSpace(context, 40),
                   // Logo and branding
                   Center(
                     child: Column(
                       children: [
                         Container(
-                          width: 100,
-                          height: 100,
+                          width: ResponsiveUtils.r(context, 100),
+                          height: ResponsiveUtils.r(context, 100),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
                             child: Image.asset(
                               'assets/images/app_logo.png',
                               fit: BoxFit.cover,
@@ -252,42 +252,42 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.primaryTeal,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  ResponsiveUtils.verticalSpace(context, 12),
                   // Phone input row
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Static country code
                       Container(
-                        height: 56,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        height: ResponsiveUtils.h(context, 56),
+                        padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
                         decoration: BoxDecoration(
                           color: AppColors.primaryTeal.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                           border: Border.all(
                             color: AppColors.primaryTeal.withValues(alpha: 0.3),
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             '+971',
                             style: TextStyle(
                               color: AppColors.primaryTeal,
-                              fontSize: 16,
+                              fontSize: ResponsiveUtils.sp(context, 16),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      ResponsiveUtils.horizontalSpace(context, 12),
                       // Phone number input
                       Expanded(
                         child: TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.primaryTeal,
-                            fontSize: 16,
+                            fontSize: ResponsiveUtils.sp(context, 16),
                           ),
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
@@ -301,33 +301,33 @@ class _LoginScreenState extends State<LoginScreen> {
                             filled: true,
                             fillColor: AppColors.primaryTeal.withValues(alpha: 0.05),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                               borderSide: BorderSide(
                                 color: AppColors.primaryTeal.withValues(alpha: 0.3),
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                               borderSide: BorderSide(
                                 color: AppColors.primaryTeal.withValues(alpha: 0.3),
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                               borderSide: const BorderSide(
                                 color: AppColors.primaryTeal,
                                 width: 2,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                               borderSide: const BorderSide(
                                 color: Colors.red,
                               ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: ResponsiveUtils.w(context, 16),
+                              vertical: ResponsiveUtils.h(context, 16),
                             ),
                           ),
                           validator: (value) {
@@ -360,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.primaryTeal.withValues(alpha: 0.6),
                     ),
                   ),
-                  SizedBox(height: ResponsiveUtils.h(context, 12)),
+                  ResponsiveUtils.verticalSpace(context, 12),
                   // 6 OTP boxes
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -380,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                  SizedBox(height: ResponsiveUtils.h(context, 40)),
+                  ResponsiveUtils.verticalSpace(context, 40),
                   // Login button
                   SizedBox(
                     width: double.infinity,
@@ -393,7 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         disabledBackgroundColor:
                             AppColors.primaryTeal.withOpacity(0.5),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
                         ),
                         elevation: 4,
                         shadowColor: AppColors.primaryTeal.withOpacity(0.4),
@@ -415,7 +415,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                     ),
                   ),
-                  SizedBox(height: ResponsiveUtils.h(context, 24)),
+                  ResponsiveUtils.verticalSpace(context, 24),
                   // Terms text
                   Center(
                     child: Text(
