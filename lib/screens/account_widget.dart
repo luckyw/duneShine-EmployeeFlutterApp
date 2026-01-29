@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../utils/responsive_utils.dart';
@@ -114,6 +115,17 @@ class _AccountWidgetState extends State<AccountWidget> {
         '/login',
         (route) => false,
       );
+    }
+  }
+
+  Future<void> _launchURL(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch website')),
+        );
+      }
     }
   }
 
@@ -350,14 +362,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                   _buildMenuItem(
                     icon: Icons.info_outline,
                     title: 'About DuneShine',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AboutScreen(),
-                        ),
-                      );
-                    },
+                    onTap: () => _launchURL('https://duneshine.bztechhub.com'),
                   ),
                    _buildMenuItem(
                     icon: Icons.autorenew,
