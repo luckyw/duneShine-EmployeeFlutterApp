@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:math';
 import '../constants/api_constants.dart';
+import '../models/customer_subscription_model.dart';
 
 /// API Service for handling HTTP requests
 class ApiService {
@@ -565,5 +567,100 @@ class ApiService {
         'message': 'Network error: ${e.toString()}',
       };
     }
+  }
+  /// MOCKED: Get customer details by phone number
+  Future<Map<String, dynamic>> getCustomerDetails({
+    required String phoneNumber,
+    required String token,
+  }) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Simple mock validation
+    if (phoneNumber.length < 8) {
+      return {
+        'success': false,
+        'message': 'Invalid phone number',
+        'data': {},
+      };
+    }
+
+    // Mock data
+    final mockData = {
+      'id': 'cust_12345',
+      'name': 'Ahmed Al-Farsi',
+      'phone': phoneNumber,
+      'car_model': 'Toyota Land Cruiser',
+      'car_plate': 'DXB 12345',
+      'current_plan': 'Weekly Wash',
+      'subscription_end_date': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(), // Expired
+      'last_subscription_date': DateTime.now().subtract(const Duration(days: 35)).toIso8601String(),
+      'is_subscription_active': false,
+    };
+
+    return {
+      'success': true,
+      'data': {
+        'customer': mockData,
+      },
+    };
+  }
+
+  /// MOCKED: Send OTP for renewal verification
+  Future<Map<String, dynamic>> sendRenewalOtp({
+    required String phoneNumber,
+    required String token,
+  }) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+    
+    debugPrint('MOCK OTP sent to $phoneNumber: 123456');
+
+    return {
+      'success': true,
+      'message': 'OTP sent successfully',
+      'data': {},
+    };
+  }
+
+  /// MOCKED: Verify renewal OTP
+  Future<Map<String, dynamic>> verifyRenewalOtp({
+    required String phoneNumber,
+    required String otp,
+    required String token,
+  }) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (otp == '123456') {
+      return {
+        'success': true,
+        'message': 'OTP verified successfully',
+        'data': {},
+      };
+    } else {
+      return {
+        'success': false,
+        'message': 'Invalid OTP',
+        'data': {},
+      };
+    }
+  }
+
+  /// MOCKED: Renew subscription
+  Future<Map<String, dynamic>> renewSubscription({
+    required String customerId,
+    required String token,
+  }) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    return {
+      'success': true,
+      'message': 'Subscription renewed successfully',
+      'data': {
+          'new_end_date': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+      },
+    };
   }
 }

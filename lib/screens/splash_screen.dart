@@ -10,35 +10,69 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Check authentication and navigate accordingly
+    _setupAnimations();
     _checkAuthAndNavigate();
   }
 
+  void _setupAnimations() {
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+
+    // Fade Animation: 0.0 to 1.0 over first 60%
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
+
+    // Scale Animation: 0.85 to 1.0 over first 60%
+    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    // Slide Animation: Offset(0, 0.1) to Offset.zero over 0.2 to 0.8
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 0.8, curve: Curves.easeOutQuart),
+      ),
+    );
+
+    _controller.forward();
+  }
+
   Future<void> _checkAuthAndNavigate() async {
-    // Wait for splash to display
-    await Future.delayed(const Duration(seconds: 2));
+    // Wait for animation to complete + small buffer
+    await Future.delayed(const Duration(seconds: 3));
 
     // Initialize auth service and check if user is logged in
     final isLoggedIn = await _authService.initialize();
 
     if (mounted) {
-      // Add small delay before transition
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (!mounted) return;
-
       if (isLoggedIn) {
-        // User is already logged in, go to home screen
         debugPrint('User already logged in, navigating to home...');
         _navigateWithSlide('/employee-home');
       } else {
-        // User not logged in, go to onboarding
         debugPrint('User not logged in, navigating to onboarding...');
         _navigateWithSlide('/onboarding');
       }
@@ -52,76 +86,88 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Static Logo
-            Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
-                  'assets/images/app_logo.png',
-                  fit: BoxFit.cover,
-                ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   // Logo Container with Shadow for depth
+                  Container(
+                    width: 120, 
+                    height: 120,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  // App Name
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Dune',
+                          style: AppTextStyles.headline(context).copyWith(
+                            color: AppColors.primaryTeal,
+                            fontSize: 32, 
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Shine',
+                          style: AppTextStyles.headline(context).copyWith(
+                            color: AppColors.gold,
+                            fontSize: 32, 
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                   // Employee Tag
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      'EMPLOYEE',
+                      style: AppTextStyles.subtitle(context).copyWith(
+                        color: AppColors.gold,
+                        fontSize: 12,
+                        letterSpacing: 2.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 30),
-            // Static App Name
-            Text(
-              'DuneShine',
-              style: AppTextStyles.headline(context).copyWith(
-                color: AppColors.primaryTeal,
-                fontSize: 36,
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Employee',
-              style: AppTextStyles.subtitle(context).copyWith(
-                color: AppColors.gold,
-                fontSize: 18,
-                letterSpacing: 4,
-                fontWeight: FontWeight.w300,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
-}
-
-// Custom slide transition for navigation
-class SlideUpPageRoute<T> extends PageRouteBuilder<T> {
-  final Widget page;
-
-  SlideUpPageRoute({required this.page})
-      : super(
-          pageBuilder: (context, animation, secondaryAnimation) => page,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0);
-            const end = Offset.zero;
-            const curve = Curves.easeOutCubic;
-
-            var tween = Tween(begin: begin, end: end).chain(
-              CurveTween(curve: curve),
-            );
-
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        );
 }

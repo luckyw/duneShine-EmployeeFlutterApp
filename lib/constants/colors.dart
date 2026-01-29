@@ -29,4 +29,5 @@ class AppColors {
   static const Color amber = Color(0xFFFFC107);
   static const Color darkBlue = Color(0xFF1A3A52);
   static const Color creamBg = Color(0xFFFEF5E7);
+  static const Color backgroundMilkWhite = Color(0xFFFFFBF2);
 }

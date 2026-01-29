@@ -11,6 +11,7 @@ import 'equipment_support_screen.dart';
 import 'settings_screen.dart';
 import 'help_support_screen.dart';
 import 'about_screen.dart';
+import 'customer_lookup_screen.dart';
 
 class AccountWidget extends StatefulWidget {
   const AccountWidget({Key? key}) : super(key: key);
@@ -354,6 +355,18 @@ class _AccountWidgetState extends State<AccountWidget> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const AboutScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                   _buildMenuItem(
+                    icon: Icons.autorenew,
+                    title: 'Reactivate Subscription of User',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CustomerLookupScreen(),
                         ),
                       );
                     },
