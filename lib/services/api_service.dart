@@ -568,6 +568,81 @@ class ApiService {
       };
     }
   }
+
+  /// Employee attendance check-in
+  /// Returns a map containing the response data
+  Future<Map<String, dynamic>> checkIn({
+    required String token,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.checkInUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Check-in failed',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  /// Employee attendance check-out
+  /// Returns a map containing the response data
+  Future<Map<String, dynamic>> checkOut({
+    required String token,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.checkOutUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Check-out failed',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
   /// MOCKED: Get customer details by phone number
   Future<Map<String, dynamic>> getCustomerDetails({
     required String phoneNumber,

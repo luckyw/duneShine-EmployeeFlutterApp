@@ -28,6 +28,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   
   // Shift state
   bool _isShiftStarted = false;
+  bool _isAttendanceLoading = false;
   
   // Filter out cancelled jobs and sort by time (closest first)
   List<Job> get _upcomingJobs {
@@ -109,6 +110,79 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleCheckIn() async {
+    final token = AuthService().token;
+    if (token == null) return;
+
+    setState(() {
+      _isAttendanceLoading = true;
+    });
+
+    final result = await ApiService().checkIn(token: token);
+
+    if (mounted) {
+      if (result['success'] == true) {
+        setState(() {
+          _isShiftStarted = true;
+          _isAttendanceLoading = false;
+        });
+        _fetchTodaysJobs();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Shift started! Good luck today!'),
+            backgroundColor: AppColors.primaryTeal,
+          ),
+        );
+      } else {
+        setState(() {
+          _isAttendanceLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Failed to start shift'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleCheckOut() async {
+    final token = AuthService().token;
+    if (token == null) return;
+
+    setState(() {
+      _isAttendanceLoading = true;
+    });
+
+    final result = await ApiService().checkOut(token: token);
+
+    if (mounted) {
+      if (result['success'] == true) {
+        setState(() {
+          _isShiftStarted = false;
+          _isAttendanceLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Shift ended successfully'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      } else {
+        setState(() {
+          _isAttendanceLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Failed to end shift'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   String _getGreeting() {
@@ -211,18 +285,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       margin: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _isShiftStarted = false;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Shift ended successfully'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.stop_circle_outlined),
+                        onPressed: _isAttendanceLoading ? null : _handleCheckOut,
+                        icon: _isAttendanceLoading 
+                            ? SizedBox(
+                                width: 20, 
+                                height: 20, 
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white)
+                              )
+                            : const Icon(Icons.stop_circle_outlined),
                         label: const Text('End Shift'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
@@ -477,21 +547,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _isShiftStarted = true;
-                    });
-                    _fetchTodaysJobs();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Shift started! Good luck today!'),
-                        backgroundColor: AppColors.primaryTeal,
-                      ),
-                    );
-                  },
-                  icon: Icon(Icons.play_circle_filled,
-                      size: ResponsiveUtils.r(context, 30),
-                      color: AppColors.primaryTeal),
+                  onPressed: _isAttendanceLoading ? null : _handleCheckIn,
+                  icon: _isAttendanceLoading
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryTeal),
+                        )
+                      : Icon(Icons.play_circle_filled,
+                          size: ResponsiveUtils.r(context, 30),
+                          color: AppColors.primaryTeal),
                   label: Text(
                     'Start Shift',
                     style: TextStyle(
