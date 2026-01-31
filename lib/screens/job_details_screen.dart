@@ -518,8 +518,12 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header with Service Type and Status
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Header with Service Type and Status
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       Text(
                         'Today\'s Task',
@@ -528,7 +532,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           color: AppColors.darkNavy,
                         ),
                       ),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
                         children: [
                           // Status Badge
                           Container(
@@ -546,7 +552,6 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
                           // Service Type Badge
                           Container(
                             padding: const EdgeInsets.symmetric(

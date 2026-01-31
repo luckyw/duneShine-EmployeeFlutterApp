@@ -1,17 +1,45 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 
-class JobCompletedScreen extends StatelessWidget {
+import '../models/job_model.dart';
+
+class JobCompletedScreen extends StatefulWidget {
   final String employeeName;
   final double earnedAmount;
   final String jobId;
+  final Job? job;
 
   const JobCompletedScreen({
     Key? key,
     required this.employeeName,
     required this.earnedAmount,
     required this.jobId,
+    this.job,
   }) : super(key: key);
+
+  @override
+  State<JobCompletedScreen> createState() => _JobCompletedScreenState();
+}
+
+class _JobCompletedScreenState extends State<JobCompletedScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   void _backToHome(BuildContext context) {
     Navigator.pushNamedAndRemoveUntil(
@@ -32,151 +60,135 @@ class JobCompletedScreen extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppColors.white,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                const Spacer(),
-                
-                // Success Icon
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.success,
+        body: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 0, end: 1).animate(
+                      CurvedAnimation(
+                        parent: _animationController,
+                        curve: Curves.elasticOut,
+                      ),
+                    ),
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.success.withOpacity(0.1),
+                      ),
+                      child: const Icon(
+                        Icons.check_circle,
+                        size: 80,
+                        color: AppColors.success,
+                      ),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    size: 60,
-                    color: AppColors.white,
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Job Completed!',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkNavy,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Title
-                const Text(
-                  'Job Completed!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkTeal,
+                  const SizedBox(height: 16),
+                  Text(
+                    'Great work, ${widget.employeeName}!',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.lightGray,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Subtitle
-                Text(
-                  'Great work, $employeeName!',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.darkTeal.withOpacity(0.8),
+                  const SizedBox(height: 32),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.lightGold),
+                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.veryLightGray,
+                    ),
+                    child: Column(
+                      children: [
+                        _buildResultRow('Job ID', widget.jobId),
+                        _buildResultRow('Employee', widget.employeeName),
+                        if (widget.job?.booking?.vehicle != null)
+                          _buildResultRow('Vehicle', widget.job!.booking!.vehicle!.displayName),
+                        if (widget.job?.booking?.apartment != null)
+                          _buildResultRow('Location', widget.job!.booking!.apartment!.name),
+                        if (widget.job?.booking?.servicesPayload.isNotEmpty == true)
+                          _buildResultRow('Services', widget.job!.booking!.servicesPayload.map((s) => s.name).join(', ')),
+                        _buildResultRow('Amount Earned', 'AED ${widget.earnedAmount.toStringAsFixed(2)}'),
+                      ],
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 48),
-                
-                // Earnings Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'You Earned',
+                  const SizedBox(height: 48),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () => _backToHome(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.darkTeal,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Back to Home',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.lightGray,
+                          color: AppColors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            '+${earnedAmount.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryTeal,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Text(
-                            'AED',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.darkNavy,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.veryLightGray,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          'Job ID: $jobId',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.lightGray,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const Spacer(),
-                
-                // Back to Home Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () => _backToHome(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.darkTeal,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Back to Home',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
                     ),
                   ),
-                ),
-                
-                const SizedBox(height: 16),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildResultRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.lightGray,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: AppColors.darkNavy,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

@@ -568,7 +568,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                   Text(
                     title,
                     style: AppTextStyles.body(context).copyWith(
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.bold,
                       color: AppColors.darkNavy,
                     ),
                   ),

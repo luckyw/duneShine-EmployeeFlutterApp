@@ -37,7 +37,7 @@ class AppTextStyles {
     return TextStyle(
       fontFamily: 'Inter',
       fontSize: ResponsiveUtils.sp(context, 14),
-      fontWeight: FontWeight.normal,
+      fontWeight: FontWeight.w500,
       color: AppColors.textDark,
     );
   }

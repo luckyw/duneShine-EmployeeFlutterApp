@@ -9,6 +9,8 @@ import 'availability_widget.dart';
 import 'account_widget.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/toast_utils.dart';
+import '../services/background_location_service.dart';
+import '../services/location_tracking_service.dart';
 
 
 class EmployeeHomeScreen extends StatefulWidget {
@@ -57,6 +59,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     _isShiftStarted = AuthService().isShiftStarted;
     _fetchTodaysJobs();
     _fetchProfile();
+    
+    // Ensure tracking is active if shift is already started
+    if (_isShiftStarted) {
+      final employeeId = AuthService().employeeId;
+      if (employeeId != null) {
+        BackgroundLocationService.start(employeeId);
+      }
+    }
   }
 
   Future<void> _fetchProfile() async {
@@ -146,6 +156,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       _isAttendanceLoading = true;
     });
 
+    // Request permissions before starting shift
+    bool hasPermission = await LocationTrackingService().requestLocationPermission();
+    if (!hasPermission) {
+      if (mounted) {
+        ToastUtils.showErrorToast(context, 'Location permission is required to start shift');
+      }
+      setState(() => _isAttendanceLoading = false);
+      return;
+    }
+
     final result = await ApiService().checkIn(token: token);
 
     if (mounted) {
@@ -156,6 +176,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           _isAttendanceLoading = false;
         });
         _fetchTodaysJobs();
+        
+        // Start background tracking service
+        final employeeId = AuthService().employeeId;
+        if (employeeId != null) {
+          BackgroundLocationService.start(employeeId);
+        }
+        
         ToastUtils.showSuccessToast(context, 'Shift started! Good luck today!');
 
       } else {
@@ -185,6 +212,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           _isShiftStarted = false;
           _isAttendanceLoading = false;
         });
+        
+        // Stop background tracking service
+        BackgroundLocationService.stop();
+        
         ToastUtils.showSuccessToast(context, 'Shift ended successfully');
 
       } else {
@@ -231,9 +262,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               fit: BoxFit.contain,
             ),
           ),
+          centerTitle: true,
           title: _isShiftStarted
               ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       '${_getGreeting()}, ${_profile?.name ?? AuthService().employeeName}',
@@ -268,13 +300,23 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         );
       case 1:
         return AppBar(
-          title: const Text('Mark Availability'),
+          title: Text(
+            'Mark Availability',
+            style: AppTextStyles.headline(context).copyWith(fontSize: 20),
+          ),
           centerTitle: true,
+          backgroundColor: AppColors.white,
+          elevation: 0,
         );
       case 2:
         return AppBar(
-          title: const Text('My Account'),
+          title: Text(
+            'My Account',
+            style: AppTextStyles.headline(context).copyWith(fontSize: 20),
+          ),
           centerTitle: true,
+          backgroundColor: AppColors.white,
+          elevation: 0,
         );
       default:
         return null;
@@ -1087,6 +1129,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         debugPrint('Bottom nav tapped: $index');
         setState(() => _currentIndex = index);
       },
+      selectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+      ),
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home,

@@ -16,9 +16,12 @@ import 'screens/screenToFillUserPin.dart';
 import 'screens/splash_screen.dart';
 import 'screens/washProgressShowingScreen.dart';
 
+import 'services/background_location_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await BackgroundLocationService.initializeService();
   runApp(const MyApp());
 }
 
@@ -81,6 +84,7 @@ class MyApp extends StatelessWidget {
               earnedAmount:
                   (args['earnedAmount'] ?? 150.0).toDouble(),
               jobId: args['jobId'] ?? 'JOB-001',
+              job: args['job'],
             ),
           );
         }
