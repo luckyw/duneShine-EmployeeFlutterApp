@@ -4,6 +4,8 @@ import '../constants/text_styles.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/toast_utils.dart';
+
 
 class JobDetailsScreen extends StatefulWidget {
   const JobDetailsScreen({Key? key}) : super(key: key);
@@ -91,9 +93,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
     final token = AuthService().token;
     if (token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not authenticated. Please login again.')),
-      );
+      ToastUtils.showErrorToast(context, 'Not authenticated. Please login again.');
+
       return;
     }
 
@@ -153,12 +154,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Failed to start navigation'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        ToastUtils.showErrorToast(context, response['message'] ?? 'Failed to start navigation');
+
       }
     }
   }

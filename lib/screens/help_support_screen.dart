@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../utils/toast_utils.dart';
+
 
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({Key? key}) : super(key: key);
@@ -73,12 +75,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           title: 'Call Us',
                           subtitle: '+971 XXX XXXX',
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Calling support...'),
-                                backgroundColor: AppColors.primaryTeal,
-                              ),
-                            );
+                            ToastUtils.showSuccessToast(context, 'Calling support...');
+
                           },
                         ),
                       ),
@@ -89,12 +87,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           title: 'Email',
                           subtitle: 'support@duneshine.com',
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Opening email...'),
-                                backgroundColor: AppColors.primaryTeal,
-                              ),
-                            );
+                            ToastUtils.showSuccessToast(context, 'Opening email...');
+
                           },
                         ),
                       ),
@@ -313,12 +307,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Report submitted. We\'ll get back to you soon.'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
+              ToastUtils.showSuccessToast(context, 'Report submitted. We\'ll get back to you soon.');
+
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryTeal,

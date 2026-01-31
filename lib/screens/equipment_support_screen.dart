@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
+import '../utils/toast_utils.dart';
+
 
 class EquipmentSupportScreen extends StatefulWidget {
   const EquipmentSupportScreen({Key? key}) : super(key: key);
@@ -131,12 +133,8 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Contacting support...'),
-                            backgroundColor: AppColors.primaryTeal,
-                          ),
-                        );
+                        ToastUtils.showSuccessToast(context, 'Contacting support...');
+
                       },
                       icon: const Icon(Icons.phone),
                       label: const Text('Call Support'),
@@ -256,12 +254,8 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Support request sent for $itemName'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
+              ToastUtils.showSuccessToast(context, 'Support request sent for $itemName');
+
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryTeal,

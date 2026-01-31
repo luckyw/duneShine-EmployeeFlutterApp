@@ -13,6 +13,8 @@ import 'settings_screen.dart';
 import 'help_support_screen.dart';
 import 'about_screen.dart';
 import 'customer_lookup_screen.dart';
+import '../utils/toast_utils.dart';
+
 
 class AccountWidget extends StatefulWidget {
   const AccountWidget({Key? key}) : super(key: key);
@@ -96,17 +98,8 @@ class _AccountWidgetState extends State<AccountWidget> {
       await _authService.clearAuthData();
 
       if (result['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Logged out successfully'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
+        ToastUtils.showSuccessToast(context, 'Logged out successfully');
+
       }
 
       // Navigate to login screen
@@ -122,9 +115,8 @@ class _AccountWidgetState extends State<AccountWidget> {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not launch website')),
-        );
+        ToastUtils.showErrorToast(context, 'Could not launch website');
+
       }
     }
   }

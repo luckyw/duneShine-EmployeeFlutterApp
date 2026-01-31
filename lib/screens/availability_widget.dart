@@ -3,6 +3,8 @@ import '../constants/colors.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/toast_utils.dart';
+
 
 class AvailabilityWidget extends StatefulWidget {
   const AvailabilityWidget({super.key});
@@ -20,11 +22,16 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   bool _isLoading = false;
   bool _isFetchingDates = true;
 
-  // Current month info
+  // Current month info (today)
   late int _currentYear;
   late int _currentMonth;
+  
+  // Displayed month info (navigation)
+  late int _displayYear;
+  late int _displayMonth;
   late int _daysInMonth;
   late String _monthName;
+
 
   @override
   void initState() {
@@ -32,10 +39,42 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     final now = DateTime.now();
     _currentYear = now.year;
     _currentMonth = now.month;
-    _daysInMonth = DateTime(_currentYear, _currentMonth + 1, 0).day;
-    _monthName = _getMonthName(_currentMonth);
+    
+    // Initialize display date to current date
+    _displayYear = _currentYear;
+    _displayMonth = _currentMonth;
+    
+    _updateMonthInfo();
     _fetchAvailability();
   }
+
+  void _updateMonthInfo() {
+    _daysInMonth = DateTime(_displayYear, _displayMonth + 1, 0).day;
+    _monthName = _getMonthName(_displayMonth);
+  }
+
+  void _changeMonth(int offset) {
+    setState(() {
+      _displayMonth += offset;
+      if (_displayMonth > 12) {
+        _displayMonth = 1;
+        _displayYear++;
+      } else if (_displayMonth < 1) {
+        _displayMonth = 12;
+        _displayYear--;
+      }
+      
+      // Reset selected date if it exceeds days in new month
+      _updateMonthInfo();
+      if (_selectedDate > _daysInMonth) {
+        _selectedDate = 1;
+      }
+      
+      _isFetchingDates = true;
+    });
+    _fetchAvailability();
+  }
+
 
   Future<void> _fetchAvailability() async {
     final token = _authService.token;
@@ -62,9 +101,10 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
           final utcDate = DateTime.parse(dateString);
           final localDate = utcDate.toLocal();
           // Only add dates from current month
-          if (localDate.year == _currentYear && localDate.month == _currentMonth) {
+          if (localDate.year == _displayYear && localDate.month == _displayMonth) {
             availableDays.add(localDate.day);
           }
+
         }
       }
 
@@ -90,9 +130,10 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   }
 
   String _formatDateForApi(int day) {
-    final date = DateTime(_currentYear, _currentMonth, day);
+    final date = DateTime(_displayYear, _displayMonth, day);
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
+
 
   Future<void> _setAvailability(bool isAvailable) async {
     final token = _authService.token;
@@ -125,16 +166,13 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   }
 
   void _showSnackBar(String message, {required bool isError}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : AppColors.primaryTeal,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+    if (isError) {
+      ToastUtils.showErrorToast(context, message);
+    } else {
+      ToastUtils.showSuccessToast(context, message);
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -156,14 +194,30 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '$_monthName $_currentYear',
-                style: TextStyle(
-                  fontSize: ResponsiveUtils.sp(context, 24),
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.darkNavy,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    onPressed: () => _changeMonth(-1),
+                    color: AppColors.primaryTeal,
+                  ),
+                  Text(
+                    '$_monthName $_displayYear',
+                    style: TextStyle(
+                      fontSize: ResponsiveUtils.sp(context, 24),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkNavy,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                    onPressed: () => _changeMonth(1),
+                    color: AppColors.primaryTeal,
+                  ),
+                ],
               ),
+
               ResponsiveUtils.verticalSpace(context, 24),
               GridView.builder(
               shrinkWrap: true,
@@ -178,8 +232,15 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                 int day = index + 1;
                 bool isAvailable = _availableDates.contains(day);
                 bool isSelected = day == _selectedDate;
-                bool isPast = DateTime(_currentYear, _currentMonth, day)
-                    .isBefore(DateTime.now().subtract(const Duration(days: 1)));
+                
+                // Compare with Today for "past" logic
+                final dateToCheck = DateTime(_displayYear, _displayMonth, day);
+                final now = DateTime.now();
+                final today = DateTime(now.year, now.month, now.day);
+                
+                // Make past dates unselectable
+                bool isPast = dateToCheck.isBefore(today);
+
 
                 return GestureDetector(
                   onTap: isPast ? null : () => setState(() => _selectedDate = day),
@@ -216,7 +277,8 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
             ),
               ResponsiveUtils.verticalSpace(context, 32),
               Text(
-                'Selected Date: $_monthName $_selectedDate, $_currentYear',
+                'Selected Date: $_monthName $_selectedDate, $_displayYear',
+
                 style: TextStyle(
                   fontSize: ResponsiveUtils.sp(context, 16),
                   fontWeight: FontWeight.bold,

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
+import '../utils/toast_utils.dart';
+
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({Key? key}) : super(key: key);
@@ -50,12 +52,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void _resendOtp() {
     if (_resendTimer == 0) {
       // Simulate resend OTP
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('OTP resent successfully'),
-          backgroundColor: AppColors.primaryTeal,
-        ),
-      );
+      ToastUtils.showSuccessToast(context, 'OTP resent successfully');
+
       _startResendTimer();
     }
   }
@@ -63,12 +61,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void _verifyOtp() async {
     String otp = _controllers.map((c) => c.text).join();
     if (otp.length != 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter complete OTP'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ToastUtils.showErrorToast(context, 'Please enter complete OTP');
+
       return;
     }
 

@@ -8,6 +8,8 @@ import '../services/auth_service.dart';
 import 'availability_widget.dart';
 import 'account_widget.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/toast_utils.dart';
+
 
 class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({Key? key}) : super(key: key);
@@ -158,22 +160,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           _isAttendanceLoading = false;
         });
         _fetchTodaysJobs();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Shift started! Good luck today!'),
-            backgroundColor: AppColors.primaryTeal,
-          ),
-        );
+        ToastUtils.showSuccessToast(context, 'Shift started! Good luck today!');
+
       } else {
         setState(() {
           _isAttendanceLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Failed to start shift'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        ToastUtils.showErrorToast(context, result['message'] ?? 'Failed to start shift');
+
       }
     }
   }
@@ -195,22 +189,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           _isShiftStarted = false;
           _isAttendanceLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Shift ended successfully'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        ToastUtils.showSuccessToast(context, 'Shift ended successfully');
+
       } else {
         setState(() {
           _isAttendanceLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Failed to end shift'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        ToastUtils.showErrorToast(context, result['message'] ?? 'Failed to end shift');
+
       }
     }
   }

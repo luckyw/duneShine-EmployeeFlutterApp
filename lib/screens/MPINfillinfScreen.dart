@@ -5,6 +5,8 @@ import '../constants/text_styles.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/toast_utils.dart';
+
 
 class JobVerificationScreen extends StatefulWidget {
   const JobVerificationScreen({Key? key}) : super(key: key);
@@ -53,12 +55,8 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
 
   Future<void> _verifyAndStart() async {
     if (!_isPinComplete()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter complete PIN'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ToastUtils.showErrorToast(context, 'Please enter complete PIN');
+
       return;
     }
 
@@ -77,9 +75,8 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
 
     final token = AuthService().token;
     if (token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not authenticated. Please login again.')),
-      );
+      ToastUtils.showErrorToast(context, 'Not authenticated. Please login again.');
+
       return;
     }
 
@@ -113,12 +110,8 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'OTP verification failed'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        ToastUtils.showErrorToast(context, response['message'] ?? 'OTP verification failed');
+
       }
     }
   }
@@ -279,9 +272,8 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('PIN resent')),
-                        );
+                        ToastUtils.showSuccessToast(context, 'PIN resent');
+
                       },
                       child: Text(
                         'Resend PIN',

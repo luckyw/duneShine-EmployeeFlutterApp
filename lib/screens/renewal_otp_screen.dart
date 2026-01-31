@@ -4,6 +4,8 @@ import '../constants/colors.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/toast_utils.dart';
+
 
 class RenewalOtpScreen extends StatefulWidget {
   final Map<String, dynamic> customerData;
@@ -83,23 +85,15 @@ class _RenewalOtpScreenState extends State<RenewalOtpScreen> {
           // Success: Return the new expiry data to the lookup screen
           Navigator.pop(context, renewalResult['data']);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(renewalResult['message'] ?? 'Failed to renew subscription'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          ToastUtils.showErrorToast(context, renewalResult['message'] ?? 'Failed to renew subscription');
+
         }
       }
     } else {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Invalid OTP'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtils.showErrorToast(context, result['message'] ?? 'Invalid OTP');
+
       }
     }
   }

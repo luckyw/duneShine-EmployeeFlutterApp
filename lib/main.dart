@@ -35,6 +35,17 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.white,
         useMaterial3: true,
         fontFamily: 'Manrope',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.primaryTeal,
+          foregroundColor: Colors.white,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Manrope',
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.white,
+          ),
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
       ),
       initialRoute: '/splash',
       routes: {

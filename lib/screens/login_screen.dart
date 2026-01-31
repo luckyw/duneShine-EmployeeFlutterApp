@@ -5,6 +5,8 @@ import '../constants/text_styles.dart';
 import '../utils/responsive_utils.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/toast_utils.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -44,17 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       // Check OTP is complete
       if (!_isOtpComplete()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Please enter all 6 OTP digits'),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
+        ToastUtils.showErrorToast(context, 'Please enter all 6 OTP digits');
+
         return;
       }
 
@@ -99,17 +92,8 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           // Show error message
           final message = result['data']?['message'] ?? result['message'] ?? 'Login failed';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          );
+          ToastUtils.showErrorToast(context, message);
+
         }
       }
     }

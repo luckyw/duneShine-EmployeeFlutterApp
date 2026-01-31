@@ -4,6 +4,8 @@ import '../constants/colors.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/toast_utils.dart';
+
 
 class JobCompletionOtpScreen extends StatefulWidget {
   const JobCompletionOtpScreen({Key? key}) : super(key: key);
@@ -68,12 +70,8 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
 
   Future<void> _verifyAndComplete() async {
     if (!_isOtpComplete()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter complete OTP'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ToastUtils.showErrorToast(context, 'Please enter complete OTP');
+
       return;
     }
 
@@ -105,9 +103,8 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
 
     final token = AuthService().token;
     if (token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not authenticated. Please login again.')),
-      );
+      ToastUtils.showErrorToast(context, 'Not authenticated. Please login again.');
+
       return;
     }
 
@@ -144,12 +141,8 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
     } else {
       // Show error snackbar
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Failed to complete job'),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        ToastUtils.showErrorToast(context, response['message'] ?? 'Failed to complete job');
+
       }
     }
   }
@@ -302,9 +295,8 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('OTP resent')),
-                        );
+                        ToastUtils.showSuccessToast(context, 'OTP resent');
+
                       },
                       child: const Text(
                         'Resend OTP',
