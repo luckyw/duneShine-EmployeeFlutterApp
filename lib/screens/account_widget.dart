@@ -17,7 +17,14 @@ import '../utils/toast_utils.dart';
 
 
 class AccountWidget extends StatefulWidget {
-  const AccountWidget({Key? key}) : super(key: key);
+  final VoidCallback? onShiftEnded;
+  final bool isShiftStarted;
+
+  const AccountWidget({
+    Key? key, 
+    this.onShiftEnded,
+    required this.isShiftStarted,
+  }) : super(key: key);
 
   @override
   State<AccountWidget> createState() => _AccountWidgetState();
@@ -27,13 +34,16 @@ class _AccountWidgetState extends State<AccountWidget> {
   final ApiService _apiService = ApiService();
   final AuthService _authService = AuthService();
   bool _isLoggingOut = false;
+  bool _isEndingShift = false;
   bool _isLoadingProfile = true;
   EmployeeProfileModel? _profile;
   String? _profileError;
+  bool _isShiftStarted = false;
 
   @override
   void initState() {
     super.initState();
+    _isShiftStarted = widget.isShiftStarted;
     _fetchProfile();
   }
 
@@ -54,8 +64,22 @@ class _AccountWidgetState extends State<AccountWidget> {
 
     final result = await _apiService.getProfile(token: token);
 
+    if (!mounted) return;
     if (result['success'] == true) {
       final userData = result['data']['user'] as Map<String, dynamic>;
+      final sessionStatus = result['data']['session_status'];
+      
+      // Sync shift status
+      if (sessionStatus != null) {
+        final bool apiShiftStarted = sessionStatus == 1 || sessionStatus == true || sessionStatus == '1';
+        if (_isShiftStarted != apiShiftStarted) {
+          _authService.setShiftStatus(apiShiftStarted);
+          setState(() {
+            _isShiftStarted = apiShiftStarted;
+          });
+        }
+      }
+
       setState(() {
         _profile = EmployeeProfileModel.fromJson(userData);
         _isLoadingProfile = false;
@@ -65,6 +89,34 @@ class _AccountWidgetState extends State<AccountWidget> {
         _isLoadingProfile = false;
         _profileError = result['message'] ?? 'Failed to load profile';
       });
+    }
+  }
+
+  Future<void> _handleCheckOut() async {
+    final token = _authService.token;
+    if (token == null) return;
+
+    setState(() {
+      _isEndingShift = true;
+    });
+
+    final result = await _apiService.checkOut(token: token);
+
+    if (mounted) {
+      if (result['success'] == true) {
+        _authService.setShiftStatus(false);
+        setState(() {
+          _isShiftStarted = false;
+          _isEndingShift = false;
+        });
+        ToastUtils.showSuccessToast(context, 'Shift ended successfully');
+        widget.onShiftEnded?.call();
+      } else {
+        setState(() {
+          _isEndingShift = false;
+        });
+        ToastUtils.showErrorToast(context, result['message'] ?? 'Failed to end shift');
+      }
     }
   }
 
@@ -89,6 +141,7 @@ class _AccountWidgetState extends State<AccountWidget> {
 
     final result = await _apiService.logout(token: token);
 
+    if (!mounted) return;
     setState(() {
       _isLoggingOut = false;
     });
@@ -96,6 +149,8 @@ class _AccountWidgetState extends State<AccountWidget> {
     if (mounted) {
       // Clear auth data from secure storage
       await _authService.clearAuthData();
+      
+      if (!mounted) return; // In case clearAuthData was slow
 
       if (result['success'] == true) {
         ToastUtils.showSuccessToast(context, 'Logged out successfully');
@@ -211,6 +266,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                                   color: AppColors.white.withValues(alpha: 0.8),
                                 ),
                               ),
+
                             ResponsiveUtils.verticalSpace(context, 12),
                             if (_profile?.vendor != null)
                               Container(
@@ -362,13 +418,55 @@ class _AccountWidgetState extends State<AccountWidget> {
             ResponsiveUtils.verticalSpace(context, 24),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
-              child: SizedBox(
-                width: double.infinity,
-                height: ResponsiveUtils.h(context, 56),
-                child: ElevatedButton(
+                child: Column(
+                  children: [
+                    // End Shift button (Always show for debugging)
+                    if (widget.isShiftStarted || _isShiftStarted) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        height: ResponsiveUtils.h(context, 56),
+                        child: ElevatedButton.icon(
+                          onPressed: _isEndingShift ? null : _handleCheckOut,
+                          icon: _isEndingShift
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: AppColors.white),
+                                )
+                              : const Icon(Icons.stop_circle_outlined, color: AppColors.white),
+                          label: Text(
+                            'End Shift',
+                            style: AppTextStyles.button(context).copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange.shade700,
+                            foregroundColor: AppColors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  ResponsiveUtils.r(context, 12)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      ResponsiveUtils.verticalSpace(context, 16),
+                    ],
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: ResponsiveUtils.h(context, 56),
+                      child: OutlinedButton(
                   onPressed: _isLoggingOut
                       ? null
                       : () {
+                          // Prevent logout if shift is active
+                          if (widget.isShiftStarted || _isShiftStarted) {
+                            ToastUtils.showErrorToast(context, 'Please end your shift before logging out');
+                            return;
+                          }
+                          
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
@@ -385,15 +483,14 @@ class _AccountWidgetState extends State<AccountWidget> {
                                     Navigator.pop(context);
                                     _performLogout();
                                   },
-                                  child: const Text('Log Out'),
+                                  child: const Text('Log Out', style: TextStyle(color: Colors.red)),
                                 ),
                               ],
                             ),
                           );
                         },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    disabledBackgroundColor: Colors.red.withValues(alpha: 0.5),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                     ),
@@ -403,26 +500,29 @@ class _AccountWidgetState extends State<AccountWidget> {
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
-                            color: AppColors.white,
+                            color: Colors.red,
                             strokeWidth: 2,
                           ),
                         )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.logout, color: AppColors.white, size: ResponsiveUtils.r(context, 24)),
+                            Icon(Icons.logout, color: Colors.red, size: ResponsiveUtils.r(context, 24)),
                             ResponsiveUtils.horizontalSpace(context, 8),
                             Text(
                               'Log Out',
                               style: AppTextStyles.button(context).copyWith(
-                                color: AppColors.white,
+                                color: Colors.red,
                               ),
                             ),
                           ],
                         ),
                 ),
               ),
+              ],
             ),
+            ),
+
             ResponsiveUtils.verticalSpace(context, 16),
             Text(
               'App Version 1.2.0',

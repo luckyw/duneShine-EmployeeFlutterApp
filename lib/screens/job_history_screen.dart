@@ -42,6 +42,8 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
     }
 
     final response = await _apiService.getTodaysJobs(token: token);
+    
+    if (!mounted) return;
 
     if (response['success'] == true) {
       final data = response['data'] as Map<String, dynamic>;

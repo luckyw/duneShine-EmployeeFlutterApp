@@ -71,10 +71,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (mounted) {
       if (isLoggedIn) {
-        debugPrint('User already logged in, navigating to home...');
         _navigateWithSlide('/employee-home');
       } else {
-        debugPrint('User not logged in, navigating to onboarding...');
         _navigateWithSlide('/onboarding');
       }
     }

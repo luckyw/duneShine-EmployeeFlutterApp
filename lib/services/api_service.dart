@@ -149,11 +149,6 @@ class ApiService {
         }),
       );
 
-      debugPrint('=== SET AVAILABILITY API RESPONSE ===');
-      debugPrint('Status: ${response.statusCode}');
-      debugPrint('Body: ${response.body}');
-      debugPrint('=====================================');
-
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
@@ -434,9 +429,6 @@ class ApiService {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       
-      debugPrint('Start wash response status: ${response.statusCode}');
-      debugPrint('Start wash response body: ${response.body}');
-      
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
@@ -493,11 +485,6 @@ class ApiService {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       
-      debugPrint('=== FINISH WASH API RESPONSE ===');
-      debugPrint('Status: ${response.statusCode}');
-      debugPrint('Body: ${response.body}');
-      debugPrint('================================');
-      
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
@@ -540,11 +527,6 @@ class ApiService {
           'otp': otp,
         }),
       );
-
-      debugPrint('=== COMPLETE JOB API RESPONSE ===');
-      debugPrint('Status: ${response.statusCode}');
-      debugPrint('Body: ${response.body}');
-      debugPrint('=================================');
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 

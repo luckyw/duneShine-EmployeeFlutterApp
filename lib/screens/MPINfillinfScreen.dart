@@ -90,7 +90,6 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
       otp: otp,
       token: token,
     );
-    debugPrint('Verify OTP response: $response');
 
     setState(() {
       _isVerifying = false;

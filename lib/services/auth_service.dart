@@ -58,7 +58,6 @@ class AuthService {
       final shiftStartedStr = await _storage.read(key: _isShiftStartedKey);
       _isShiftStarted = shiftStartedStr == 'true';
 
-      debugPrint('AuthService initialized - Logged in: $isLoggedIn, Shift Started: $_isShiftStarted');
       return isLoggedIn;
     } catch (e) {
       debugPrint('AuthService initialization error: $e');
@@ -82,7 +81,7 @@ class AuthService {
         key: _employeeDataKey,
         value: jsonEncode(employeeData),
       );
-      debugPrint('Auth data saved securely - Token: ${token.substring(0, 10)}...');
+      // Save to secure storage
     } catch (e) {
       debugPrint('Error saving auth data: $e');
     }
@@ -99,7 +98,6 @@ class AuthService {
       await _storage.delete(key: _tokenKey);
       await _storage.delete(key: _employeeDataKey);
       await _storage.delete(key: _isShiftStartedKey);
-      debugPrint('Auth data and shift status cleared from secure storage');
     } catch (e) {
       debugPrint('Error clearing auth data: $e');
     }
@@ -110,7 +108,6 @@ class AuthService {
     _isShiftStarted = value;
     try {
       await _storage.write(key: _isShiftStartedKey, value: value.toString());
-      debugPrint('Shift status saved securely: $value');
     } catch (e) {
       debugPrint('Error saving shift status: $e');
     }

@@ -77,7 +77,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           });
           AuthService().setShiftStatus(apiShiftStarted);
         }
-        debugPrint('Shift status recovered from profile API: $_isShiftStarted');
       }
 
       setState(() {
@@ -102,7 +101,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     }
 
     final response = await ApiService().getTodaysJobs(token: token);
-    debugPrint('Today\'s jobs response: $response');
 
     if (response['success'] == true) {
       final data = response['data'] as Map<String, dynamic>;
@@ -118,7 +116,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           });
           AuthService().setShiftStatus(apiShiftStarted);
         }
-        debugPrint('Shift status recovered from API: $_isShiftStarted');
       }
 
       setState(() {
@@ -127,7 +124,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             .toList();
         _isLoading = false;
       });
-      debugPrint('Loaded ${_allJobs.length} jobs');
     } else {
       setState(() {
         _isLoading = false;
@@ -223,7 +219,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   }
 
   AppBar? _getAppBar() {
-    debugPrint('Building appBar for index: $_currentIndex');
     switch (_currentIndex) {
       case 0:
         return AppBar(
@@ -303,29 +298,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 child: Column(
                   children: [
                     // End Shift Button
-                    Container(
-                      margin: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isAttendanceLoading ? null : _handleCheckOut,
-                        icon: _isAttendanceLoading 
-                            ? SizedBox(
-                                width: 20, 
-                                height: 20, 
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white)
-                              )
-                            : const Icon(Icons.stop_circle_outlined),
-                        label: const Text('End Shift'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                          ),
-                        ),
-                      ),
-                    ),
+
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
                       padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
@@ -518,7 +491,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       case 1:
         return const AvailabilityWidget();
       case 2:
-        return const AccountWidget();
+        return AccountWidget(
+          isShiftStarted: _isShiftStarted,
+          onShiftEnded: () {
+            // Update local state when shift is ending from Account screen
+            setState(() {
+              _isShiftStarted = false;
+              AuthService().setShiftStatus(false);
+              _tabController.index = 0; // Go back to upcoming
+            });
+            // Force refresh of jobs to show empty/start shift state
+            _fetchTodaysJobs();
+          },
+        );
       default:
         return Container();
     }

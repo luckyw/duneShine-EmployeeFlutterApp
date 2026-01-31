@@ -18,7 +18,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   final AuthService _authService = AuthService();
 
   Set<int> _availableDates = {};
-  int _selectedDate = DateTime.now().day;
+  Set<int> _selectedDates = {}; // Changed to Set for multi-select
   bool _isLoading = false;
   bool _isFetchingDates = true;
 
@@ -64,12 +64,8 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
         _displayYear--;
       }
       
-      // Reset selected date if it exceeds days in new month
       _updateMonthInfo();
-      if (_selectedDate > _daysInMonth) {
-        _selectedDate = 1;
-      }
-      
+      _selectedDates.clear(); // Clear selection on month change
       _isFetchingDates = true;
     });
     _fetchAvailability();
@@ -108,12 +104,14 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
         }
       }
 
+      if (!mounted) return;
       setState(() {
         _availableDates = availableDays;
         _isFetchingDates = false;
         _isLoading = false;
       });
     } else {
+      if (!mounted) return;
       setState(() {
         _isFetchingDates = false;
         _isLoading = false;
@@ -135,28 +133,70 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   }
 
 
-  Future<void> _setAvailability(bool isAvailable) async {
+  Future<void> _processAvailabilityUpdate(bool makeAvailable) async {
     final token = _authService.token;
     if (token == null) {
       _showSnackBar('Not authenticated. Please login again.', isError: true);
       return;
     }
 
+    if (_selectedDates.isEmpty) {
+      _showSnackBar('Please select at least one date', isError: true);
+      return;
+    }
+
+    // Filter dates to avoid redundant API calls
+    // If making available: only include dates that are NOT currently available
+    // If making unavailable: only include dates that ARE currently available
+    final List<String> datesToUpdate = [];
+    int ignoredCount = 0;
+
+    for (final day in _selectedDates) {
+      final isCurrentlyAvailable = _availableDates.contains(day);
+      
+      if (makeAvailable && !isCurrentlyAvailable) {
+        datesToUpdate.add(_formatDateForApi(day));
+      } else if (!makeAvailable && isCurrentlyAvailable) {
+        datesToUpdate.add(_formatDateForApi(day));
+      } else {
+        ignoredCount++;
+      }
+    }
+
+    if (datesToUpdate.isEmpty) {
+      if (ignoredCount > 0) {
+        _showSnackBar(
+          makeAvailable 
+            ? 'Selected dates are already available' 
+            : 'Selected dates are already unavailable', 
+          isError: false
+        );
+      }
+      return; // No API call needed
+    }
+
     setState(() => _isLoading = true);
 
-    final dateString = _formatDateForApi(_selectedDate);
-    
     final result = await _apiService.setAvailability(
       token: token,
-      availableDates: [dateString],
-      isAvailable: isAvailable,
+      availableDates: datesToUpdate,
+      isAvailable: makeAvailable,
     );
 
+    if (!mounted) return;
     if (result['success'] == true) {
       _showSnackBar(
-        isAvailable ? 'Marked as available' : 'Marked as unavailable',
+        makeAvailable 
+          ? 'Marked ${datesToUpdate.length} days as available' 
+          : 'Marked ${datesToUpdate.length} days as unavailable',
         isError: false,
       );
+      
+      // Clear selection after successful update
+      setState(() {
+        _selectedDates.clear();
+      });
+      
       // Refetch all availability dates from the API
       await _fetchAvailability();
     } else {
@@ -171,6 +211,28 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     } else {
       ToastUtils.showSuccessToast(context, message);
     }
+  }
+  
+  void _selectAllWeekdays() {
+    final Set<int> weekdays = {};
+    for (int day = 1; day <= _daysInMonth; day++) {
+       final date = DateTime(_displayYear, _displayMonth, day);
+       // 1 = Mon, 7 = Sun. We want Mon-Fri (1-5)
+       if (date.weekday >= 1 && date.weekday <= 5) {
+         // Check if past
+         final now = DateTime.now();
+         final today = DateTime(now.year, now.month, now.day);
+         if (!date.isBefore(today)) {
+           weekdays.add(day);
+         }
+       }
+    }
+    
+    setState(() {
+      _selectedDates = weekdays;
+    });
+    
+    _showSnackBar('Selected all upcoming weekdays', isError: false);
   }
 
 
@@ -217,8 +279,20 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                   ),
                 ],
               ),
+              
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _selectAllWeekdays,
+                  icon: const Icon(Icons.calendar_view_week, size: 18),
+                  label: const Text('Select M-F'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primaryTeal,
+                  ),
+                ),
+              ),
 
-              ResponsiveUtils.verticalSpace(context, 24),
+              ResponsiveUtils.verticalSpace(context, 12),
               GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -231,7 +305,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
               itemBuilder: (context, index) {
                 int day = index + 1;
                 bool isAvailable = _availableDates.contains(day);
-                bool isSelected = day == _selectedDate;
+                bool isSelected = _selectedDates.contains(day);
                 
                 // Compare with Today for "past" logic
                 final dateToCheck = DateTime(_displayYear, _displayMonth, day);
@@ -243,15 +317,23 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
 
 
                 return GestureDetector(
-                  onTap: isPast ? null : () => setState(() => _selectedDate = day),
+                  onTap: isPast ? null : () {
+                    setState(() {
+                      if (_selectedDates.contains(day)) {
+                        _selectedDates.remove(day);
+                      } else {
+                        _selectedDates.add(day);
+                      }
+                    });
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isPast
                           ? AppColors.lightGray.withValues(alpha: 0.5)
                           : isAvailable
-                              ? AppColors.primaryTeal
-                              : AppColors.lightGray,
+                              ? AppColors.primaryTeal // Available
+                              : AppColors.lightGray.withOpacity(0.3), // Neutral/Not Set
                       border: isSelected
                           ? Border.all(
                               color: AppColors.amber,
@@ -259,17 +341,27 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                             )
                           : null,
                     ),
-                    child: Center(
-                      child: Text(
-                        day.toString(),
-                        style: TextStyle(
-                          color: isPast
-                              ? AppColors.white.withValues(alpha: 0.5)
-                              : AppColors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Text(
+                          day.toString(),
+                          style: TextStyle(
+                            color: isPast
+                                ? AppColors.white.withValues(alpha: 0.5)
+                                : isAvailable 
+                                    ? AppColors.white 
+                                    : AppColors.darkNavy,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
+                        if (isSelected)
+                           Positioned(
+                             bottom: 4,
+                             child: Icon(Icons.check, size: 10, color: isAvailable ? AppColors.white : AppColors.darkNavy),
+                           )
+                      ],
                     ),
                   ),
                 );
@@ -277,24 +369,13 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
             ),
               ResponsiveUtils.verticalSpace(context, 32),
               Text(
-                'Selected Date: $_monthName $_selectedDate, $_displayYear',
-
+                _selectedDates.isEmpty 
+                  ? 'Select dates to update status' 
+                  : '${_selectedDates.length} days selected',
                 style: TextStyle(
                   fontSize: ResponsiveUtils.sp(context, 16),
                   fontWeight: FontWeight.bold,
                   color: AppColors.darkNavy,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _availableDates.contains(_selectedDate)
-                    ? 'Status: Available ✓'
-                    : 'Status: Not set',
-                style: TextStyle(
-                  fontSize: ResponsiveUtils.sp(context, 14),
-                  color: _availableDates.contains(_selectedDate)
-                      ? AppColors.primaryTeal
-                      : AppColors.textGray,
                 ),
               ),
               ResponsiveUtils.verticalSpace(context, 24),
@@ -310,16 +391,17 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => _setAvailability(true),
+                        onPressed: _selectedDates.isEmpty ? null : () => _processAvailabilityUpdate(true),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryTeal,
+                          disabledBackgroundColor: AppColors.lightGray,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                           ),
                           padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
                         ),
                         child: const Text(
-                          'Set Available',
+                          'Mark Available',
                           style: TextStyle(
                             color: AppColors.white,
                             fontWeight: FontWeight.bold,
@@ -330,10 +412,10 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                     ResponsiveUtils.horizontalSpace(context, 12),
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () => _setAvailability(false),
+                        onPressed: _selectedDates.isEmpty ? null : () => _processAvailabilityUpdate(false),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                            color: AppColors.primaryTeal,
+                          side: BorderSide(
+                            color: _selectedDates.isEmpty ? AppColors.lightGray : AppColors.primaryTeal,
                             width: 2,
                           ),
                           shape: RoundedRectangleBorder(
@@ -341,10 +423,10 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                           ),
                           padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
                         ),
-                        child: const Text(
-                          'Set Unavailable',
+                        child: Text(
+                          'Mark Unavailable',
                           style: TextStyle(
-                            color: AppColors.primaryTeal,
+                            color: _selectedDates.isEmpty ? AppColors.lightGray : AppColors.primaryTeal,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -358,8 +440,29 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLegendItem(AppColors.primaryTeal, 'Available'),
-                  ResponsiveUtils.horizontalSpace(context, 24),
-                  _buildLegendItem(AppColors.lightGray, 'Not Set'),
+                  ResponsiveUtils.horizontalSpace(context, 16),
+                  _buildLegendItem(AppColors.lightGray.withOpacity(0.3), 'Not Set'),
+                  ResponsiveUtils.horizontalSpace(context, 16),
+                  Row(
+                    children: [
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.amber, width: 2),
+                        ),
+                      ),
+                      ResponsiveUtils.horizontalSpace(context, 8),
+                      const Text(
+                        'Selected',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textGray,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -368,6 +471,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       ),
     );
   }
+
 
   Widget _buildLegendItem(Color color, String label) {
     return Row(
