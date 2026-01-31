@@ -18,7 +18,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  String _selectedCountryCode = '+971';
   bool _isLoading = false;
 
   final ApiService _apiService = ApiService();
@@ -34,13 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
     (index) => FocusNode(),
   );
 
-  final List<Map<String, String>> _countryCodes = [
-    {'code': '+971', 'country': 'UAE'},
-    {'code': '+966', 'country': 'KSA'},
-    {'code': '+1', 'country': 'USA'},
-    {'code': '+44', 'country': 'UK'},
-    {'code': '+91', 'country': 'IND'},
-  ];
+
 
   void _login() async {
     if (_formKey.currentState!.validate()) {

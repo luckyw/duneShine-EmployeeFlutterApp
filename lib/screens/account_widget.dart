@@ -11,8 +11,8 @@ import 'performance_rating_screen.dart';
 import 'equipment_support_screen.dart';
 import 'settings_screen.dart';
 import 'help_support_screen.dart';
-import 'about_screen.dart';
 import 'customer_lookup_screen.dart';
+
 import '../utils/toast_utils.dart';
 
 
@@ -192,21 +192,9 @@ class _AccountWidgetState extends State<AccountWidget> {
                                       : Icon(Icons.person,
                                           size: ResponsiveUtils.r(context, 60), color: AppColors.white),
                                 ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: EdgeInsets.all(ResponsiveUtils.r(context, 8)),
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: AppColors.white,
-                                    ),
-                                    child: Icon(Icons.edit,
-                                        size: ResponsiveUtils.r(context, 20), color: AppColors.primaryTeal),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
+
                             ResponsiveUtils.verticalSpace(context, 16),
                             Text(
                               _profile?.name ?? _authService.employeeName,
