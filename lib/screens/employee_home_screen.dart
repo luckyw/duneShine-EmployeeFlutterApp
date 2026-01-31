@@ -27,7 +27,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   List<Job> _allJobs = [];
   
   // Shift state
-  bool _isShiftStarted = false;
+  late bool _isShiftStarted;
   bool _isAttendanceLoading = false;
   
   // Filter out cancelled jobs and sort by time (closest first)
@@ -52,6 +52,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _isShiftStarted = AuthService().isShiftStarted;
     _fetchTodaysJobs();
     _fetchProfile();
   }
@@ -62,7 +63,21 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
 
     final result = await ApiService().getProfile(token: token);
     if (result['success'] == true && mounted) {
-      final userData = result['data']['user'] as Map<String, dynamic>;
+      final data = result['data'] as Map<String, dynamic>;
+      final userData = data['user'] as Map<String, dynamic>;
+      
+      // Update shift status from profile response if available
+      if (data['session_status'] != null) {
+        final apiShiftStarted = data['session_status'] == 1 || data['session_status'] == true || data['session_status'] == '1';
+        if (_isShiftStarted != apiShiftStarted) {
+          setState(() {
+            _isShiftStarted = apiShiftStarted;
+          });
+          AuthService().setShiftStatus(apiShiftStarted);
+        }
+        debugPrint('Shift status recovered from profile API: $_isShiftStarted');
+      }
+
       setState(() {
         _profile = EmployeeProfileModel.fromJson(userData);
       });
@@ -91,6 +106,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       final data = response['data'] as Map<String, dynamic>;
       final jobsList = data['jobs'] as List<dynamic>? ?? [];
       
+      // Update shift status from API response if available
+      // The session_status is usually 1 for started and 0 for not started
+      if (data['session_status'] != null) {
+        final apiShiftStarted = data['session_status'] == 1 || data['session_status'] == true || data['session_status'] == '1';
+        if (_isShiftStarted != apiShiftStarted) {
+          setState(() {
+            _isShiftStarted = apiShiftStarted;
+          });
+          AuthService().setShiftStatus(apiShiftStarted);
+        }
+        debugPrint('Shift status recovered from API: $_isShiftStarted');
+      }
+
       setState(() {
         _allJobs = jobsList
             .map((json) => Job.fromJson(json as Map<String, dynamic>))
@@ -124,6 +152,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
 
     if (mounted) {
       if (result['success'] == true) {
+        AuthService().setShiftStatus(true);
         setState(() {
           _isShiftStarted = true;
           _isAttendanceLoading = false;
@@ -161,6 +190,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
 
     if (mounted) {
       if (result['success'] == true) {
+        AuthService().setShiftStatus(false);
         setState(() {
           _isShiftStarted = false;
           _isAttendanceLoading = false;
@@ -240,10 +270,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       fontSize: ResponsiveUtils.sp(context, 26),
                     ),
                     children: const [
-                      TextSpan(text: 'Dune'),
+                      TextSpan(
+                        text: 'Dune',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       TextSpan(
                         text: 'Shine',
-                        style: TextStyle(color: AppColors.gold),
+                        style: TextStyle(
+                          color: AppColors.gold,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),

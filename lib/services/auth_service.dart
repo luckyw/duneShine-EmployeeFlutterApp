@@ -25,16 +25,21 @@ class AuthService {
   // Storage keys
   static const String _tokenKey = 'auth_token';
   static const String _employeeDataKey = 'employee_data';
+  static const String _isShiftStartedKey = 'is_shift_started';
 
   // In-memory cache for quick access
   String? _token;
   Map<String, dynamic>? _employeeData;
+  bool _isShiftStarted = false;
 
   /// Get the current auth token
   String? get token => _token;
 
   /// Get the current employee data
   Map<String, dynamic>? get employeeData => _employeeData;
+
+  /// Get the current shift status
+  bool get isShiftStarted => _isShiftStarted;
 
   /// Check if user is logged in
   bool get isLoggedIn => _token != null;
@@ -50,7 +55,10 @@ class AuthService {
         _employeeData = jsonDecode(employeeDataJson) as Map<String, dynamic>;
       }
 
-      debugPrint('AuthService initialized - Logged in: $isLoggedIn');
+      final shiftStartedStr = await _storage.read(key: _isShiftStartedKey);
+      _isShiftStarted = shiftStartedStr == 'true';
+
+      debugPrint('AuthService initialized - Logged in: $isLoggedIn, Shift Started: $_isShiftStarted');
       return isLoggedIn;
     } catch (e) {
       debugPrint('AuthService initialization error: $e');
@@ -85,13 +93,26 @@ class AuthService {
   Future<void> clearAuthData() async {
     _token = null;
     _employeeData = null;
+    _isShiftStarted = false;
 
     try {
       await _storage.delete(key: _tokenKey);
       await _storage.delete(key: _employeeDataKey);
-      debugPrint('Auth data cleared from secure storage');
+      await _storage.delete(key: _isShiftStartedKey);
+      debugPrint('Auth data and shift status cleared from secure storage');
     } catch (e) {
       debugPrint('Error clearing auth data: $e');
+    }
+  }
+
+  /// Set the current shift status
+  Future<void> setShiftStatus(bool value) async {
+    _isShiftStarted = value;
+    try {
+      await _storage.write(key: _isShiftStartedKey, value: value.toString());
+      debugPrint('Shift status saved securely: $value');
+    } catch (e) {
+      debugPrint('Error saving shift status: $e');
     }
   }
 

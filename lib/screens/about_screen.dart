@@ -12,7 +12,7 @@ class AboutScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         foregroundColor: AppColors.white,
-        title: const Text('About DuneShine'),
+        title: const Text('About DuneShine Employee'),
         centerTitle: true,
         elevation: 0,
       ),
@@ -56,7 +56,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'DuneShine Employee',
+                    'DuneShine Employee App',
                     style: AppTextStyles.headline(context).copyWith(
                       color: AppColors.white,
                       fontSize: 28,
