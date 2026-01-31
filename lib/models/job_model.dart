@@ -63,36 +63,41 @@ class Customer {
   }
 }
 
-class Apartment {
+class Property {
   final int id;
   final String name;
-  final String address;
-  final String buildingNumber;
-  final String zone;
+  final String? address;
+  final String? buildingNumber;
+  final String? zone;
   final String geoLocation;
 
-  Apartment({
+  Property({
     required this.id,
     required this.name,
-    required this.address,
-    required this.buildingNumber,
-    required this.zone,
+    this.address,
+    this.buildingNumber,
+    this.zone,
     required this.geoLocation,
   });
 
-  factory Apartment.fromJson(Map<String, dynamic> json) {
-    return Apartment(
+  factory Property.fromJson(Map<String, dynamic> json) {
+    return Property(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
-      address: json['address'] ?? '',
-      buildingNumber: json['building_number'] ?? '',
-      zone: json['zone'] ?? '',
+      address: json['address'],
+      buildingNumber: json['building_number'],
+      zone: json['zone'],
       geoLocation: json['geo_location'] ?? '',
     );
   }
 
   /// Full address for display
-  String get fullAddress => '$name, $address';
+  String get fullAddress {
+    if (address != null && address!.isNotEmpty) {
+      return '$name, $address';
+    }
+    return name;
+  }
 }
 
 class Vehicle {
@@ -160,7 +165,8 @@ class Booking {
   final int id;
   final int userId;
   final int vehicleId;
-  final int apartmentId;
+  final int? apartmentId;
+  final int? propertyId;
   final int vendorId;
   final String type;
   final String totalPrice;
@@ -169,14 +175,15 @@ class Booking {
   final List<ServicePayload> servicesPayload;
   final String? notes;
   final Customer? customer;
-  final Apartment? apartment;
+  final Property? property;
   final Vehicle? vehicle;
 
   Booking({
     required this.id,
     required this.userId,
     required this.vehicleId,
-    required this.apartmentId,
+    this.apartmentId,
+    this.propertyId,
     required this.vendorId,
     required this.type,
     required this.totalPrice,
@@ -185,7 +192,7 @@ class Booking {
     required this.servicesPayload,
     this.notes,
     this.customer,
-    this.apartment,
+    this.property,
     this.vehicle,
   });
 
@@ -194,7 +201,8 @@ class Booking {
       id: json['id'] ?? 0,
       userId: json['user_id'] ?? 0,
       vehicleId: json['vehicle_id'] ?? 0,
-      apartmentId: json['apartment_id'] ?? 0,
+      apartmentId: json['apartment_id'],
+      propertyId: json['property_id'],
       vendorId: json['vendor_id'] ?? 0,
       type: json['type'] ?? '',
       totalPrice: json['total_price'] ?? '0.00',
@@ -208,14 +216,25 @@ class Booking {
       customer: json['customer'] != null
           ? Customer.fromJson(json['customer'] as Map<String, dynamic>)
           : null,
-      apartment: json['apartment'] != null
-          ? Apartment.fromJson(json['apartment'] as Map<String, dynamic>)
-          : null,
+      property: json['property'] != null
+          ? Property.fromJson(json['property'] as Map<String, dynamic>)
+          : (json['apartment'] != null 
+              ? Property.fromJson(json['apartment'] as Map<String, dynamic>)
+              : null),
       vehicle: json['vehicle'] != null
           ? Vehicle.fromJson(json['vehicle'] as Map<String, dynamic>)
           : null,
     );
   }
+
+  /// Helper to get the property/location name
+  String get locationName => property?.name ?? 'Unknown Location';
+
+  /// Helper to get the full formatted address
+  String get fullAddress => property?.fullAddress ?? 'Unknown Address';
+
+  /// Helper to get geo location coordinates
+  String get geoLocation => property?.geoLocation ?? '';
 }
 
 class Job {

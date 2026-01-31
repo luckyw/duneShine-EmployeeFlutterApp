@@ -160,7 +160,6 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
 
   Widget _buildJobCard(Job job) {
     final vehicle = job.booking?.vehicle;
-    final apartment = job.booking?.apartment;
     final timeSlot = job.timeSlot;
     
     return Container(
@@ -237,7 +236,7 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    apartment?.name ?? 'Location',
+                    job.booking?.locationName ?? 'Property',
                     style: AppTextStyles.caption(context).copyWith(
                       color: AppColors.textGray,
                     ),

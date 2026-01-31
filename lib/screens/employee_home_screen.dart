@@ -701,7 +701,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   /// Job preview item for the pre-shift view
   Widget _buildJobPreviewItem(Job job, int index) {
     final vehicle = job.booking?.vehicle;
-    final apartment = job.booking?.apartment;
     final timeSlot = job.timeSlot;
     
     return Container(
@@ -736,7 +735,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  apartment?.name ?? 'Location',
+                  job.booking?.locationName ?? 'Property',
                   style: AppTextStyles.caption(context).copyWith(
                     color: AppColors.textGray,
                   ),
@@ -1006,12 +1005,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     required bool isNextJob,
   }) {
     final vehicle = job.booking?.vehicle;
-    final apartment = job.booking?.apartment;
     final timeSlot = job.timeSlot;
     final booking = job.booking;
     
     final carName = vehicle?.displayName ?? 'Unknown Vehicle';
-    final location = apartment?.fullAddress ?? 'Unknown Location';
+    final location = booking?.locationName ?? 'Unknown Property';
     final timeLabel = isNextJob 
         ? 'NEXT JOB - ${timeSlot?.formattedStartTime ?? ''}' 
         : 'UPCOMING - ${timeSlot?.formattedStartTime ?? ''}';
@@ -1097,12 +1095,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     required Job job,
   }) {
     final vehicle = job.booking?.vehicle;
-    final apartment = job.booking?.apartment;
     final timeSlot = job.timeSlot;
     final booking = job.booking;
     
     final carName = vehicle?.displayName ?? 'Unknown Vehicle';
-    final location = apartment?.fullAddress ?? 'Unknown Location';
+    final location = booking?.fullAddress ?? 'Unknown Location';
     
     // Calculate total price from services
     double totalPrice = 0;

@@ -121,8 +121,8 @@ class _JobCompletedScreenState extends State<JobCompletedScreen>
                         _buildResultRow('Employee', widget.employeeName),
                         if (widget.job?.booking?.vehicle != null)
                           _buildResultRow('Vehicle', widget.job!.booking!.vehicle!.displayName),
-                        if (widget.job?.booking?.apartment != null)
-                          _buildResultRow('Location', widget.job!.booking!.apartment!.name),
+                        if (widget.job?.booking != null)
+                          _buildResultRow('Location', widget.job!.booking!.locationName),
                         if (widget.job?.booking?.servicesPayload.isNotEmpty == true)
                           _buildResultRow('Services', widget.job!.booking!.servicesPayload.map((s) => s.name).join(', ')),
                         _buildResultRow('Amount Earned', 'AED ${widget.earnedAmount.toStringAsFixed(2)}'),

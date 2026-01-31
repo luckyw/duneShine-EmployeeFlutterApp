@@ -256,15 +256,14 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   }
 
   Widget _buildJobContent() {
-    final job = _job!;
-    final vehicle = job.booking?.vehicle;
-    final apartment = job.booking?.apartment;
-    final booking = job.booking;
+    final booking = _job!.booking;
+    final property = booking?.property;
     final customer = booking?.customer;
+    final vehicle = booking?.vehicle;
     
     final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
     final carColor = vehicle?.color ?? 'Unknown';
-    final jobId = 'JOB-${job.id}';
+    final jobId = 'JOB-${_job!.id}';
     final employeeName = AuthService().employeeName;
     
     // Calculate total price from services
@@ -406,7 +405,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Service Location',
+                              'Property Details',
                               style: AppTextStyles.caption(context).copyWith(
                                 color: AppColors.lightGray,
                                 fontWeight: FontWeight.w500,
@@ -414,7 +413,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              apartment?.name ?? 'Unknown Location',
+                              booking?.locationName ?? 'Unknown Property',
                               style: AppTextStyles.body(context).copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.darkNavy,
@@ -422,16 +421,16 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              apartment?.address ?? '',
+                              booking?.fullAddress ?? '',
                               style: AppTextStyles.caption(context).copyWith(
                                 color: AppColors.lightGray,
                                 fontSize: 13,
                               ),
                             ),
-                            if (apartment?.zone != null) ...[
+                            if (property?.zone != null) ...[
                               const SizedBox(height: 2),
                               Text(
-                                apartment!.zone,
+                                property!.zone!,
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.lightGray,
                                   fontSize: 13,
@@ -541,13 +540,13 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(job.status).withValues(alpha: 0.1),
+                              color: _getStatusColor(_job!.status).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              job.displayStatus,
+                              _job!.displayStatus,
                               style: AppTextStyles.caption(context).copyWith(
-                                color: _getStatusColor(job.status),
+                                color: _getStatusColor(_job!.status),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

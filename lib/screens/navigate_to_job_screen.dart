@@ -65,10 +65,14 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     }
   }
 
-  /// Parse customer location from apartment geo_location
+  /// Parse customer location from booking property geo_location
   void _parseCustomerLocation() {
-    if (_job?.booking?.apartment?.geoLocation != null) {
-      final geoStr = _job!.booking!.apartment!.geoLocation;
+    print('DEBUG: Attempting to parse customer location...');
+    
+    final geoStr = _job?.booking?.geoLocation;
+    
+    if (geoStr != null && geoStr.isNotEmpty) {
+      print('DEBUG: Found location: $geoStr');
       // Expected format: "lat,lng" e.g., "25.2048,55.2708"
       final parts = geoStr.split(',');
       if (parts.length == 2) {
@@ -76,11 +80,14 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
         final lng = double.tryParse(parts[1].trim());
         if (lat != null && lng != null) {
           _customerLocation = LatLng(lat, lng);
+          print('DEBUG: Successfully parsed destination: $_customerLocation');
           return;
         }
       }
     }
+    
     // Fallback to default if parsing fails
+    print('DEBUG: Falling back to default location (Dubai)');
     _customerLocation = _defaultLocation;
   }
 
@@ -182,16 +189,16 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       );
     }
     
-    // Customer marker (red)
+    // Customer/Property marker
     if (_customerLocation != null) {
-      final apartment = _job?.booking?.apartment;
+      final booking = _job?.booking;
       _markers.add(
         Marker(
           markerId: const MarkerId('customer'),
           position: _customerLocation!,
           infoWindow: InfoWindow(
-            title: apartment?.name ?? 'Customer Location',
-            snippet: apartment?.fullAddress ?? 'Destination',
+            title: booking?.locationName ?? 'Property Location',
+            snippet: booking?.fullAddress ?? 'Destination',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         ),
@@ -396,9 +403,9 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     final String employeeName = args['employeeName'] ?? 'Ahmed';
     final double earnedAmount = (args['earnedAmount'] ?? 120.0).toDouble();
 
-    final apartment = _job?.booking?.apartment;
-    final locationName = apartment?.name ?? 'Customer Location';
-    final locationAddress = apartment?.fullAddress ?? 'Loading...';
+    final booking = _job?.booking;
+    final locationName = booking?.locationName ?? 'Property Location';
+    final locationAddress = booking?.fullAddress ?? 'Loading...';
 
     // Initial camera position
     final initialPosition = _currentPosition != null

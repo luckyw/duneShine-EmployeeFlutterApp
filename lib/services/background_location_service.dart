@@ -120,7 +120,7 @@ class BackgroundLocationService {
       try {
         final position = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.balanced, // Lower accuracy for general tracking
+            accuracy: LocationAccuracy.medium, // Lower accuracy for general tracking
           ),
         );
 
