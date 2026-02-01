@@ -4,6 +4,8 @@ import 'dart:async';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../models/job_model.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class WashProgressScreen extends StatefulWidget {
   const WashProgressScreen({Key? key}) : super(key: key);
@@ -31,6 +33,61 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
+        
+        // If the job is "lean" (missing booking info), fetch full details
+        if (_job!.booking == null) {
+          _fetchFullJobDetails();
+        }
+      } else {
+        // Try to get job ID from jobId argument and fetch
+        final jobIdStr = args['jobId'] as String?;
+        if (jobIdStr != null) {
+          final idStr = jobIdStr.replaceAll('JOB-', '');
+          final jobId = int.tryParse(idStr);
+          if (jobId != null) {
+            _fetchJobById(jobId);
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> _fetchFullJobDetails() async {
+    final token = AuthService().token;
+    if (token == null || _job == null) return;
+
+    final response = await ApiService().getJobDetails(
+      jobId: _job!.id,
+      token: token,
+    );
+
+    if (response['success'] == true && mounted) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobJson = data['job'] as Map<String, dynamic>?;
+      if (jobJson != null) {
+        setState(() {
+          _job = _job!.mergeWith(Job.fromJson(jobJson));
+        });
+      }
+    }
+  }
+
+  Future<void> _fetchJobById(int jobId) async {
+    final token = AuthService().token;
+    if (token == null) return;
+
+    final response = await ApiService().getJobDetails(
+      jobId: jobId,
+      token: token,
+    );
+
+    if (response['success'] == true && mounted) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobJson = data['job'] as Map<String, dynamic>?;
+      if (jobJson != null) {
+        setState(() {
+          _job = Job.fromJson(jobJson);
+        });
       }
     }
   }
