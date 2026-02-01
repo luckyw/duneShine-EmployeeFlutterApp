@@ -631,22 +631,6 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                       children: [
                         Row(
                           children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryTeal,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.primaryTeal.withValues(alpha: 0.4),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
                             if (locationName.isNotEmpty && !locationName.toLowerCase().contains('unknown'))
                               Text(
                                 'En Route to $locationName',
@@ -698,7 +682,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                           child: OutlinedButton.icon(
                             onPressed: _openGoogleMaps,
                             icon: const Icon(Icons.navigation, size: 20),
-                            label: const Text('Open Google Maps'),
+                            label: const Text('Open Maps'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.primaryTeal,
                               side: const BorderSide(color: AppColors.primaryTeal),
