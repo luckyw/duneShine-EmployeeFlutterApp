@@ -36,6 +36,31 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
+        
+        // If the job is "lean" (missing booking info), fetch full details
+        if (_job!.booking == null) {
+          _fetchFullJobDetails();
+        }
+      }
+    }
+  }
+
+  Future<void> _fetchFullJobDetails() async {
+    final token = AuthService().token;
+    if (token == null || _job == null) return;
+
+    final response = await ApiService().getJobDetails(
+      jobId: _job!.id,
+      token: token,
+    );
+
+    if (response['success'] == true && mounted) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobJson = data['job'] as Map<String, dynamic>?;
+      if (jobJson != null) {
+        setState(() {
+          _job = _job!.mergeWith(Job.fromJson(jobJson));
+        });
       }
     }
   }
@@ -125,6 +150,18 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
     if (response['success'] == true) {
       // Photo uploaded, navigate to wash progress screen
       if (mounted) {
+        final jobJson = response['data']?['job'] as Map<String, dynamic>?;
+        Job? nextJob = _job;
+        
+        if (jobJson != null) {
+          final newJob = Job.fromJson(jobJson);
+          if (_job != null) {
+            nextJob = _job!.mergeWith(newJob);
+          } else {
+            nextJob = newJob;
+          }
+        }
+        
         Navigator.pushNamed(
           context,
           '/wash-progress',
@@ -134,7 +171,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
             'carModel': widget.carModel,
             'carColor': widget.carColor,
             'photoPath': _capturedPhoto?.path,
-            'job': _job,
+            'job': nextJob,
           },
         );
       }
@@ -195,7 +232,9 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.carModel,
+                          _job?.booking?.vehicle != null 
+                              ? '${_job!.booking!.vehicle!.brandName} ${_job!.booking!.vehicle!.model}'
+                              : widget.carModel,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -203,7 +242,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                           ),
                         ),
                         Text(
-                          widget.carColor,
+                          _job?.booking?.vehicle?.color ?? widget.carColor,
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,

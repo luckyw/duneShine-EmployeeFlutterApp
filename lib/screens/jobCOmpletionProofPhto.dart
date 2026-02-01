@@ -114,10 +114,21 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
     if (response['success'] == true) {
       // Photo uploaded, navigate to end OTP screen
       if (mounted) {
+        final jobJson = response['data']?['job'] as Map<String, dynamic>?;
+        Job? nextJob = _job;
+        if (jobJson != null) {
+          final newJob = Job.fromJson(jobJson);
+          if (_job != null) {
+            nextJob = _job!.mergeWith(newJob);
+          } else {
+            nextJob = newJob;
+          }
+        }
+
         Navigator.pushNamed(context, '/job-completion-otp', arguments: {
           ...routeArgs,
           'photoPath': _capturedPhoto?.path,
-          'job': _job,
+          'job': nextJob,
           'finishWashResponse': response['data'],
         });
       }
@@ -336,41 +347,6 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                           ],
                         ),
                       ),
-              ),
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Skip Photo?'),
-                      content:
-                          const Text('Please provide a reason for skipping.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, '/job-completion-otp');
-                          },
-                          child: const Text('Skip'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                child: const Text(
-                  'Skip Photo (Requires Reason)',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.darkTeal,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
               ),
               const SizedBox(height: 32),
               SizedBox(

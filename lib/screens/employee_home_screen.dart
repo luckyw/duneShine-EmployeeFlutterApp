@@ -115,7 +115,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     if (response['success'] == true) {
       final data = response['data'] as Map<String, dynamic>;
       final jobsList = data['jobs'] as List<dynamic>? ?? [];
-      
+
       // Update shift status from API response if available
       // The session_status is usually 1 for started and 0 for not started
       if (data['session_status'] != null) {
@@ -195,38 +195,6 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     }
   }
 
-  Future<void> _handleCheckOut() async {
-    final token = AuthService().token;
-    if (token == null) return;
-
-    setState(() {
-      _isAttendanceLoading = true;
-    });
-
-    final result = await ApiService().checkOut(token: token);
-
-    if (mounted) {
-      if (result['success'] == true) {
-        AuthService().setShiftStatus(false);
-        setState(() {
-          _isShiftStarted = false;
-          _isAttendanceLoading = false;
-        });
-        
-        // Stop background tracking service
-        BackgroundLocationService.stop();
-        
-        ToastUtils.showSuccessToast(context, 'Shift ended successfully');
-
-      } else {
-        setState(() {
-          _isAttendanceLoading = false;
-        });
-        ToastUtils.showErrorToast(context, result['message'] ?? 'Failed to end shift');
-
-      }
-    }
-  }
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -726,22 +694,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  vehicle?.displayName ?? 'Vehicle',
-                  style: AppTextStyles.body(context).copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkNavy,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  job.booking?.locationName ?? 'Property',
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.textGray,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                 Text(
+                   vehicle?.displayName ?? 'Vehicle',
+                   style: AppTextStyles.body(context).copyWith(
+                     fontWeight: FontWeight.w600,
+                     color: AppColors.darkNavy,
+                   ),
+                 ),
               ],
             ),
           ),
@@ -835,21 +794,23 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ),
                   ],
                 ),
-                ResponsiveUtils.verticalSpace(context, 8),
-                Row(
-                  children: [
-                    Icon(Icons.location_on, color: iconColor, size: ResponsiveUtils.r(context, 20)),
-                    ResponsiveUtils.horizontalSpace(context, 8),
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: textColor,
+                if (location.isNotEmpty && !location.toLowerCase().contains('unknown')) ...[
+                  ResponsiveUtils.verticalSpace(context, 8),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, color: iconColor, size: ResponsiveUtils.r(context, 20)),
+                      ResponsiveUtils.horizontalSpace(context, 8),
+                      Expanded(
+                        child: Text(
+                          location,
+                          style: AppTextStyles.caption(context).copyWith(
+                            color: textColor,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -938,22 +899,24 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.location_on,
-                  color: AppColors.textGray, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  location,
-                  style: AppTextStyles.caption(context).copyWith(
-                    color: AppColors.textGray,
+          if (location.isNotEmpty && !location.toLowerCase().contains('unknown')) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.location_on,
+                    color: AppColors.textGray, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    location,
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: AppColors.textGray,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
@@ -1007,13 +970,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     final vehicle = job.booking?.vehicle;
     final timeSlot = job.timeSlot;
     final booking = job.booking;
-    
+
     final carName = vehicle?.displayName ?? 'Unknown Vehicle';
-    final location = booking?.locationName ?? 'Unknown Property';
-    final timeLabel = isNextJob 
-        ? 'NEXT JOB - ${timeSlot?.formattedStartTime ?? ''}' 
+    final timeLabel = isNextJob
+        ? 'NEXT JOB - ${timeSlot?.formattedStartTime ?? ''}'
         : 'UPCOMING - ${timeSlot?.formattedStartTime ?? ''}';
-    
+
     // Calculate total price from services
     double totalPrice = 0;
     if (booking != null) {
@@ -1025,8 +987,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     // Common arguments for all navigations
     final commonArgs = {
       'jobId': 'JOB-${job.id}',
-      'carModel': vehicle?.brandName ?? 'Unknown',
-      'carColor': vehicle?.color ?? '',
+      'carModel': vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle',
+      'carColor': vehicle?.color ?? 'Unknown',
       'employeeName': AuthService().employeeName,
       'earnedAmount': totalPrice,
       'job': job,
@@ -1065,7 +1027,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     return _buildJobCard(
       time: timeLabel,
       car: carName,
-      location: location,
+      location: booking?.fullAddress ?? '',
       status: isNextJob ? job.displayStatus : job.displayStatus,
       buttonText: buttonText,
       bgColor: isNextJob ? AppColors.primaryTeal : AppColors.white,
@@ -1099,7 +1061,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     final booking = job.booking;
     
     final carName = vehicle?.displayName ?? 'Unknown Vehicle';
-    final location = booking?.fullAddress ?? 'Unknown Location';
+    final location = booking?.fullAddress ?? '';
     
     // Calculate total price from services
     double totalPrice = 0;

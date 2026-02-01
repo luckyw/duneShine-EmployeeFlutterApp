@@ -29,6 +29,31 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
+        
+        // If the job is "lean" (missing booking info), fetch full details
+        if (_job!.booking == null) {
+          _fetchFullJobDetails();
+        }
+      }
+    }
+  }
+
+  Future<void> _fetchFullJobDetails() async {
+    final token = AuthService().token;
+    if (token == null || _job == null) return;
+
+    final response = await ApiService().getJobDetails(
+      jobId: _job!.id,
+      token: token,
+    );
+
+    if (response['success'] == true && mounted) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobJson = data['job'] as Map<String, dynamic>?;
+      if (jobJson != null) {
+        setState(() {
+          _job = _job!.mergeWith(Job.fromJson(jobJson));
+        });
       }
     }
   }

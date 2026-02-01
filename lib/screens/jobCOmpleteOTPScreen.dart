@@ -126,6 +126,17 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
     if (response['success'] == true) {
       // Job completed, navigate to success screen
       if (mounted) {
+        final jobJson = response['data']?['job'] as Map<String, dynamic>?;
+        Job? nextJob = _job;
+        if (jobJson != null) {
+          final newJob = Job.fromJson(jobJson);
+          if (_job != null) {
+             nextJob = _job!.mergeWith(newJob);
+          } else {
+             nextJob = newJob;
+          }
+        }
+
         Navigator.pushNamed(
           context,
           '/job-completed',
@@ -133,7 +144,7 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
             'employeeName': routeArgs['employeeName'] ?? AuthService().employeeName,
             'earnedAmount': (routeArgs['earnedAmount'] ?? 120.0).toDouble(),
             'jobId': routeArgs['jobId'] ?? 'JOB-$jobId',
-            'job': _job,
+            'job': nextJob,
             'completeResponse': response['data'],
           },
         );

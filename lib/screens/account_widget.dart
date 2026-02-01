@@ -14,6 +14,7 @@ import 'help_support_screen.dart';
 import 'customer_lookup_screen.dart';
 
 import '../utils/toast_utils.dart';
+import '../services/background_location_service.dart';
 
 
 class AccountWidget extends StatefulWidget {
@@ -109,13 +110,34 @@ class _AccountWidgetState extends State<AccountWidget> {
           _isShiftStarted = false;
           _isEndingShift = false;
         });
+        
+        // Stop background tracking service
+        BackgroundLocationService.stop();
+        
         ToastUtils.showSuccessToast(context, 'Shift ended successfully');
         widget.onShiftEnded?.call();
       } else {
         setState(() {
           _isEndingShift = false;
         });
-        ToastUtils.showErrorToast(context, result['message'] ?? 'Failed to end shift');
+        
+        final String errorMessage = result['message']?.toString() ?? 'Failed to end shift';
+        
+        // If backend says no active session, we should just sync locally as the goal of ending the shift is achieved
+        if (errorMessage.toLowerCase().contains('no active session')) {
+          _authService.setShiftStatus(false);
+          setState(() {
+            _isShiftStarted = false;
+          });
+          
+          // Stop background tracking service
+          BackgroundLocationService.stop();
+          
+          ToastUtils.showSuccessToast(context, 'Shift status synchronized');
+          widget.onShiftEnded?.call();
+        } else {
+          ToastUtils.showErrorToast(context, errorMessage);
+        }
       }
     }
   }

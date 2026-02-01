@@ -61,6 +61,35 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
         _parseCustomerLocation();
+        
+        // If the job is "lean" (missing booking info), fetch full details
+        if (_job!.booking == null) {
+          _fetchFullJobDetails();
+        }
+      }
+    }
+  }
+
+  Future<void> _fetchFullJobDetails() async {
+    final token = AuthService().token;
+    if (token == null || _job == null) return;
+
+    final response = await ApiService().getJobDetails(
+      jobId: _job!.id,
+      token: token,
+    );
+
+    if (response['success'] == true && mounted) {
+      final data = response['data'] as Map<String, dynamic>;
+      final jobJson = data['job'] as Map<String, dynamic>?;
+      if (jobJson != null) {
+        setState(() {
+          // Merge to preserve statuses but gain booking details
+          _job = _job!.mergeWith(Job.fromJson(jobJson));
+          _parseCustomerLocation();
+          _updateMarkers();
+          _fetchRoute();
+        });
       }
     }
   }
@@ -276,20 +305,46 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   }
 
   /// Open external Google Maps for turn-by-turn navigation
+  /// Open external Google Maps for turn-by-turn navigation
   Future<void> _openGoogleMaps() async {
     if (_customerLocation == null) return;
     
-    final url = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=${_customerLocation!.latitude},${_customerLocation!.longitude}&travelmode=driving',
-    );
+    final lat = _customerLocation!.latitude;
+    final lng = _customerLocation!.longitude;
+    final title = _job?.booking?.locationName ?? 'Destination';
     
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
+    // Platform specific URLs
+    final Uri googleMapsUrl = Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
+    final Uri appleMapsUrl = Uri.parse('https://maps.apple.com/?daddr=$lat,$lng');
+    final Uri androidUri = Uri.parse('geo:$lat,$lng?q=$lat,$lng($title)');
+    final Uri webUrl = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
+
+    try {
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        if (await canLaunchUrl(googleMapsUrl)) {
+          await launchUrl(googleMapsUrl);
+        } else if (await canLaunchUrl(appleMapsUrl)) {
+          await launchUrl(appleMapsUrl);
+        } else {
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        }
+      } else {
+        // Android
+        if (await canLaunchUrl(androidUri)) {
+          await launchUrl(androidUri);
+        } else {
+          await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+        }
+      }
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open Google Maps')),
+          SnackBar(content: Text('Could not match map: $e')),
         );
+      }
+      // Last resort fallback
+      if (await canLaunchUrl(webUrl)) {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
       }
     }
   }
@@ -343,9 +398,16 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       final data = response['data'] as Map<String, dynamic>;
       final jobJson = data['job'] as Map<String, dynamic>?;
       
-      Job updatedJob = _job!;
+      // Update local job with new status
+      Job? updatedJob = _job;
       if (jobJson != null) {
-        updatedJob = Job.fromJson(jobJson);
+        final newJob = Job.fromJson(jobJson);
+        if (_job != null) {
+          updatedJob = _job!.mergeWith(newJob);
+        } else {
+          updatedJob = newJob;
+        }
+
         setState(() {
           _job = updatedJob;
           _hasArrived = true;
@@ -356,29 +418,33 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       _locationService.stopSendingLocation();
 
       if (mounted) {
-        final vehicle = updatedJob.booking?.vehicle;
+        final vehicle = updatedJob?.booking?.vehicle;
         final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
         final carColor = vehicle?.color ?? 'Unknown';
         final employeeName = AuthService().employeeName;
         
         double earnedAmount = 0;
-        if (updatedJob.booking != null) {
-          for (var service in updatedJob.booking!.servicesPayload) {
+        if (updatedJob?.booking != null) {
+          for (var service in updatedJob!.booking!.servicesPayload) {
             earnedAmount += double.tryParse(service.price) ?? 0;
           }
         }
+
+        // Retrieve fallback args from route settings
+        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+        final fallbackJobId = args['jobId'];
 
         Navigator.pushNamed(
           context,
           '/job-verification',
           arguments: {
-            'jobId': 'JOB-${updatedJob.id}',
+            'jobId': updatedJob != null ? 'JOB-${updatedJob.id}' : fallbackJobId,
             'carModel': carModel,
             'carColor': carColor,
             'employeeName': employeeName,
             'earnedAmount': earnedAmount,
             'job': updatedJob,
-            'startOtp': updatedJob.startOtp,
+            'startOtp': updatedJob?.startOtp,
           },
         );
       }
@@ -404,8 +470,14 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     final double earnedAmount = (args['earnedAmount'] ?? 120.0).toDouble();
 
     final booking = _job?.booking;
-    final locationName = booking?.locationName ?? 'Property Location';
-    final locationAddress = booking?.fullAddress ?? 'Loading...';
+    final vehicle = booking?.vehicle;
+    
+    // Prioritize job model data over passed arguments
+    final String currentCarModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : carModel;
+    final String currentCarColor = vehicle?.color ?? carColor;
+    
+    final locationName = booking?.locationName ?? '';
+    final locationAddress = booking?.fullAddress ?? '';
 
     // Initial camera position
     final initialPosition = _currentPosition != null
@@ -575,13 +647,14 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Text(
-                              'En Route to $locationName',
-                              style: AppTextStyles.title(context).copyWith(
-                                fontSize: 18,
-                                color: AppColors.darkNavy,
+                            if (locationName.isNotEmpty && !locationName.toLowerCase().contains('unknown'))
+                              Text(
+                                'En Route to $locationName',
+                                style: AppTextStyles.title(context).copyWith(
+                                  fontSize: 18,
+                                  color: AppColors.darkNavy,
+                                ),
                               ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -591,29 +664,31 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                                 color: AppColors.primaryTeal, size: 20),
                             const SizedBox(width: 8),
                             Text(
-                              '$carModel - $carColor',
+                              '$currentCarModel - $currentCarColor',
                               style: AppTextStyles.body(context).copyWith(
                                 color: AppColors.darkNavy,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on,
-                                color: AppColors.primaryTeal, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                locationAddress,
-                                style: AppTextStyles.body(context).copyWith(
-                                  color: AppColors.darkNavy,
+                        if (locationAddress.isNotEmpty && !locationAddress.toLowerCase().contains('unknown')) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.location_on,
+                                  color: AppColors.primaryTeal, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  locationAddress,
+                                  style: AppTextStyles.body(context).copyWith(
+                                    color: AppColors.darkNavy,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                         const SizedBox(height: 20),
                         
                         // Open Google Maps button

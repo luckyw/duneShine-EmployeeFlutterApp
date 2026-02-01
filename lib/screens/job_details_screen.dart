@@ -119,7 +119,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       // Update local job with new status
       Job updatedJob = _job!;
       if (jobJson != null) {
-        updatedJob = Job.fromJson(jobJson);
+        // Use mergeWith to preserve booking details from the original job
+        updatedJob = _job!.mergeWith(Job.fromJson(jobJson));
         setState(() {
           _job = updatedJob;
         });
@@ -381,85 +382,103 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Divider(height: 1),
-                  const SizedBox(height: 16),
-                  // Address Section
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                  const Divider(height: 40),
+                  if (booking?.fullAddress != null && 
+                      booking!.fullAddress.isNotEmpty && 
+                      !booking.fullAddress.toLowerCase().contains('unknown')) ...[
+                    const SizedBox(height: 16),
+                    // Address Section
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.location_on,
-                          color: Colors.redAccent,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Property Details',
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.lightGray,
-                                fontWeight: FontWeight.w500,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Property Details',
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: AppColors.lightGray,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              booking?.locationName ?? 'Unknown Property',
-                              style: AppTextStyles.body(context).copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.darkNavy,
+                              const SizedBox(height: 4),
+                              Text(
+                                booking.locationName,
+                                style: AppTextStyles.body(context).copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.darkNavy,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              booking?.fullAddress ?? '',
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.lightGray,
-                                fontSize: 13,
-                              ),
-                            ),
-                            if (property?.zone != null) ...[
                               const SizedBox(height: 2),
                               Text(
-                                property!.zone!,
+                                booking.fullAddress,
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.lightGray,
                                   fontSize: 13,
                                 ),
                               ),
+                              if (property?.zone != null) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  property!.zone!,
+                                  style: AppTextStyles.caption(context).copyWith(
+                                    color: AppColors.lightGray,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(height: 1),
-                  const SizedBox(height: 16),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                  ],
                   // Customer Info Section
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                          shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.person,
-                          color: AppColors.primaryTeal,
-                          size: 20,
-                        ),
+                        child: customer?.idProofImageUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(22),
+                                child: Image.network(
+                                  customer!.idProofImageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                    Icons.person,
+                                    color: AppColors.primaryTeal,
+                                    size: 20,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person,
+                                color: AppColors.primaryTeal,
+                                size: 20,
+                              ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
