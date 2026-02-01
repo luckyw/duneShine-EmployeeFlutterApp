@@ -44,8 +44,8 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   // Google Directions API key (same as Maps key)
   static const String _googleApiKey = 'AIzaSyD3Zy41HBhg8K73xjRMeZyCRceJfShzkMs';
   
-  // Default Dubai location (fallback)
-  static const LatLng _defaultLocation = LatLng(25.2048, 55.2708);
+  // Default location (fallback) - Bhopal, India
+  static const LatLng _defaultLocation = LatLng(23.030451, 78.076358);
 
   @override
   void initState() {
@@ -116,7 +116,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     }
     
     // Fallback to default if parsing fails
-    print('DEBUG: Falling back to default location (Dubai)');
+    print('DEBUG: Falling back to default location (Bhopal)');
     _customerLocation = _defaultLocation;
   }
 
