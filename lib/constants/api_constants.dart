@@ -15,6 +15,7 @@ class ApiConstants {
   static const String availabilityEndpoint = '/api/employee/availability';
   static const String todaysJobsEndpoint = '/api/employee/jobs/today';
   static const String jobDetailsEndpoint = '/api/employee/jobs'; // /{id}
+  static const String propertyDetailsEndpoint = '/api/properties'; // /{id}
   static const String checkInEndpoint = '/api/employee/attendance/check-in';
   static const String checkOutEndpoint = '/api/employee/attendance/check-out';
 
@@ -25,6 +26,7 @@ class ApiConstants {
   static String get availabilityUrl => '$baseUrl$availabilityEndpoint';
   static String get todaysJobsUrl => '$baseUrl$todaysJobsEndpoint';
   static String jobDetailsUrl(int jobId) => '$baseUrl$jobDetailsEndpoint/$jobId';
+  static String propertyDetailsUrl(int propertyId) => '$baseUrl$propertyDetailsEndpoint/$propertyId';
   static String navigateToJobUrl(int jobId) => '$baseUrl$jobDetailsEndpoint/$jobId/navigate';
   static String arrivedAtJobUrl(int jobId) => '$baseUrl$jobDetailsEndpoint/$jobId/reached';
   static String verifyStartOtpUrl(int jobId) => '$baseUrl$jobDetailsEndpoint/$jobId/verify-start-otp';

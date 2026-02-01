@@ -45,6 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>geo</string>
+		<string>comgooglemaps</string>
+		<string>appleMaps</string>
+	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>DuneShine Employee needs your location to navigate to customers and share your location.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

@@ -285,6 +285,44 @@ class ApiService {
     }
   }
 
+  /// Get property details by property ID
+  /// Returns a map containing the property data
+  Future<Map<String, dynamic>> getPropertyDetails({
+    required int propertyId,
+    required String token,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse(ApiConstants.propertyDetailsUrl(propertyId)),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to fetch property details',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
   /// Start navigation to a job - updates status to "en_route"
   /// Returns a map containing the updated job data
   Future<Map<String, dynamic>> navigateToJob({

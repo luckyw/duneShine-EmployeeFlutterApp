@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+@pragma('vm:entry-point')
 class BackgroundLocationService {
   static const String notificationChannelId = 'foreground_service';
   static const int notificationId = 888;

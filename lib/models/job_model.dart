@@ -45,12 +45,14 @@ class Customer {
   final String name;
   final String email;
   final String phone;
+  final String? idProofImage;
 
   Customer({
     required this.id,
     required this.name,
     required this.email,
     required this.phone,
+    this.idProofImage,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) {
@@ -59,7 +61,20 @@ class Customer {
       name: json['name'] ?? 'Unknown',
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
+      idProofImage: json['id_proof_image'],
     );
+  }
+
+  /// Get full ID proof image URL
+  String? get idProofImageUrl {
+    if (idProofImage != null && idProofImage!.isNotEmpty) {
+      // Check if it's already a full URL
+      if (idProofImage!.startsWith('http')) {
+        return idProofImage;
+      }
+      return 'https://duneshine.bztechhub.com/storage/$idProofImage';
+    }
+    return null;
   }
 }
 
@@ -235,6 +250,43 @@ class Booking {
 
   /// Helper to get geo location coordinates
   String get geoLocation => property?.geoLocation ?? '';
+
+  /// Create a copy of this Booking with optionally replaced fields
+  Booking copyWith({
+    int? id,
+    int? userId,
+    int? vehicleId,
+    int? apartmentId,
+    int? propertyId,
+    int? vendorId,
+    String? type,
+    String? totalPrice,
+    String? paymentStatus,
+    String? status,
+    List<ServicePayload>? servicesPayload,
+    String? notes,
+    Customer? customer,
+    Property? property,
+    Vehicle? vehicle,
+  }) {
+    return Booking(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      vehicleId: vehicleId ?? this.vehicleId,
+      apartmentId: apartmentId ?? this.apartmentId,
+      propertyId: propertyId ?? this.propertyId,
+      vendorId: vendorId ?? this.vendorId,
+      type: type ?? this.type,
+      totalPrice: totalPrice ?? this.totalPrice,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      status: status ?? this.status,
+      servicesPayload: servicesPayload ?? this.servicesPayload,
+      notes: notes ?? this.notes,
+      customer: customer ?? this.customer,
+      property: property ?? this.property,
+      vehicle: vehicle ?? this.vehicle,
+    );
+  }
 }
 
 class Job {
@@ -352,5 +404,67 @@ class Job {
       default:
         return status.replaceAll('_', ' ').toUpperCase();
     }
+  }
+
+  /// Create a copy of this Job with optionally replaced fields
+  Job copyWith({
+    int? id,
+    int? bookingId,
+    String? scheduledDate,
+    int? timeSlotId,
+    int? employeeId,
+    String? status,
+    String? startOtp,
+    String? startOtpVerifiedAt,
+    String? endOtp,
+    String? endOtpVerifiedAt,
+    String? enRouteAt,
+    String? arrivedAt,
+    String? startedAt,
+    String? washedAt,
+    String? completedAt,
+    List<String>? photosBefore,
+    List<String>? photosAfter,
+    List<String>? photosBeforeUrls,
+    List<String>? photosAfterUrls,
+    Booking? booking,
+    TimeSlot? timeSlot,
+    String? createdAt,
+    String? updatedAt,
+  }) {
+    return Job(
+      id: id ?? this.id,
+      bookingId: bookingId ?? this.bookingId,
+      scheduledDate: scheduledDate ?? this.scheduledDate,
+      timeSlotId: timeSlotId ?? this.timeSlotId,
+      employeeId: employeeId ?? this.employeeId,
+      status: status ?? this.status,
+      startOtp: startOtp ?? this.startOtp,
+      startOtpVerifiedAt: startOtpVerifiedAt ?? this.startOtpVerifiedAt,
+      endOtp: endOtp ?? this.endOtp,
+      endOtpVerifiedAt: endOtpVerifiedAt ?? this.endOtpVerifiedAt,
+      enRouteAt: enRouteAt ?? this.enRouteAt,
+      arrivedAt: arrivedAt ?? this.arrivedAt,
+      startedAt: startedAt ?? this.startedAt,
+      washedAt: washedAt ?? this.washedAt,
+      completedAt: completedAt ?? this.completedAt,
+      photosBefore: photosBefore ?? this.photosBefore,
+      photosAfter: photosAfter ?? this.photosAfter,
+      photosBeforeUrls: photosBeforeUrls ?? this.photosBeforeUrls,
+      photosAfterUrls: photosAfterUrls ?? this.photosAfterUrls,
+      booking: booking ?? this.booking,
+      timeSlot: timeSlot ?? this.timeSlot,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  /// Merges this job with another job (typically from a status update API)
+  /// while preserving nested objects (booking, timeSlot) if the other is null.
+  Job mergeWith(Job other) {
+    return other.copyWith(
+      booking: other.booking ?? booking,
+      timeSlot: other.timeSlot ?? timeSlot,
+    );
   }
 }
