@@ -1,6 +1,8 @@
 /// Job Model Classes for Employee Jobs API
 /// Parses the response from /api/employee/jobs/today
 
+import '../constants/api_constants.dart';
+
 class TimeSlot {
   final int id;
   final String startTime;
@@ -72,7 +74,7 @@ class Customer {
       if (idProofImage!.startsWith('http')) {
         return idProofImage;
       }
-      return 'https://duneshine.bztechhub.com/storage/$idProofImage';
+      return ApiConstants.storageUrl(idProofImage!);
     }
     return null;
   }

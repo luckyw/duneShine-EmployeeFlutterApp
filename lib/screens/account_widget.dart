@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../constants/api_constants.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../utils/responsive_utils.dart';
@@ -424,7 +425,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                   _buildMenuItem(
                     icon: Icons.info_outline,
                     title: 'About DuneShine',
-                    onTap: () => _launchURL('https://duneshine.bztechhub.com'),
+                    onTap: () => _launchURL(ApiConstants.baseUrl),
                   ),
                    _buildMenuItem(
                     icon: Icons.autorenew,

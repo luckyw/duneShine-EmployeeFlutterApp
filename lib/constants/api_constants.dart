@@ -5,13 +5,18 @@ class ApiConstants {
   // Private constructor to prevent instantiation
   ApiConstants._();
 
-  /// Environment base URLs — change only [baseUrl] below to switch environment.
-  static const String _baseUrlProd = 'https://duneshine.bztechhub.com';
-  static const String _baseUrlAe = 'https://duneshine.ae';
+  /// Environment base URLs — change [_defaultBaseUrl] to switch default env.
+  static const String _baseUrlDev = 'https://duneshine.bztechhub.com';
+  static const String _baseUrlProd = 'https://duneshine.ae';
 
-  /// Active base URL — change this single line to switch between prod and AE.
-  static const String baseUrl = _baseUrlProd;
-  // static const String baseUrl = _baseUrlAe;
+  /// Default base URL — change this single line to switch between prod and AE.
+  /// CI can override via: flutter build apk --dart-define=BASE_URL=https://...
+  static const String _defaultBaseUrl = _baseUrlDev;
+  static String get baseUrl =>
+      String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrl);
+
+  /// Full URL for a storage path (e.g. image path from API).
+  static String storageUrl(String path) => '$baseUrl/storage/$path';
 
   /// API Endpoints
   static const String loginEndpoint = '/api/employee/login';

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../constants/api_constants.dart';
+
 /// Auth Service for managing authentication state
 /// Uses flutter_secure_storage for persistent, encrypted token storage
 /// - iOS: Uses Keychain
@@ -129,7 +131,7 @@ class AuthService {
   String? get employeeProfileImage {
     final image = _employeeData?['profile_image'];
     if (image != null && image.toString().isNotEmpty) {
-      return 'https://duneshine.bztechhub.com/storage/$image';
+      return ApiConstants.storageUrl(image.toString());
     }
     return null;
   }

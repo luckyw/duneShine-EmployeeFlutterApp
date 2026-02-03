@@ -1,6 +1,8 @@
 /// Employee Profile Model
 /// Represents the employee profile data returned from /api/employee/profile
 
+import '../constants/api_constants.dart';
+
 class VendorModel {
   final int id;
   final String name;
@@ -91,7 +93,7 @@ class VendorModel {
   /// Get full logo URL
   String? get logoUrl {
     if (logo != null && logo!.isNotEmpty) {
-      return 'https://duneshine.bztechhub.com/storage/$logo';
+      return ApiConstants.storageUrl(logo!);
     }
     return null;
   }
@@ -197,7 +199,7 @@ class EmployeeProfileModel {
   /// Get full ID proof image URL
   String? get idProofImageUrl {
     if (idProofImage != null && idProofImage!.isNotEmpty) {
-      return 'https://duneshine.bztechhub.com/storage/$idProofImage';
+      return ApiConstants.storageUrl(idProofImage!);
     }
     return null;
   }
