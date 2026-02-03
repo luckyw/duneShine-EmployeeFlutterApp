@@ -6,6 +6,7 @@ import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
+import '../utils/responsive_utils.dart';
 
 
 class JobVerificationScreen extends StatefulWidget {
@@ -159,163 +160,165 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
           'Job Verification',
           style: AppTextStyles.headline(context).copyWith(
             color: AppColors.white,
-            fontSize: 20, // AppBar size override
+            fontSize: ResponsiveUtils.sp(context, 20), // AppBar size override
           ),
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.darkNavy,
-                    width: 2,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                    border: Border.all(
+                      color: AppColors.darkNavy,
+                      width: ResponsiveUtils.w(context, 2),
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Enter Customer PIN',
-                      style: AppTextStyles.headline(context).copyWith(
-                        fontSize: 20,
-                        color: AppColors.darkNavy,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Enter Customer PIN',
+                        style: AppTextStyles.headline(context).copyWith(
+                          fontSize: ResponsiveUtils.sp(context, 20),
+                          color: AppColors.darkNavy,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Ask the customer for the 4-digit PIN\nto start the wash.',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.body(context).copyWith(
-                        color: AppColors.lightGray,
+                      ResponsiveUtils.verticalSpace(context, 12),
+                      Text(
+                        'Ask the customer for the 4-digit PIN\nto start the wash.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.body(context).copyWith(
+                          color: AppColors.lightGray,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        4,
-                        (index) => SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: KeyboardListener(
-                            focusNode: FocusNode(), // Node for listener
-                            onKeyEvent: (event) {
-                              if (event is KeyDownEvent &&
-                                  event.logicalKey ==
-                                      LogicalKeyboardKey.backspace) {
-                                if (_pinControllers[index].text.isEmpty &&
-                                    index > 0) {
-                                  _focusNodes[index - 1].requestFocus();
-                                }
-                              }
-                            },
-                            child: TextField(
-                              controller: _pinControllers[index],
-                              focusNode: _focusNodes[index],
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              maxLength: 1,
-                              onChanged: (value) {
-                                if (value.isNotEmpty) {
-                                  if (index < 3) {
-                                    _focusNodes[index + 1].requestFocus();
-                                  } else {
-                                    // Last digit entered, dismiss keyboard
-                                    _focusNodes[index].unfocus();
-                                  }
-                                } else {
-                                  // Value became empty
-                                  if (index > 0) {
+                      ResponsiveUtils.verticalSpace(context, 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: List.generate(
+                          4,
+                          (index) => SizedBox(
+                            width: ResponsiveUtils.w(context, 60),
+                            height: ResponsiveUtils.h(context, 60),
+                            child: KeyboardListener(
+                              focusNode: FocusNode(), // Node for listener
+                              onKeyEvent: (event) {
+                                if (event is KeyDownEvent &&
+                                    event.logicalKey ==
+                                        LogicalKeyboardKey.backspace) {
+                                  if (_pinControllers[index].text.isEmpty &&
+                                      index > 0) {
                                     _focusNodes[index - 1].requestFocus();
                                   }
                                 }
-                                setState(() {});
                               },
-                              decoration: InputDecoration(
-                                counterText: '',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.darkNavy,
-                                    width: 2,
+                              child: TextField(
+                                controller: _pinControllers[index],
+                                focusNode: _focusNodes[index],
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                maxLength: 1,
+                                onChanged: (value) {
+                                  if (value.isNotEmpty) {
+                                    if (index < 3) {
+                                      _focusNodes[index + 1].requestFocus();
+                                    } else {
+                                      // Last digit entered, dismiss keyboard
+                                      _focusNodes[index].unfocus();
+                                    }
+                                  } else {
+                                    // Value became empty
+                                    if (index > 0) {
+                                      _focusNodes[index - 1].requestFocus();
+                                    }
+                                  }
+                                  setState(() {});
+                                },
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                    borderSide: BorderSide(
+                                      color: AppColors.darkNavy,
+                                      width: ResponsiveUtils.w(context, 2),
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                    borderSide: BorderSide(
+                                      color: AppColors.darkNavy,
+                                      width: ResponsiveUtils.w(context, 2),
+                                    ),
                                   ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.darkNavy,
-                                    width: 2,
-                                  ),
+                                style: AppTextStyles.title(context).copyWith(
+                                  fontSize: ResponsiveUtils.sp(context, 24),
+                                  color: AppColors.darkNavy,
                                 ),
-                              ),
-                              style: AppTextStyles.title(context).copyWith(
-                                fontSize: 24,
-                                color: AppColors.darkNavy,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: (_isPinComplete() && !_isVerifying)
-                            ? _verifyAndStart
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.amber,
-                          disabledBackgroundColor:
-                              AppColors.amber.withOpacity(0.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      ResponsiveUtils.verticalSpace(context, 32),
+                      SizedBox(
+                        width: double.infinity,
+                        height: ResponsiveUtils.h(context, 56),
+                        child: ElevatedButton(
+                          onPressed: (_isPinComplete() && !_isVerifying)
+                              ? _verifyAndStart
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.amber,
+                            disabledBackgroundColor:
+                                AppColors.amber.withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                            ),
+                          ),
+                          child: _isVerifying
+                              ? SizedBox(
+                                  width: ResponsiveUtils.w(context, 24),
+                                  height: ResponsiveUtils.h(context, 24),
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.darkNavy,
+                                    strokeWidth: ResponsiveUtils.w(context, 2),
+                                  ),
+                                )
+                              : Text(
+                                  'Verify & Start Wash',
+                                  style: AppTextStyles.button(context).copyWith(
+                                    color: AppColors.darkNavy,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      ResponsiveUtils.verticalSpace(context, 16),
+                      GestureDetector(
+                        onTap: () {
+                          ToastUtils.showSuccessToast(context, 'PIN resent');
+        
+                        },
+                        child: Text(
+                          'Resend PIN',
+                          style: AppTextStyles.body(context).copyWith(
+                            color: AppColors.primaryTeal,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
-                        child: _isVerifying
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.darkNavy,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                'Verify & Start Wash',
-                                style: AppTextStyles.button(context).copyWith(
-                                  color: AppColors.darkNavy,
-                                ),
-                              ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        ToastUtils.showSuccessToast(context, 'PIN resent');
-
-                      },
-                      child: Text(
-                        'Resend PIN',
-                        style: AppTextStyles.body(context).copyWith(
-                          color: AppColors.primaryTeal,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

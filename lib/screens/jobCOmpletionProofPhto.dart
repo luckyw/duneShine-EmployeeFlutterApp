@@ -5,6 +5,7 @@ import 'package:employeapplication/constants/colors.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/responsive_utils.dart';
 
 class JobCompletionProofScreen extends StatefulWidget {
   const JobCompletionProofScreen({Key? key}) : super(key: key);
@@ -176,48 +177,48 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Job Completion Proof',
           style: TextStyle(
             color: AppColors.white,
-            fontSize: 20,
+            fontSize: ResponsiveUtils.sp(context, 20),
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
           child: Column(
             children: [
               // Show wash duration if available
               if (_washDurationFormatted != null) ...[
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                   decoration: BoxDecoration(
                     color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                     border: Border.all(color: AppColors.primaryTeal),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.timer, color: AppColors.primaryTeal),
-                      const SizedBox(width: 12),
+                      Icon(Icons.timer, color: AppColors.primaryTeal, size: ResponsiveUtils.sp(context, 24)),
+                      ResponsiveUtils.horizontalSpace(context, 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Wash Duration',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: ResponsiveUtils.sp(context, 12),
                               color: AppColors.textGray,
                             ),
                           ),
                           Text(
                             _washDurationFormatted!,
-                            style: const TextStyle(
-                              fontSize: 24,
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.sp(context, 24),
                               fontWeight: FontWeight.bold,
                               color: AppColors.primaryTeal,
                             ),
@@ -227,43 +228,43 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                ResponsiveUtils.verticalSpace(context, 24),
               ],
-              const Text(
+              Text(
                 'Please take a clear photo of the clean\ncar as proof of completion.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: AppColors.darkTeal),
+                style: TextStyle(fontSize: ResponsiveUtils.sp(context, 16), color: AppColors.darkTeal),
               ),
-              const SizedBox(height: 32),
+              ResponsiveUtils.verticalSpace(context, 32),
               Container(
-                height: 300,
+                height: ResponsiveUtils.h(context, 300),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.darkNavy, width: 2),
-                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.darkNavy, width: ResponsiveUtils.w(context, 2)),
+                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
                   color: AppColors.veryLightGray,
                 ),
-                child: _isPhotoUploaded && _capturedPhoto != null
+                  child: _isPhotoUploaded && _capturedPhoto != null
                     ? Stack(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
                             child: Image.file(
                               _capturedPhoto!,
                               fit: BoxFit.cover,
-                              height: 300,
+                              height: ResponsiveUtils.h(context, 300),
                               width: double.infinity,
                             ),
                           ),
                           Positioned(
-                            top: 12,
-                            right: 12,
+                            top: ResponsiveUtils.h(context, 12),
+                            right: ResponsiveUtils.w(context, 12),
                             child: GestureDetector(
                               onTap: () {
                                 showModalBottomSheet(
                                   context: context,
                                   builder: (context) => Container(
-                                    padding: const EdgeInsets.all(20),
+                                    padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -291,24 +292,24 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: EdgeInsets.all(ResponsiveUtils.w(context, 8)),
                                 decoration: BoxDecoration(
                                   color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 8)),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(
                                         alpha: 0.2,
                                       ),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
+                                      blurRadius: ResponsiveUtils.r(context, 4),
+                                      offset: Offset(0, ResponsiveUtils.h(context, 2)),
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.edit,
                                   color: AppColors.primaryTeal,
-                                  size: 24,
+                                  size: ResponsiveUtils.sp(context, 24),
                                 ),
                               ),
                             ),
@@ -321,7 +322,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                           showModalBottomSheet(
                             context: context,
                             builder: (context) => Container(
-                              padding: const EdgeInsets.all(20),
+                              padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -349,16 +350,16 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.camera_alt,
-                              size: 64,
+                              size: ResponsiveUtils.sp(context, 64),
                               color: AppColors.darkNavy,
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
+                            ResponsiveUtils.verticalSpace(context, 16),
+                            Text(
                               'Tap to Take Photo',
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: ResponsiveUtils.sp(context, 16),
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.darkNavy,
                               ),
@@ -367,10 +368,10 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                         ),
                       ),
               ),
-              const SizedBox(height: 32),
+              ResponsiveUtils.verticalSpace(context, 32),
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: ResponsiveUtils.h(context, 56),
                 child: ElevatedButton(
                   onPressed: (_isPhotoUploaded && !_isSubmitting)
                       ? _submitJob
@@ -383,23 +384,23 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                     ),
                     disabledForegroundColor: Colors.white.withOpacity(0.6),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                     ),
                   ),
                   child: _isSubmitting
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
+                      ? SizedBox(
+                          width: ResponsiveUtils.w(context, 24),
+                          height: ResponsiveUtils.h(context, 24),
                           child: CircularProgressIndicator(
                             color: Colors.white,
-                            strokeWidth: 2,
+                            strokeWidth: ResponsiveUtils.w(context, 2),
                           ),
                         )
-                      : const Text(
+                      : Text(
                           'Submit Job',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: ResponsiveUtils.sp(context, 16),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

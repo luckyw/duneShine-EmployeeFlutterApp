@@ -5,6 +5,7 @@ import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
+import '../utils/responsive_utils.dart';
 
 
 class JobCompletionOtpScreen extends StatefulWidget {
@@ -173,162 +174,168 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
             (route) => false,
           ),
         ),
-        title: const Text(
+        title: Text(
           'Job Completion',
           style: TextStyle(
             color: AppColors.white,
-            fontSize: 20,
+            fontSize: ResponsiveUtils.sp(context, 20),
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: AppColors.darkNavy,
-                    width: 2,
-                  ),
-                ),
+      body: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Enter Customer\nOTP',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.darkNavy,
+                    Container(
+                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                        border: Border.all(
+                          color: AppColors.darkNavy,
+                          width: ResponsiveUtils.w(context, 2),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Ask for the 4-digit OTP to finalize\nthe job.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.lightGray,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        4,
-                        (index) => SizedBox(
-                          width: 60,
-                          height: 60,
-                          child: KeyboardListener(
-                            focusNode: FocusNode(),
-                            onKeyEvent: (event) {
-                              if (event is KeyDownEvent &&
-                                  event.logicalKey == LogicalKeyboardKey.backspace) {
-                                if (index > 0 && _otpControllers[index].text.isEmpty) {
-                                  _otpControllers[index - 1].clear();
-                                  _focusNodes[index - 1].requestFocus();
-                                }
-                              }
-                            },
-                            child: TextField(
-                              controller: _otpControllers[index],
-                              focusNode: _focusNodes[index],
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              maxLength: 1,
-                              onChanged: (value) => _onOtpInput(index, value),
-                              decoration: InputDecoration(
-                                counterText: '',
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.darkNavy,
-                                    width: 2,
+                      child: Column(
+                        children: [
+                          Text(
+                            'Enter Customer\nOTP',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.sp(context, 20),
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkNavy,
+                            ),
+                          ),
+                          ResponsiveUtils.verticalSpace(context, 12),
+                          Text(
+                            'Ask for the 4-digit OTP to finalize\nthe job.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.sp(context, 14),
+                              color: AppColors.lightGray,
+                            ),
+                          ),
+                          ResponsiveUtils.verticalSpace(context, 32),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: List.generate(
+                              4,
+                              (index) => SizedBox(
+                                width: ResponsiveUtils.w(context, 60),
+                                height: ResponsiveUtils.h(context, 60),
+                                child: KeyboardListener(
+                                  focusNode: FocusNode(),
+                                  onKeyEvent: (event) {
+                                    if (event is KeyDownEvent &&
+                                        event.logicalKey == LogicalKeyboardKey.backspace) {
+                                      if (index > 0 && _otpControllers[index].text.isEmpty) {
+                                        _otpControllers[index - 1].clear();
+                                        _focusNodes[index - 1].requestFocus();
+                                      }
+                                    }
+                                  },
+                                  child: TextField(
+                                    controller: _otpControllers[index],
+                                    focusNode: _focusNodes[index],
+                                    textAlign: TextAlign.center,
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 1,
+                                    onChanged: (value) => _onOtpInput(index, value),
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                        borderSide: BorderSide(
+                                          color: AppColors.darkNavy,
+                                          width: ResponsiveUtils.w(context, 2),
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                        borderSide: BorderSide(
+                                          color: AppColors.darkNavy,
+                                          width: ResponsiveUtils.w(context, 2),
+                                        ),
+                                      ),
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: ResponsiveUtils.sp(context, 24),
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.darkNavy,
+                                    ),
                                   ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.darkNavy,
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.darkNavy,
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: (_isOtpComplete() && !_isVerifying)
-                            ? _verifyAndComplete
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.darkTeal,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
-                          disabledForegroundColor: Colors.white.withOpacity(0.6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _isVerifying
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                'Verify & Complete Job',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                          ResponsiveUtils.verticalSpace(context, 32),
+                          SizedBox(
+                            width: double.infinity,
+                            height: ResponsiveUtils.h(context, 56),
+                            child: ElevatedButton(
+                              onPressed: (_isOtpComplete() && !_isVerifying)
+                                  ? _verifyAndComplete
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.darkTeal,
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
+                                disabledForegroundColor: Colors.white.withOpacity(0.6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                                 ),
                               ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        ToastUtils.showSuccessToast(context, 'OTP resent');
-
-                      },
-                      child: const Text(
-                        'Resend OTP',
-                        style: TextStyle(
-                          color: AppColors.primaryTeal,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        ),
+                              child: _isVerifying
+                                  ? SizedBox(
+                                      width: ResponsiveUtils.w(context, 24),
+                                      height: ResponsiveUtils.h(context, 24),
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: ResponsiveUtils.w(context, 2),
+                                      ),
+                                    )
+                                  : Text(
+                                      'Verify & Complete Job',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: ResponsiveUtils.sp(context, 16),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          ResponsiveUtils.verticalSpace(context, 16),
+                          GestureDetector(
+                            onTap: () {
+                              ToastUtils.showSuccessToast(context, 'OTP resent');
+                            },
+                            child: Text(
+                              'Resend OTP',
+                              style: TextStyle(
+                                color: AppColors.primaryTeal,
+                                fontSize: ResponsiveUtils.sp(context, 14),
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

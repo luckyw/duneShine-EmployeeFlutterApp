@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../utils/toast_utils.dart';
+import '../utils/responsive_utils.dart';
 
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
@@ -202,204 +203,225 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
           'Wash in Progress',
           style: AppTextStyles.headline(
             context,
-          ).copyWith(color: AppColors.white, fontSize: 20),
+          ).copyWith(color: AppColors.white, fontSize: ResponsiveUtils.sp(context, 20)),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Stopwatch display
-                  Container(
-                    width: 220,
-                    height: 220,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primaryTeal,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryTeal.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
+      body: CustomScrollView(
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.timer,
-                          size: 32,
-                          color: AppColors.white.withValues(alpha: 0.8),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _formatDuration(_elapsedSeconds),
-                          style: AppTextStyles.headline(context).copyWith(
-                            fontSize: 42,
-                            color: AppColors.white,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _isRunning ? 'Washing...' : 'Paused',
-                          style: AppTextStyles.body(
-                            context,
-                          ).copyWith(color: AppColors.white, fontSize: 16),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Pause/Resume Button
-                  TextButton.icon(
-                    onPressed: _isRunning ? _pauseStopwatch : _resumeStopwatch,
-                    icon: Icon(
-                      _isRunning
-                          ? Icons.pause_circle_outline
-                          : Icons.play_circle_outline,
-                      color: AppColors.primaryTeal,
-                    ),
-                    label: Text(
-                      _isRunning ? 'Pause Timer' : 'Resume Timer',
-                      style: TextStyle(color: AppColors.primaryTeal),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            decoration: const BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-            ),
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.lightGray.withValues(alpha: 0.2)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'JOB-${_job?.id}',
-                            style: AppTextStyles.subtitle(context).copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryTeal,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              _job?.displayStatus ?? 'IN PROGRESS',
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.primaryTeal,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 10,
+                        // Stopwatch display
+                        Container(
+                          width: ResponsiveUtils.r(context, 220),
+                          height: ResponsiveUtils.r(context, 220),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primaryTeal,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryTeal.withValues(alpha: 0.3),
+                                blurRadius: ResponsiveUtils.r(context, 20),
+                                spreadRadius: ResponsiveUtils.r(context, 5),
                               ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.timer,
+                                size: ResponsiveUtils.r(context, 32),
+                                color: AppColors.white.withValues(alpha: 0.8),
+                              ),
+                              ResponsiveUtils.verticalSpace(context, 8),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    _formatDuration(_elapsedSeconds),
+                                    style: AppTextStyles.headline(context).copyWith(
+                                      fontSize: ResponsiveUtils.sp(context, 42),
+                                      color: AppColors.white,
+                                      fontFeatures: const [FontFeature.tabularFigures()],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              ResponsiveUtils.verticalSpace(context, 8),
+                              Text(
+                                _isRunning ? 'Washing...' : 'Paused',
+                                style: AppTextStyles.body(
+                                  context,
+                                ).copyWith(
+                                  color: AppColors.white, 
+                                  fontSize: ResponsiveUtils.sp(context, 16)
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ResponsiveUtils.verticalSpace(context, 24),
+                        // Pause/Resume Button
+                        TextButton.icon(
+                          onPressed: _isRunning ? _pauseStopwatch : _resumeStopwatch,
+                          icon: Icon(
+                            _isRunning
+                                ? Icons.pause_circle_outline
+                                : Icons.play_circle_outline,
+                            color: AppColors.primaryTeal,
+                            size: ResponsiveUtils.sp(context, 24),
+                          ),
+                          label: Text(
+                            _isRunning ? 'Pause Timer' : 'Resume Timer',
+                            style: TextStyle(
+                              color: AppColors.primaryTeal,
+                              fontSize: ResponsiveUtils.sp(context, 16),
                             ),
                           ),
-                        ],
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        child: Divider(height: 1),
-                      ),
-                      _buildInfoRow(
-                        Icons.location_on_outlined,
-                        'Location',
-                        _job?.booking?.fullAddress ?? 'Unknown Location',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInfoRow(
-                        Icons.directions_car_outlined,
-                        'Vehicle',
-                        '${vehicle?.brandName} ${vehicle?.model} (${vehicle?.color})\nPlate: ${vehicle?.numberPlate}',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInfoRow(
-                        Icons.person_outline,
-                        'Customer',
-                        '${_job?.booking?.customer?.name ?? 'Unknown'}\n${_job?.booking?.customer?.phone ?? ''}',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInfoRow(
-                        Icons.list_alt_outlined,
-                        'Services',
-                        services.isNotEmpty
-                            ? services.map((s) => s.name).join(', ')
-                            : 'Car Wash Service',
-                      ),
-                      if (_job?.booking?.notes != null &&
-                          _job!.booking!.notes!.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        _buildInfoRow(
-                          Icons.note_alt_outlined,
-                          'Customer Notes',
-                          _job!.booking!.notes!,
                         ),
+                        ResponsiveUtils.verticalSpace(context, 16),
                       ],
-                      if (vehicle?.parkingNotes != null &&
-                          vehicle!.parkingNotes!.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        _buildInfoRow(
-                          Icons.local_parking_outlined,
-                          'Parking Notes',
-                          vehicle!.parkingNotes!,
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _finishWash,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.darkTeal,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(ResponsiveUtils.r(context, 24)),
+                      topRight: Radius.circular(ResponsiveUtils.r(context, 24)),
+                    ),
+                  ),
+                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                          border: Border.all(color: AppColors.lightGray.withValues(alpha: 0.2)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'JOB-${_job?.id}',
+                                  style: AppTextStyles.subtitle(context).copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primaryTeal,
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: ResponsiveUtils.w(context, 10), vertical: ResponsiveUtils.h(context, 4)),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                                  ),
+                                  child: Text(
+                                    _job?.displayStatus ?? 'IN PROGRESS',
+                                    style: AppTextStyles.caption(context).copyWith(
+                                      color: AppColors.primaryTeal,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: ResponsiveUtils.sp(context, 10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 12)),
+                              child: const Divider(height: 1),
+                            ),
+                            _buildInfoRow(
+                              Icons.location_on_outlined,
+                              'Location',
+                              _job?.booking?.fullAddress ?? 'Unknown Location',
+                            ),
+                            ResponsiveUtils.verticalSpace(context, 12),
+                            _buildInfoRow(
+                              Icons.directions_car_outlined,
+                              'Vehicle',
+                              '${vehicle?.brandName} ${vehicle?.model} (${vehicle?.color})\nPlate: ${vehicle?.numberPlate}',
+                            ),
+                            ResponsiveUtils.verticalSpace(context, 12),
+                            _buildInfoRow(
+                              Icons.person_outline,
+                              'Customer',
+                              '${_job?.booking?.customer?.name ?? 'Unknown'}\n${_job?.booking?.customer?.phone ?? ''}',
+                            ),
+                            ResponsiveUtils.verticalSpace(context, 12),
+                            _buildInfoRow(
+                              Icons.list_alt_outlined,
+                              'Services',
+                              services.isNotEmpty
+                                  ? services.map((s) => s.name).join(', ')
+                                  : 'Car Wash Service',
+                            ),
+                            if (_job?.booking?.notes != null &&
+                                _job!.booking!.notes!.isNotEmpty) ...[
+                              ResponsiveUtils.verticalSpace(context, 12),
+                              _buildInfoRow(
+                                Icons.note_alt_outlined,
+                                'Customer Notes',
+                                _job!.booking!.notes!,
+                              ),
+                            ],
+                            if (vehicle?.parkingNotes != null &&
+                                vehicle!.parkingNotes!.isNotEmpty) ...[
+                              ResponsiveUtils.verticalSpace(context, 12),
+                              _buildInfoRow(
+                                Icons.local_parking_outlined,
+                                'Parking Notes',
+                                vehicle!.parkingNotes!,
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Take Photo & Finish Wash',
-                      style: AppTextStyles.button(
-                        context,
-                      ).copyWith(color: Colors.white),
-                    ),
+                      ResponsiveUtils.verticalSpace(context, 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: ResponsiveUtils.h(context, 56),
+                        child: ElevatedButton(
+                          onPressed: _finishWash,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.darkTeal,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                            ),
+                          ),
+                          child: Text(
+                            'Take Photo & Finish Wash',
+                            style: AppTextStyles.button(
+                              context,
+                            ).copyWith(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -413,8 +435,8 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: AppColors.primaryTeal),
-        const SizedBox(width: 12),
+        Icon(icon, size: ResponsiveUtils.r(context, 20), color: AppColors.primaryTeal),
+        ResponsiveUtils.horizontalSpace(context, 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,12 +448,12 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 2),
+              ResponsiveUtils.verticalSpace(context, 2),
               Text(
                 value,
                 style: AppTextStyles.body(context).copyWith(
                   color: AppColors.darkNavy,
-                  fontSize: 14,
+                  fontSize: ResponsiveUtils.sp(context, 14),
                   fontWeight: FontWeight.w500,
                 ),
               ),
