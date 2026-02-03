@@ -5,6 +5,7 @@ import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
+import '../utils/responsive_utils.dart';
 
 class JobHistoryScreen extends StatefulWidget {
   const JobHistoryScreen({Key? key}) : super(key: key);
@@ -72,7 +73,13 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         foregroundColor: AppColors.white,
-        title: const Text('Job History'),
+        title: Text(
+          'Job History',
+          style: AppTextStyles.title(context).copyWith(
+            color: AppColors.white,
+            fontSize: ResponsiveUtils.sp(context, 20),
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
       ),
@@ -111,20 +118,26 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.history, color: AppColors.lightGray, size: 80),
-            const SizedBox(height: 16),
+            Icon(
+              Icons.history,
+              color: AppColors.lightGray,
+              size: ResponsiveUtils.r(context, 80),
+            ),
+            ResponsiveUtils.verticalSpace(context, 16),
             Text(
               'No completed jobs yet',
-              style: AppTextStyles.title(
-                context,
-              ).copyWith(color: AppColors.textGray),
+              style: AppTextStyles.title(context).copyWith(
+                color: AppColors.textGray,
+                fontSize: ResponsiveUtils.sp(context, 18),
+              ),
             ),
-            const SizedBox(height: 8),
+            ResponsiveUtils.verticalSpace(context, 8),
             Text(
               'Your completed jobs will appear here',
-              style: AppTextStyles.body(
-                context,
-              ).copyWith(color: AppColors.lightGray),
+              style: AppTextStyles.body(context).copyWith(
+                color: AppColors.lightGray,
+                fontSize: ResponsiveUtils.sp(context, 14),
+              ),
             ),
           ],
         ),
@@ -132,7 +145,7 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
       itemCount: _completedJobs.length,
       itemBuilder: (context, index) {
         return _buildJobCard(_completedJobs[index]);
@@ -145,42 +158,52 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
     final timeSlot = job.timeSlot;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 12)),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.lightGray.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+        border: Border.all(
+          color: AppColors.lightGray.withValues(alpha: 0.3),
+          width: ResponsiveUtils.w(context, 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: ResponsiveUtils.r(context, 10),
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  timeSlot?.formattedStartTime ?? 'N/A',
-                  style: AppTextStyles.body(context).copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkNavy,
+                Flexible(
+                  child: Text(
+                    timeSlot?.formattedStartTime ?? 'N/A',
+                    style: AppTextStyles.body(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkNavy,
+                      fontSize: ResponsiveUtils.sp(context, 16),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                SizedBox(width: ResponsiveUtils.w(context, 8)),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveUtils.w(context, 10),
+                    vertical: ResponsiveUtils.h(context, 4),
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(
+                      ResponsiveUtils.r(context, 20),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -188,51 +211,63 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                       Icon(
                         Icons.check_circle,
                         color: AppColors.success,
-                        size: 14,
+                        size: ResponsiveUtils.r(context, 14),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: ResponsiveUtils.w(context, 4)),
                       Text(
                         'Completed',
                         style: AppTextStyles.caption(context).copyWith(
                           color: AppColors.success,
                           fontWeight: FontWeight.bold,
+                          fontSize: ResponsiveUtils.sp(context, 12),
                         ),
+                        maxLines: 1,
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            ResponsiveUtils.verticalSpace(context, 12),
             Row(
               children: [
                 Icon(
                   Icons.directions_car,
                   color: AppColors.primaryTeal,
-                  size: 20,
+                  size: ResponsiveUtils.r(context, 20),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: ResponsiveUtils.w(context, 8)),
                 Expanded(
                   child: Text(
                     vehicle?.displayName ?? 'Vehicle',
-                    style: AppTextStyles.body(
-                      context,
-                    ).copyWith(color: AppColors.darkNavy),
+                    style: AppTextStyles.body(context).copyWith(
+                      color: AppColors.darkNavy,
+                      fontSize: ResponsiveUtils.sp(context, 14),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            ResponsiveUtils.verticalSpace(context, 8),
             Row(
               children: [
-                Icon(Icons.location_on, color: AppColors.gold, size: 20),
-                const SizedBox(width: 8),
+                Icon(
+                  Icons.location_on,
+                  color: AppColors.gold,
+                  size: ResponsiveUtils.r(context, 20),
+                ),
+                SizedBox(width: ResponsiveUtils.w(context, 8)),
                 Expanded(
                   child: Text(
                     job.booking?.locationName ?? 'Property',
-                    style: AppTextStyles.caption(
-                      context,
-                    ).copyWith(color: AppColors.textGray),
+                    style: AppTextStyles.caption(context).copyWith(
+                      color: AppColors.textGray,
+                      fontSize: ResponsiveUtils.sp(context, 12),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

@@ -18,12 +18,19 @@ class ResponsiveUtils {
     return size * MediaQuery.sizeOf(context).height / _designHeight;
   }
 
-  /// Font scaling that RESPECTS device accessibility text size settings.
+  /// Font scaling based on screen width only.
+  ///
+  /// NOTE:
+  /// - We intentionally do NOT apply [MediaQuery.textScalerOf] here.
+  /// - Text widgets in Flutter already respect the system text scale
+  ///   factor via [MediaQuery.textScaler] / `textScaleFactor`.
+  /// - If we multiplied by the text scale again here, fonts would be
+  ///   "double scaled" and become huge when the user sets max font size.
+  /// - To keep layouts stable while still respecting accessibility,
+  ///   we clamp the global [textScaler] in `MaterialApp.builder` instead.
   static double sp(BuildContext context, double size) {
     final double widthScale = MediaQuery.sizeOf(context).width / _designWidth;
-    final double textScale = MediaQuery.textScalerOf(context).scale(1.0);
-    final double clampedTextScale = textScale.clamp(0.85, 1.25);
-    return size * widthScale * clampedTextScale;
+    return size * widthScale;
   }
 
   /// Radius scaling

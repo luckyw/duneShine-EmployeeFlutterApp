@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../utils/toast_utils.dart';
-
+import '../utils/responsive_utils.dart';
 
 class EquipmentSupportScreen extends StatefulWidget {
   const EquipmentSupportScreen({Key? key}) : super(key: key);
@@ -58,7 +58,13 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         foregroundColor: AppColors.white,
-        title: const Text('Equipment Support'),
+        title: Text(
+          'Equipment Support',
+          style: AppTextStyles.title(context).copyWith(
+            color: AppColors.white,
+            fontSize: ResponsiveUtils.sp(context, 20),
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
       ),
@@ -69,8 +75,8 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
             // Header
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              color: AppColors.primaryTeal.withOpacity(0.1),
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
+              color: AppColors.primaryTeal.withValues(alpha: 0.1),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -79,71 +85,101 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
                     style: AppTextStyles.title(context).copyWith(
                       color: AppColors.darkNavy,
                       fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveUtils.sp(context, 20),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  ResponsiveUtils.verticalSpace(context, 4),
                   Text(
                     'Request support or replacement for your equipment',
                     style: AppTextStyles.body(context).copyWith(
                       color: AppColors.textGray,
+                      fontSize: ResponsiveUtils.sp(context, 14),
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             // Equipment list
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
               child: Column(
-                children: _equipment.map((item) => _buildEquipmentCard(item)).toList(),
+                children: _equipment
+                    .map((item) => _buildEquipmentCard(item))
+                    .toList(),
               ),
             ),
-            
+
             // Contact support section
             Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
+              margin: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
               decoration: BoxDecoration(
                 color: AppColors.creamBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.gold, width: 1),
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.r(context, 16),
+                ),
+                border: Border.all(
+                  color: AppColors.gold,
+                  width: ResponsiveUtils.w(context, 1),
+                ),
               ),
               child: Column(
                 children: [
-                  Icon(Icons.headset_mic, color: AppColors.gold, size: 48),
-                  const SizedBox(height: 12),
+                  Icon(
+                    Icons.headset_mic,
+                    color: AppColors.gold,
+                    size: ResponsiveUtils.r(context, 48),
+                  ),
+                  ResponsiveUtils.verticalSpace(context, 12),
                   Text(
                     'Need Urgent Support?',
                     style: AppTextStyles.title(context).copyWith(
                       color: AppColors.darkNavy,
                       fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveUtils.sp(context, 18),
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  ResponsiveUtils.verticalSpace(context, 8),
                   Text(
                     'Contact our equipment support team for immediate assistance',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.body(context).copyWith(
                       color: AppColors.textGray,
+                      fontSize: ResponsiveUtils.sp(context, 14),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  ResponsiveUtils.verticalSpace(context, 16),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        ToastUtils.showSuccessToast(context, 'Contacting support...');
-
+                        ToastUtils.showSuccessToast(
+                          context,
+                          'Contacting support...',
+                        );
                       },
-                      icon: const Icon(Icons.phone),
-                      label: const Text('Call Support'),
+                      icon: Icon(
+                        Icons.phone,
+                        size: ResponsiveUtils.r(context, 20),
+                      ),
+                      label: Text(
+                        'Call Support',
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.sp(context, 16),
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryTeal,
                         foregroundColor: AppColors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(
+                          vertical: ResponsiveUtils.h(context, 14),
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(
+                            ResponsiveUtils.r(context, 12),
+                          ),
                         ),
                       ),
                     ),
@@ -151,7 +187,7 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            ResponsiveUtils.verticalSpace(context, 24),
           ],
         ),
       ),
@@ -160,16 +196,19 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
 
   Widget _buildEquipmentCard(Map<String, dynamic> item) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 12)),
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.lightGray.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+        border: Border.all(
+          color: AppColors.lightGray.withValues(alpha: 0.3),
+          width: ResponsiveUtils.w(context, 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: ResponsiveUtils.r(context, 8),
             offset: const Offset(0, 2),
           ),
         ],
@@ -177,18 +216,20 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
             decoration: BoxDecoration(
-              color: AppColors.primaryTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.primaryTeal.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.r(context, 12),
+              ),
             ),
             child: Icon(
               item['icon'] as IconData,
               color: AppColors.primaryTeal,
-              size: 28,
+              size: ResponsiveUtils.r(context, 28),
             ),
           ),
-          const SizedBox(width: 16),
+          ResponsiveUtils.horizontalSpace(context, 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,24 +239,32 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
                   style: AppTextStyles.body(context).copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppColors.darkNavy,
+                    fontSize: ResponsiveUtils.sp(context, 16),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                ResponsiveUtils.verticalSpace(context, 4),
                 Row(
                   children: [
                     Container(
-                      width: 8,
-                      height: 8,
+                      width: ResponsiveUtils.w(context, 8),
+                      height: ResponsiveUtils.h(context, 8),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: item['statusColor'] as Color,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      item['status'] as String,
-                      style: AppTextStyles.caption(context).copyWith(
-                        color: item['statusColor'] as Color,
+                    ResponsiveUtils.horizontalSpace(context, 6),
+                    Expanded(
+                      child: Text(
+                        item['status'] as String,
+                        style: AppTextStyles.caption(context).copyWith(
+                          color: item['statusColor'] as Color,
+                          fontSize: ResponsiveUtils.sp(context, 12),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -227,11 +276,15 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
             onPressed: () {
               _showRequestDialog(item['name'] as String);
             },
-            child: Text(
-              'Request',
-              style: TextStyle(
-                color: AppColors.primaryTeal,
-                fontWeight: FontWeight.w600,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'Request',
+                style: TextStyle(
+                  color: AppColors.primaryTeal,
+                  fontWeight: FontWeight.w600,
+                  fontSize: ResponsiveUtils.sp(context, 14),
+                ),
               ),
             ),
           ),
@@ -244,23 +297,41 @@ class _EquipmentSupportScreenState extends State<EquipmentSupportScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Request Support'),
-        content: Text('Request support for $itemName?'),
+        title: Text(
+          'Request Support',
+          style: AppTextStyles.title(
+            context,
+          ).copyWith(fontSize: ResponsiveUtils.sp(context, 20)),
+        ),
+        content: Text(
+          'Request support for $itemName?',
+          style: AppTextStyles.body(
+            context,
+          ).copyWith(fontSize: ResponsiveUtils.sp(context, 16)),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(fontSize: ResponsiveUtils.sp(context, 14)),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ToastUtils.showSuccessToast(context, 'Support request sent for $itemName');
-
+              ToastUtils.showSuccessToast(
+                context,
+                'Support request sent for $itemName',
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryTeal,
             ),
-            child: const Text('Request'),
+            child: Text(
+              'Request',
+              style: TextStyle(fontSize: ResponsiveUtils.sp(context, 14)),
+            ),
           ),
         ],
       ),

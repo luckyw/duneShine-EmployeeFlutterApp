@@ -50,6 +50,21 @@ class MyApp extends StatelessWidget {
           iconTheme: IconThemeData(color: Colors.white),
         ),
       ),
+      // Clamp global text scaling so huge accessibility fonts
+      // don't completely break layouts, while still allowing
+      // reasonable user text size adjustments.
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        final clampedTextScaler = mediaQuery.textScaler.clamp(
+          minScaleFactor: 0.85,
+          maxScaleFactor: 1.25,
+        );
+
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: clampedTextScaler),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       initialRoute: '/splash',
       routes: {
         '/splash': (context) => const SplashScreen(),

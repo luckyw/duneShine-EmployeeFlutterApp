@@ -292,11 +292,11 @@ class _AccountWidgetState extends State<AccountWidget> {
                             ResponsiveUtils.verticalSpace(context, 12),
                             if (_profile?.vendor != null)
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: ResponsiveUtils.w(context, 12), vertical: ResponsiveUtils.h(context, 6)),
                                 decoration: BoxDecoration(
                                   color: AppColors.gold.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -304,7 +304,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                                     if (_profile!.vendorLogoUrl != null)
                                       Padding(
                                         padding:
-                                            const EdgeInsets.only(right: 8),
+                                            EdgeInsets.only(right: ResponsiveUtils.w(context, 8)),
                                         child: ClipOval(
                                           child: Image.network(
                                             _profile!.vendorLogoUrl!,
@@ -313,18 +313,22 @@ class _AccountWidgetState extends State<AccountWidget> {
                                             fit: BoxFit.cover,
                                             errorBuilder:
                                                 (context, error, stackTrace) =>
-                                                    const Icon(
+                                                    Icon(
                                                         Icons.business,
-                                                        size: 16,
+                                                        size: ResponsiveUtils.r(context, 16),
                                                         color: AppColors.gold),
                                           ),
                                         ),
                                       ),
-                                    Text(
-                                      _profile!.vendorName,
-                                      style: AppTextStyles.caption(context).copyWith(
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.gold,
+                                    Flexible(
+                                      child: Text(
+                                        _profile!.vendorName,
+                                        style: AppTextStyles.caption(context).copyWith(
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.gold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],

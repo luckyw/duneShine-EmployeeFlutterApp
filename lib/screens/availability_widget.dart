@@ -5,7 +5,6 @@ import '../services/auth_service.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/toast_utils.dart';
 
-
 class AvailabilityWidget extends StatefulWidget {
   const AvailabilityWidget({super.key});
 
@@ -24,13 +23,12 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   // Current month info (today)
   late int _currentYear;
   late int _currentMonth;
-  
+
   // Displayed month info (navigation)
   late int _displayYear;
   late int _displayMonth;
   late int _daysInMonth;
   late String _monthName;
-
 
   @override
   void initState() {
@@ -38,11 +36,11 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     final now = DateTime.now();
     _currentYear = now.year;
     _currentMonth = now.month;
-    
+
     // Initialize display date to current date
     _displayYear = _currentYear;
     _displayMonth = _currentMonth;
-    
+
     _updateMonthInfo();
     _fetchAvailability();
   }
@@ -54,8 +52,9 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
 
   void _changeMonth(int offset) {
     final now = DateTime.now();
-    final bool wasCurrentMonth = _displayYear == now.year && _displayMonth == now.month;
-    
+    final bool wasCurrentMonth =
+        _displayYear == now.year && _displayMonth == now.month;
+
     setState(() {
       _displayMonth += offset;
       if (_displayMonth > 12) {
@@ -65,19 +64,19 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
         _displayMonth = 12;
         _displayYear--;
       }
-      
+
       _updateMonthInfo();
       _selectedDates.clear(); // Clear selection on month change
       _availableDates.clear(); // Clear availability data for new month
     });
-    
+
     // Fetch availability if we're back to the current month
-    final bool isNowCurrentMonth = _displayYear == now.year && _displayMonth == now.month;
+    final bool isNowCurrentMonth =
+        _displayYear == now.year && _displayMonth == now.month;
     if (isNowCurrentMonth && !wasCurrentMonth) {
       _fetchAvailability();
     }
   }
-
 
   Future<void> _fetchAvailability() async {
     final token = _authService.token;
@@ -91,22 +90,23 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     final result = await _apiService.getAvailability(token: token);
 
     if (result['success'] == true && mounted) {
-      final availabilities = result['data']['availabilities'] as List<dynamic>? ?? [];
+      final availabilities =
+          result['data']['availabilities'] as List<dynamic>? ?? [];
       final Set<int> availableDays = {};
 
       for (var availability in availabilities) {
         final dateString = availability['available_date'] as String?;
         final isAvailable = availability['is_available'] == true;
-        
+
         if (dateString != null && isAvailable) {
           // Parse UTC date and convert to local timezone
           final utcDate = DateTime.parse(dateString);
           final localDate = utcDate.toLocal();
           // Only add dates from current month
-          if (localDate.year == _displayYear && localDate.month == _displayMonth) {
+          if (localDate.year == _displayYear &&
+              localDate.month == _displayMonth) {
             availableDays.add(localDate.day);
           }
-
         }
       }
 
@@ -125,8 +125,18 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
 
   String _getMonthName(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return months[month - 1];
   }
@@ -135,7 +145,6 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     final date = DateTime(_displayYear, _displayMonth, day);
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
-
 
   Future<void> _processAvailabilityUpdate(bool makeAvailable) async {
     final token = _authService.token;
@@ -157,7 +166,7 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
 
     for (final day in _selectedDates) {
       final isCurrentlyAvailable = _availableDates.contains(day);
-      
+
       if (makeAvailable && !isCurrentlyAvailable) {
         datesToUpdate.add(_formatDateForApi(day));
       } else if (!makeAvailable && isCurrentlyAvailable) {
@@ -170,10 +179,10 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     if (datesToUpdate.isEmpty) {
       if (ignoredCount > 0) {
         _showSnackBar(
-          makeAvailable 
-            ? 'Selected dates are already available' 
-            : 'Selected dates are already unavailable', 
-          isError: false
+          makeAvailable
+              ? 'Selected dates are already available'
+              : 'Selected dates are already unavailable',
+          isError: false,
         );
       }
       return; // No API call needed
@@ -190,22 +199,25 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     if (!mounted) return;
     if (result['success'] == true) {
       _showSnackBar(
-        makeAvailable 
-          ? 'Marked ${datesToUpdate.length} days as available' 
-          : 'Marked ${datesToUpdate.length} days as unavailable',
+        makeAvailable
+            ? 'Marked ${datesToUpdate.length} days as available'
+            : 'Marked ${datesToUpdate.length} days as unavailable',
         isError: false,
       );
-      
+
       // Clear selection after successful update
       setState(() {
         _selectedDates.clear();
       });
-      
+
       // Refetch all availability dates from the API
       await _fetchAvailability();
     } else {
       setState(() => _isLoading = false);
-      _showSnackBar(result['message'] ?? 'Failed to update availability', isError: true);
+      _showSnackBar(
+        result['message'] ?? 'Failed to update availability',
+        isError: true,
+      );
     }
   }
 
@@ -216,9 +228,6 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       ToastUtils.showSuccessToast(context, message);
     }
   }
-  
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -254,28 +263,37 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                   ),
                 ],
               ),
-              
-
 
               ResponsiveUtils.verticalSpace(context, 12),
-              
+
               // Days of week header
               Padding(
-                padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 8)),
+                padding: EdgeInsets.symmetric(
+                  vertical: ResponsiveUtils.h(context, 8),
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) => Expanded(
-                    child: Center(
-                      child: Text(
-                        day,
-                        style: TextStyle(
-                          fontSize: ResponsiveUtils.sp(context, 14),
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryTeal.withValues(alpha: 0.7),
+                  children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                      .map(
+                        (day) => Expanded(
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                day,
+                                style: TextStyle(
+                                  fontSize: ResponsiveUtils.sp(context, 14),
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primaryTeal.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  )).toList(),
+                      )
+                      .toList(),
                 ),
               ),
 
@@ -287,89 +305,113 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                   crossAxisSpacing: ResponsiveUtils.w(context, 8),
                   mainAxisSpacing: ResponsiveUtils.h(context, 8),
                 ),
-                itemCount: _daysInMonth + (DateTime(_displayYear, _displayMonth, 1).weekday - 1),
+                itemCount:
+                    _daysInMonth +
+                    (DateTime(_displayYear, _displayMonth, 1).weekday - 1),
                 itemBuilder: (context, index) {
-                  final int firstDayOffset = DateTime(_displayYear, _displayMonth, 1).weekday - 1;
-                  
+                  final int firstDayOffset =
+                      DateTime(_displayYear, _displayMonth, 1).weekday - 1;
+
                   if (index < firstDayOffset) {
                     return const SizedBox.shrink(); // Empty space for previous month days
                   }
 
                   int day = index - firstDayOffset + 1;
-                  
+
                   // Only check availability for current month
                   final now = DateTime.now();
-                  bool isCurrentMonth = _displayYear == now.year && _displayMonth == now.month;
+                  bool isCurrentMonth =
+                      _displayYear == now.year && _displayMonth == now.month;
                   bool isToday = isCurrentMonth && day == now.day;
                   bool isInteractable = isToday;
-                  
+
                   // Only show availability status for current month
-                  bool isAvailable = isCurrentMonth && _availableDates.contains(day);
+                  bool isAvailable =
+                      isCurrentMonth && _availableDates.contains(day);
                   bool isSelected = _selectedDates.contains(day);
 
-                return GestureDetector(
-                  onTap: !isInteractable ? null : () {
-                    setState(() {
-                      if (_selectedDates.contains(day)) {
-                        _selectedDates.remove(day);
-                      } else {
-                        _selectedDates.add(day);
-                      }
-                    });
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isInteractable
-                          ? (isAvailable 
-                              ? AppColors.primaryTeal 
-                              : AppColors.lightGray.withValues(alpha: 0.3))
-                          : isAvailable
-                              ? AppColors.primaryTeal.withValues(alpha: 0.5)
-                              : AppColors.lightGray.withValues(alpha: 0.1),
-                      border: isInteractable
-                          ? Border.all(
-                              color: isSelected ? AppColors.amber : AppColors.primaryTeal.withValues(alpha: 0.5),
-                              width: ResponsiveUtils.w(context, 2),
-                            )
-                          : isSelected
-                              ? Border.all(
-                                  color: AppColors.amber,
-                                  width: ResponsiveUtils.w(context, 3),
-                                )
-                              : null,
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Text(
-                          day.toString(),
-                          style: TextStyle(
-                            color: isInteractable
-                                ? (isAvailable ? AppColors.white : AppColors.darkNavy)
-                                : isAvailable 
-                                    ? AppColors.white.withValues(alpha: 0.7) 
+                  return GestureDetector(
+                    onTap: !isInteractable
+                        ? null
+                        : () {
+                            setState(() {
+                              if (_selectedDates.contains(day)) {
+                                _selectedDates.remove(day);
+                              } else {
+                                _selectedDates.add(day);
+                              }
+                            });
+                          },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isInteractable
+                            ? (isAvailable
+                                  ? AppColors.primaryTeal
+                                  : AppColors.lightGray.withValues(alpha: 0.3))
+                            : isAvailable
+                            ? AppColors.primaryTeal.withValues(alpha: 0.5)
+                            : AppColors.lightGray.withValues(alpha: 0.1),
+                        border: isInteractable
+                            ? Border.all(
+                                color: isSelected
+                                    ? AppColors.amber
+                                    : AppColors.primaryTeal.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                width: ResponsiveUtils.w(context, 2),
+                              )
+                            : isSelected
+                            ? Border.all(
+                                color: AppColors.amber,
+                                width: ResponsiveUtils.w(context, 3),
+                              )
+                            : null,
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              day.toString(),
+                              style: TextStyle(
+                                color: isInteractable
+                                    ? (isAvailable
+                                          ? AppColors.white
+                                          : AppColors.darkNavy)
+                                    : isAvailable
+                                    ? AppColors.white.withValues(alpha: 0.7)
                                     : AppColors.darkNavy.withValues(alpha: 0.4),
-                            fontSize: 14,
-                            fontWeight: isInteractable ? FontWeight.bold : FontWeight.normal,
+                                fontSize: ResponsiveUtils.sp(context, 14),
+                                fontWeight: isInteractable
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
                           ),
-                        ),
-                        if (isSelected)
-                           Positioned(
-                             bottom: 4,
-                             child: Icon(Icons.check, size: 10, color: isAvailable ? AppColors.white : AppColors.darkNavy),
-                           )
-                      ],
+                          if (isSelected)
+                            Positioned(
+                              bottom: 4,
+                              child: Icon(
+                                Icons.check,
+                                size: 10,
+                                color: isAvailable
+                                    ? AppColors.white
+                                    : AppColors.darkNavy,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
               ResponsiveUtils.verticalSpace(context, 32),
               Text(
-                _selectedDates.isEmpty 
-                  ? 'Select dates to update status' 
-                  : '${_selectedDates.length} days selected',
+                _selectedDates.isEmpty
+                    ? 'Select dates to update status'
+                    : '${_selectedDates.length} days selected',
                 style: TextStyle(
                   fontSize: ResponsiveUtils.sp(context, 16),
                   fontWeight: FontWeight.bold,
@@ -389,20 +431,30 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _selectedDates.isEmpty ? null : () => _processAvailabilityUpdate(true),
+                        onPressed: _selectedDates.isEmpty
+                            ? null
+                            : () => _processAvailabilityUpdate(true),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryTeal,
                           disabledBackgroundColor: AppColors.lightGray,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveUtils.r(context, 12),
+                            ),
                           ),
-                          padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
+                          padding: EdgeInsets.symmetric(
+                            vertical: ResponsiveUtils.h(context, 16),
+                          ),
                         ),
-                        child: const Text(
-                          'Mark Available',
-                          style: TextStyle(
-                            color: AppColors.white,
-                            fontWeight: FontWeight.bold,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Mark Available',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: ResponsiveUtils.sp(context, 14),
+                            ),
                           ),
                         ),
                       ),
@@ -410,22 +462,36 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                     ResponsiveUtils.horizontalSpace(context, 12),
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _selectedDates.isEmpty ? null : () => _processAvailabilityUpdate(false),
+                        onPressed: _selectedDates.isEmpty
+                            ? null
+                            : () => _processAvailabilityUpdate(false),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                            color: _selectedDates.isEmpty ? AppColors.lightGray : AppColors.primaryTeal,
+                            color: _selectedDates.isEmpty
+                                ? AppColors.lightGray
+                                : AppColors.primaryTeal,
                             width: 2,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveUtils.r(context, 12),
+                            ),
                           ),
-                          padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 16)),
+                          padding: EdgeInsets.symmetric(
+                            vertical: ResponsiveUtils.h(context, 16),
+                          ),
                         ),
-                        child: Text(
-                          'Mark Unavailable',
-                          style: TextStyle(
-                            color: _selectedDates.isEmpty ? AppColors.lightGray : AppColors.primaryTeal,
-                            fontWeight: FontWeight.bold,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Mark Unavailable',
+                            style: TextStyle(
+                              color: _selectedDates.isEmpty
+                                  ? AppColors.lightGray
+                                  : AppColors.primaryTeal,
+                              fontWeight: FontWeight.bold,
+                              fontSize: ResponsiveUtils.sp(context, 14),
+                            ),
                           ),
                         ),
                       ),
@@ -434,28 +500,35 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                 ),
               ResponsiveUtils.verticalSpace(context, 32),
               // Legend
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: ResponsiveUtils.w(context, 16),
+                runSpacing: ResponsiveUtils.h(context, 8),
                 children: [
                   _buildLegendItem(AppColors.primaryTeal, 'Available'),
-                  ResponsiveUtils.horizontalSpace(context, 16),
-                  _buildLegendItem(AppColors.lightGray.withOpacity(0.3), 'Not Set'),
-                  ResponsiveUtils.horizontalSpace(context, 16),
+                  _buildLegendItem(
+                    AppColors.lightGray.withValues(alpha: 0.3),
+                    'Not Set',
+                  ),
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 16,
-                        height: 16,
+                        width: ResponsiveUtils.w(context, 16),
+                        height: ResponsiveUtils.h(context, 16),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.amber, width: 2),
+                          border: Border.all(
+                            color: AppColors.amber,
+                            width: ResponsiveUtils.w(context, 2),
+                          ),
                         ),
                       ),
                       ResponsiveUtils.horizontalSpace(context, 8),
-                      const Text(
+                      Text(
                         'Selected',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: ResponsiveUtils.sp(context, 12),
                           color: AppColors.textGray,
                         ),
                       ),
@@ -470,23 +543,19 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     );
   }
 
-
   Widget _buildLegendItem(Color color, String label) {
     return Row(
       children: [
         Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-          ),
+          width: ResponsiveUtils.w(context, 16),
+          height: ResponsiveUtils.h(context, 16),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
         ),
         ResponsiveUtils.horizontalSpace(context, 8),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
+          style: TextStyle(
+            fontSize: ResponsiveUtils.sp(context, 12),
             color: AppColors.textGray,
           ),
         ),

@@ -951,17 +951,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         style: AppTextStyles.body(context).copyWith(
                           color: textColor,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (status.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: ResponsiveUtils.w(context, 8), vertical: ResponsiveUtils.h(context, 4)),
                         decoration: BoxDecoration(
                           color: statusColor == AppColors.white
                               ? AppColors.darkNavy.withValues(alpha: 0.8)
                               : statusColor.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 4)),
                         ),
                         child: Text(
                           status,
@@ -969,6 +971,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             color: statusColor,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 1,
                         ),
                       ),
                   ],
@@ -985,6 +988,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                           style: AppTextStyles.caption(context).copyWith(
                             color: textColor,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

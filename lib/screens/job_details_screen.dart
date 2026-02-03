@@ -5,6 +5,7 @@ import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
+import '../utils/responsive_utils.dart';
 
 class JobDetailsScreen extends StatefulWidget {
   const JobDetailsScreen({Key? key}) : super(key: key);
@@ -211,9 +212,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         ),
         title: Text(
           'Job Details',
-          style: AppTextStyles.headline(
-            context,
-          ).copyWith(color: AppColors.white, fontSize: 20),
+          style: AppTextStyles.headline(context).copyWith(
+            color: AppColors.white,
+            fontSize: ResponsiveUtils.sp(context, 20),
+          ),
         ),
       ),
       body: _buildBody(),
@@ -276,20 +278,22 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Card 1: Car Information & Address
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                 decoration: BoxDecoration(
                   color: AppColors.veryLightGray,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 16),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 8,
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: ResponsiveUtils.r(context, 8),
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -301,18 +305,22 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: EdgeInsets.all(
+                            ResponsiveUtils.w(context, 10),
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.gold.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveUtils.r(context, 12),
+                            ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.directions_car,
                             color: AppColors.gold,
-                            size: 28,
+                            size: ResponsiveUtils.r(context, 28),
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        ResponsiveUtils.horizontalSpace(context, 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,38 +328,42 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                               Text(
                                 carModel,
                                 style: AppTextStyles.title(context).copyWith(
-                                  fontSize: 18,
+                                  fontSize: ResponsiveUtils.sp(context, 18),
                                   color: AppColors.darkNavy,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              ResponsiveUtils.verticalSpace(context, 4),
                               Row(
                                 children: [
                                   Container(
-                                    width: 14,
-                                    height: 14,
+                                    width: ResponsiveUtils.w(context, 14),
+                                    height: ResponsiveUtils.h(context, 14),
                                     decoration: BoxDecoration(
                                       color: _getColorFromName(carColor),
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: Colors.grey.shade300,
-                                        width: 1,
+                                        width: ResponsiveUtils.w(context, 1),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 6),
+                                  ResponsiveUtils.horizontalSpace(context, 6),
                                   Text(
                                     carColor,
                                     style: AppTextStyles.body(
                                       context,
                                     ).copyWith(color: AppColors.lightGray),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    '• ${vehicle?.numberPlate ?? ''}',
-                                    style: AppTextStyles.body(context).copyWith(
-                                      color: AppColors.textGray,
-                                      fontWeight: FontWeight.w500,
+                                  ResponsiveUtils.horizontalSpace(context, 12),
+                                  Flexible(
+                                    child: Text(
+                                      '• ${vehicle?.numberPlate ?? ''}',
+                                      style: AppTextStyles.body(context)
+                                          .copyWith(
+                                            color: AppColors.textGray,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -360,13 +372,15 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: ResponsiveUtils.w(context, 10),
+                            vertical: ResponsiveUtils.h(context, 6),
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveUtils.r(context, 8),
+                            ),
                           ),
                           child: Text(
                             jobId,
@@ -378,31 +392,35 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    const Divider(height: 40),
+                    ResponsiveUtils.verticalSpace(context, 16),
+                    Divider(height: ResponsiveUtils.h(context, 40)),
                     if (booking?.fullAddress != null &&
                         booking!.fullAddress.isNotEmpty &&
                         !booking.fullAddress.toLowerCase().contains(
                           'unknown',
                         )) ...[
-                      const SizedBox(height: 16),
+                      ResponsiveUtils.verticalSpace(context, 16),
                       // Address Section
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: EdgeInsets.all(
+                              ResponsiveUtils.w(context, 8),
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.red.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(
+                                ResponsiveUtils.r(context, 8),
+                              ),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.location_on,
                               color: Colors.redAccent,
-                              size: 20,
+                              size: ResponsiveUtils.r(context, 20),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          ResponsiveUtils.horizontalSpace(context, 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,7 +433,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                         fontWeight: FontWeight.w500,
                                       ),
                                 ),
-                                const SizedBox(height: 4),
+                                ResponsiveUtils.verticalSpace(context, 4),
                                 Text(
                                   booking.locationName,
                                   style: AppTextStyles.body(context).copyWith(
@@ -423,23 +441,29 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                     color: AppColors.darkNavy,
                                   ),
                                 ),
-                                const SizedBox(height: 2),
+                                ResponsiveUtils.verticalSpace(context, 2),
                                 Text(
                                   booking.fullAddress,
                                   style: AppTextStyles.caption(context)
                                       .copyWith(
                                         color: AppColors.lightGray,
-                                        fontSize: 13,
+                                        fontSize: ResponsiveUtils.sp(
+                                          context,
+                                          13,
+                                        ),
                                       ),
                                 ),
                                 if (property?.zone != null) ...[
-                                  const SizedBox(height: 2),
+                                  ResponsiveUtils.verticalSpace(context, 2),
                                   Text(
                                     property!.zone!,
                                     style: AppTextStyles.caption(context)
                                         .copyWith(
                                           color: AppColors.lightGray,
-                                          fontSize: 13,
+                                          fontSize: ResponsiveUtils.sp(
+                                            context,
+                                            13,
+                                          ),
                                         ),
                                   ),
                                 ],
@@ -448,42 +472,43 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      const Divider(height: 1),
+                      ResponsiveUtils.verticalSpace(context, 16),
+                      Divider(height: ResponsiveUtils.h(context, 1)),
                     ],
                     // Customer Info Section
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 44,
-                          height: 44,
+                          width: ResponsiveUtils.w(context, 44),
+                          height: ResponsiveUtils.h(context, 44),
                           decoration: BoxDecoration(
                             color: AppColors.primaryTeal.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: customer?.idProofImageUrl != null
                               ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(22),
+                                  borderRadius: BorderRadius.circular(
+                                    ResponsiveUtils.r(context, 22),
+                                  ),
                                   child: Image.network(
                                     customer!.idProofImageUrl!,
                                     fit: BoxFit.cover,
                                     errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                              Icons.person,
-                                              color: AppColors.primaryTeal,
-                                              size: 20,
-                                            ),
+                                        (context, error, stackTrace) => Icon(
+                                          Icons.person,
+                                          color: AppColors.primaryTeal,
+                                          size: ResponsiveUtils.r(context, 20),
+                                        ),
                                   ),
                                 )
-                              : const Icon(
+                              : Icon(
                                   Icons.person,
                                   color: AppColors.primaryTeal,
-                                  size: 20,
+                                  size: ResponsiveUtils.r(context, 20),
                                 ),
                         ),
-                        const SizedBox(width: 12),
+                        ResponsiveUtils.horizontalSpace(context, 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -495,7 +520,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              ResponsiveUtils.verticalSpace(context, 4),
                               Text(
                                 customer?.name ?? 'Unknown Customer',
                                 style: AppTextStyles.body(context).copyWith(
@@ -503,12 +528,12 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                   color: AppColors.darkNavy,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              ResponsiveUtils.verticalSpace(context, 2),
                               Text(
                                 customer?.phone ?? '',
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.lightGray,
-                                  fontSize: 13,
+                                  fontSize: ResponsiveUtils.sp(context, 13),
                                 ),
                               ),
                             ],
@@ -519,18 +544,20 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              ResponsiveUtils.verticalSpace(context, 16),
 
               // Card 2: Today's Task
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                 decoration: BoxDecoration(
                   color: AppColors.veryLightGray,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 16),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 8,
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: ResponsiveUtils.r(context, 8),
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -539,34 +566,36 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header with Service Type and Status
-                    // Header with Service Type and Status
                     Wrap(
                       alignment: WrapAlignment.spaceBetween,
                       crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: ResponsiveUtils.w(context, 8),
+                      runSpacing: ResponsiveUtils.h(context, 8),
                       children: [
                         Text(
                           'Today\'s Task',
-                          style: AppTextStyles.title(
-                            context,
-                          ).copyWith(fontSize: 18, color: AppColors.darkNavy),
+                          style: AppTextStyles.title(context).copyWith(
+                            fontSize: ResponsiveUtils.sp(context, 18),
+                            color: AppColors.darkNavy,
+                          ),
                         ),
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: ResponsiveUtils.w(context, 8),
+                          runSpacing: ResponsiveUtils.h(context, 8),
                           children: [
                             // Status Badge
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: ResponsiveUtils.w(context, 10),
+                                vertical: ResponsiveUtils.h(context, 6),
                               ),
                               decoration: BoxDecoration(
                                 color: _getStatusColor(
                                   _job!.status,
                                 ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(
+                                  ResponsiveUtils.r(context, 8),
+                                ),
                               ),
                               child: Text(
                                 _job!.displayStatus,
@@ -574,13 +603,15 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                   color: _getStatusColor(_job!.status),
                                   fontWeight: FontWeight.w600,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             // Service Type Badge
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: ResponsiveUtils.w(context, 14),
+                                vertical: ResponsiveUtils.h(context, 8),
                               ),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -589,13 +620,15 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                     AppColors.gold.withValues(alpha: 0.8),
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(
+                                  ResponsiveUtils.r(context, 20),
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: AppColors.gold.withValues(
                                       alpha: 0.3,
                                     ),
-                                    blurRadius: 8,
+                                    blurRadius: ResponsiveUtils.r(context, 8),
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
@@ -606,9 +639,11 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                   Icon(
                                     Icons.star,
                                     color: Colors.white,
-                                    size: 16,
+                                    size: ResponsiveUtils.r(context, 16),
                                   ),
-                                  SizedBox(width: 6),
+                                  SizedBox(
+                                    width: ResponsiveUtils.w(context, 6),
+                                  ),
                                   Text(
                                     serviceName,
                                     style: AppTextStyles.caption(context)
@@ -616,6 +651,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
@@ -624,7 +661,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    ResponsiveUtils.verticalSpace(context, 20),
                     // Services List
                     if (services.isNotEmpty)
                       ...services.map(
@@ -638,23 +675,29 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                       _buildTaskItem('Car Wash Service', Icons.local_car_wash),
 
                     // Price Summary
-                    const SizedBox(height: 12),
+                    ResponsiveUtils.verticalSpace(context, 12),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
                       decoration: BoxDecoration(
                         color: AppColors.gold.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.r(context, 10),
+                        ),
                       ),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Total Earnings',
-                            style: AppTextStyles.body(context).copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.darkNavy,
+                          Flexible(
+                            child: Text(
+                              'Total Earnings',
+                              style: AppTextStyles.body(context).copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.darkNavy,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          SizedBox(width: ResponsiveUtils.w(context, 8)),
                           Text(
                             '\$${earnedAmount.toStringAsFixed(2)}',
                             style: AppTextStyles.title(context).copyWith(
@@ -668,25 +711,27 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              ResponsiveUtils.verticalSpace(context, 24),
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: ResponsiveUtils.h(context, 56),
                 child: ElevatedButton(
                   onPressed: _isNavigating ? null : _handleNavigateToJob,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryTeal,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 12),
+                      ),
                     ),
                   ),
                   child: _isNavigating
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
+                      ? SizedBox(
+                          width: ResponsiveUtils.w(context, 24),
+                          height: ResponsiveUtils.h(context, 24),
                           child: CircularProgressIndicator(
                             color: AppColors.white,
-                            strokeWidth: 2,
+                            strokeWidth: ResponsiveUtils.w(context, 2),
                           ),
                         )
                       : Text(
@@ -747,25 +792,37 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
   Widget _buildTaskItem(String task, IconData icon, {String? price}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 12)),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtils.w(context, 12),
+          vertical: ResponsiveUtils.h(context, 12),
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 10)),
+          border: Border.all(
+            color: Colors.grey.shade200,
+            width: ResponsiveUtils.w(context, 1),
+          ),
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 8)),
               decoration: BoxDecoration(
                 color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.r(context, 8),
+                ),
               ),
-              child: Icon(icon, color: AppColors.primaryTeal, size: 20),
+              child: Icon(
+                icon,
+                color: AppColors.primaryTeal,
+                size: ResponsiveUtils.r(context, 20),
+              ),
             ),
-            const SizedBox(width: 12),
+            ResponsiveUtils.horizontalSpace(context, 12),
             Expanded(
               child: Text(
                 task,
@@ -786,7 +843,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               Icon(
                 Icons.check_circle,
                 color: AppColors.primaryTeal.withValues(alpha: 0.3),
-                size: 22,
+                size: ResponsiveUtils.r(context, 22),
               ),
           ],
         ),
