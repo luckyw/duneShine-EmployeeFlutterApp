@@ -5,9 +5,13 @@ class ApiConstants {
   // Private constructor to prevent instantiation
   ApiConstants._();
 
-  /// Base URL for the API
-  static const String baseUrl = 'https://duneshine.bztechhub.com';
-  // static const String baseUrl = 'https://duneshine.ae';
+  /// Environment base URLs — change only [baseUrl] below to switch environment.
+  static const String _baseUrlProd = 'https://duneshine.bztechhub.com';
+  static const String _baseUrlAe = 'https://duneshine.ae';
+
+  /// Active base URL — change this single line to switch between prod and AE.
+  static const String baseUrl = _baseUrlProd;
+  // static const String baseUrl = _baseUrlAe;
 
   /// API Endpoints
   static const String loginEndpoint = '/api/employee/login';

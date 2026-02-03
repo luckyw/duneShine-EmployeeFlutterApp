@@ -187,7 +187,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     final services = _job?.booking?.servicesPayload ?? [];
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.veryLightGray,
       appBar: AppBar(
         backgroundColor: AppColors.primaryTeal,
         elevation: 0,
@@ -201,227 +201,313 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
         ),
         title: Text(
           'Wash in Progress',
-          style: AppTextStyles.headline(
-            context,
-          ).copyWith(color: AppColors.white, fontSize: ResponsiveUtils.sp(context, 20)),
+          style: AppTextStyles.headline(context).copyWith(
+            color: AppColors.white,
+            fontSize: ResponsiveUtils.sp(context, 20),
+          ),
         ),
+        centerTitle: true,
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Stopwatch display
-                        Container(
-                          width: ResponsiveUtils.r(context, 220),
-                          height: ResponsiveUtils.r(context, 220),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primaryTeal,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primaryTeal.withValues(alpha: 0.3),
-                                blurRadius: ResponsiveUtils.r(context, 20),
-                                spreadRadius: ResponsiveUtils.r(context, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.timer,
-                                size: ResponsiveUtils.r(context, 32),
-                                color: AppColors.white.withValues(alpha: 0.8),
-                              ),
-                              ResponsiveUtils.verticalSpace(context, 8),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    _formatDuration(_elapsedSeconds),
-                                    style: AppTextStyles.headline(context).copyWith(
-                                      fontSize: ResponsiveUtils.sp(context, 42),
-                                      color: AppColors.white,
-                                      fontFeatures: const [FontFeature.tabularFigures()],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              ResponsiveUtils.verticalSpace(context, 8),
-                              Text(
-                                _isRunning ? 'Washing...' : 'Paused',
-                                style: AppTextStyles.body(
-                                  context,
-                                ).copyWith(
-                                  color: AppColors.white, 
-                                  fontSize: ResponsiveUtils.sp(context, 16)
-                                ),
-                              ),
-                            ],
-                          ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Top Section with Timer
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(
+                top: ResponsiveUtils.h(context, 40),
+                bottom: ResponsiveUtils.h(context, 50),
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primaryTeal,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(ResponsiveUtils.r(context, 40)),
+                  bottomRight: Radius.circular(ResponsiveUtils.r(context, 40)),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryTeal.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Timer Circle
+                  Container(
+                    width: ResponsiveUtils.r(context, 210),
+                    height: ResponsiveUtils.r(context, 210),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.white.withValues(alpha: 0.2),
+                        width: 8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 15,
+                          spreadRadius: 2,
                         ),
-                        ResponsiveUtils.verticalSpace(context, 24),
-                        // Pause/Resume Button
-                        TextButton.icon(
-                          onPressed: _isRunning ? _pauseStopwatch : _resumeStopwatch,
-                          icon: Icon(
-                            _isRunning
-                                ? Icons.pause_circle_outline
-                                : Icons.play_circle_outline,
-                            color: AppColors.primaryTeal,
-                            size: ResponsiveUtils.sp(context, 24),
+                      ],
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.white,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.timer_outlined,
+                            size: ResponsiveUtils.r(context, 28),
+                            color: AppColors.primaryTeal.withValues(alpha: 0.6),
                           ),
-                          label: Text(
+                          ResponsiveUtils.verticalSpace(context, 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 12)),
+                              child: Text(
+                                _formatDuration(_elapsedSeconds),
+                                style: AppTextStyles.headline(context).copyWith(
+                                  fontSize: ResponsiveUtils.sp(context, 40),
+                                  color: AppColors.primaryTeal,
+                                  fontWeight: FontWeight.bold,
+                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                ),
+                              ),
+                            ),
+                          ),
+                          ResponsiveUtils.verticalSpace(context, 4),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: ResponsiveUtils.w(context, 12),
+                              vertical: ResponsiveUtils.h(context, 4),
+                            ),
+                            decoration: BoxDecoration(
+                              color: _isRunning 
+                                ? AppColors.success.withValues(alpha: 0.1)
+                                : AppColors.gold.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _isRunning ? 'WASHING' : 'PAUSED',
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: _isRunning ? AppColors.success : AppColors.gold,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                                fontSize: ResponsiveUtils.sp(context, 10),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  ResponsiveUtils.verticalSpace(context, 30),
+                  // Control Button
+                  GestureDetector(
+                    onTap: _isRunning ? _pauseStopwatch : _resumeStopwatch,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveUtils.w(context, 24),
+                        vertical: ResponsiveUtils.h(context, 12),
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: AppColors.white.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            color: AppColors.white,
+                            size: ResponsiveUtils.r(context, 24),
+                          ),
+                          ResponsiveUtils.horizontalSpace(context, 8),
+                          Text(
                             _isRunning ? 'Pause Timer' : 'Resume Timer',
-                            style: TextStyle(
-                              color: AppColors.primaryTeal,
+                            style: AppTextStyles.subtitle(context).copyWith(
+                              color: AppColors.white,
                               fontSize: ResponsiveUtils.sp(context, 16),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Bottom Section with Job Details
+            Padding(
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'JOB DETAILS',
+                    style: AppTextStyles.caption(context).copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                      color: AppColors.lightGray,
+                    ),
+                  ),
+                  ResponsiveUtils.verticalSpace(context, 12),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
                         ),
-                        ResponsiveUtils.verticalSpace(context, 16),
+                      ],
+                    ),
+                    padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+                    child: Column(
+                      children: [
+                        _buildDetailItem(
+                          Icons.tag,
+                          'Job ID',
+                          'JOB-${_job?.id ?? "..."}',
+                          color: AppColors.primaryTeal,
+                        ),
+                        _buildDivider(),
+                        _buildDetailItem(
+                          Icons.location_on_outlined,
+                          'Address',
+                          _job?.booking?.fullAddress ?? 'Fetching address...',
+                        ),
+                        _buildDivider(),
+                        _buildDetailItem(
+                          Icons.directions_car_outlined,
+                          'Vehicle',
+                          '${vehicle?.brandName} ${vehicle?.model} (${vehicle?.color ?? ""})\nPlate: ${vehicle?.numberPlate ?? ""}',
+                        ),
+                        _buildDivider(),
+                        _buildDetailItem(
+                          Icons.person_outline,
+                          'Customer',
+                          '${_job?.booking?.customer?.name ?? "..."}\n${_job?.booking?.customer?.phone ?? ""}',
+                        ),
+                        _buildDivider(),
+                        _buildDetailItem(
+                          Icons.settings_outlined,
+                          'Services',
+                          services.isNotEmpty
+                              ? services.map((s) => s.name).join(', ')
+                              : 'Standard Wash',
+                        ),
+                        if (_job?.booking?.notes != null && _job!.booking!.notes!.isNotEmpty) ...[
+                          _buildDivider(),
+                          _buildDetailItem(
+                            Icons.info_outline,
+                            'Notes',
+                            _job!.booking!.notes!,
+                          ),
+                        ],
+                        if (vehicle?.parkingNotes != null && vehicle!.parkingNotes!.isNotEmpty) ...[
+                          _buildDivider(),
+                          _buildDetailItem(
+                            Icons.local_parking_outlined,
+                            'Parking Notes',
+                            vehicle!.parkingNotes!,
+                            isLast: true,
+                          ),
+                        ],
                       ],
                     ),
                   ),
-                ),
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(ResponsiveUtils.r(context, 24)),
-                      topRight: Radius.circular(ResponsiveUtils.r(context, 24)),
+                  ResponsiveUtils.verticalSpace(context, 30),
+                  // Finish Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: ResponsiveUtils.h(context, 60),
+                    child: ElevatedButton(
+                      onPressed: _finishWash,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.darkNavy,
+                        foregroundColor: AppColors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                        ),
+                        elevation: 4,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.camera_alt_outlined, size: ResponsiveUtils.r(context, 22)),
+                          ResponsiveUtils.horizontalSpace(context, 10),
+                          Text(
+                            'FINISH WASH',
+                            style: AppTextStyles.button(context).copyWith(
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
-                          border: Border.all(color: AppColors.lightGray.withValues(alpha: 0.2)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'JOB-${_job?.id}',
-                                  style: AppTextStyles.subtitle(context).copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primaryTeal,
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: ResponsiveUtils.w(context, 10), vertical: ResponsiveUtils.h(context, 4)),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
-                                  ),
-                                  child: Text(
-                                    _job?.displayStatus ?? 'IN PROGRESS',
-                                    style: AppTextStyles.caption(context).copyWith(
-                                      color: AppColors.primaryTeal,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: ResponsiveUtils.sp(context, 10),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 12)),
-                              child: const Divider(height: 1),
-                            ),
-                            _buildInfoRow(
-                              Icons.location_on_outlined,
-                              'Location',
-                              _job?.booking?.fullAddress ?? 'Unknown Location',
-                            ),
-                            ResponsiveUtils.verticalSpace(context, 12),
-                            _buildInfoRow(
-                              Icons.directions_car_outlined,
-                              'Vehicle',
-                              '${vehicle?.brandName} ${vehicle?.model} (${vehicle?.color})\nPlate: ${vehicle?.numberPlate}',
-                            ),
-                            ResponsiveUtils.verticalSpace(context, 12),
-                            _buildInfoRow(
-                              Icons.person_outline,
-                              'Customer',
-                              '${_job?.booking?.customer?.name ?? 'Unknown'}\n${_job?.booking?.customer?.phone ?? ''}',
-                            ),
-                            ResponsiveUtils.verticalSpace(context, 12),
-                            _buildInfoRow(
-                              Icons.list_alt_outlined,
-                              'Services',
-                              services.isNotEmpty
-                                  ? services.map((s) => s.name).join(', ')
-                                  : 'Car Wash Service',
-                            ),
-                            if (_job?.booking?.notes != null &&
-                                _job!.booking!.notes!.isNotEmpty) ...[
-                              ResponsiveUtils.verticalSpace(context, 12),
-                              _buildInfoRow(
-                                Icons.note_alt_outlined,
-                                'Customer Notes',
-                                _job!.booking!.notes!,
-                              ),
-                            ],
-                            if (vehicle?.parkingNotes != null &&
-                                vehicle!.parkingNotes!.isNotEmpty) ...[
-                              ResponsiveUtils.verticalSpace(context, 12),
-                              _buildInfoRow(
-                                Icons.local_parking_outlined,
-                                'Parking Notes',
-                                vehicle!.parkingNotes!,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      ResponsiveUtils.verticalSpace(context, 20),
-                      SizedBox(
-                        width: double.infinity,
-                        height: ResponsiveUtils.h(context, 56),
-                        child: ElevatedButton(
-                          onPressed: _finishWash,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.darkTeal,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                            ),
-                          ),
-                          child: Text(
-                            'Take Photo & Finish Wash',
-                            style: AppTextStyles.button(
-                              context,
-                            ).copyWith(color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ],
+                  ResponsiveUtils.verticalSpace(context, 20),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String label, String value, {Color? color, bool isLast = false}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 4)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(ResponsiveUtils.r(context, 8)),
+            decoration: BoxDecoration(
+              color: (color ?? AppColors.primaryTeal).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: ResponsiveUtils.r(context, 20),
+              color: color ?? AppColors.primaryTeal,
+            ),
+          ),
+          ResponsiveUtils.horizontalSpace(context, 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: AppTextStyles.caption(context).copyWith(
+                    fontSize: ResponsiveUtils.sp(context, 10),
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.lightGray,
+                  ),
+                ),
+                ResponsiveUtils.verticalSpace(context, 2),
+                Text(
+                  value,
+                  style: AppTextStyles.body(context).copyWith(
+                    color: AppColors.darkNavy,
+                    fontSize: ResponsiveUtils.sp(context, 14),
+                    height: 1.3,
                   ),
                 ),
               ],
@@ -431,36 +517,18 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
       ),
     );
   }
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: ResponsiveUtils.r(context, 20), color: AppColors.primaryTeal),
-        ResponsiveUtils.horizontalSpace(context, 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: AppTextStyles.caption(context).copyWith(
-                  color: AppColors.lightGray,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              ResponsiveUtils.verticalSpace(context, 2),
-              Text(
-                value,
-                style: AppTextStyles.body(context).copyWith(
-                  color: AppColors.darkNavy,
-                  fontSize: ResponsiveUtils.sp(context, 14),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+
+  Widget _buildDivider() {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: ResponsiveUtils.w(context, 52),
+        top: ResponsiveUtils.h(context, 12),
+        bottom: ResponsiveUtils.h(context, 12),
+      ),
+      child: Divider(
+        height: 1,
+        color: AppColors.lightGray.withValues(alpha: 0.1),
+      ),
     );
   }
 }

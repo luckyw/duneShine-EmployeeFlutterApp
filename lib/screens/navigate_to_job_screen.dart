@@ -10,6 +10,8 @@ import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/location_tracking_service.dart';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 
 class NavigateToJobScreen extends StatefulWidget {
   const NavigateToJobScreen({Key? key}) : super(key: key);
@@ -215,39 +217,95 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     }
   }
 
+
+  /// Create a custom marker icon from a Flutter Icon
+  Future<BitmapDescriptor> _createMarkerImageFromIcon(IconData icon, Color color) async {
+    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+    final Paint paint = Paint()..color = color;
+    final double size = 100.0; // Size of the marker
+
+    // Draw background circle
+    canvas.drawCircle(Offset(size / 2, size / 2), size / 2, paint);
+
+    // Draw icon
+    final TextPainter textPainter = TextPainter(
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(icon.codePoint),
+      style: TextStyle(
+        fontSize: size * 0.6,
+        fontFamily: icon.fontFamily,
+        color: Colors.white,
+      ),
+    );
+    textPainter.layout();
+    textPainter.paint(
+      canvas,
+      Offset(
+        (size - textPainter.width) / 2,
+        (size - textPainter.height) / 2,
+      ),
+    );
+
+    final ui.Image image = await pictureRecorder.endRecording().toImage(
+      size.toInt(),
+      size.toInt(),
+    );
+    final ByteData? data = await image.toByteData(format: ui.ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
+  }
+
   /// Update map markers
-  void _updateMarkers() {
-    _markers.clear();
-    
-    // Employee marker (blue)
+  Future<void> _updateMarkers() async {
+    // Employee marker (Custom Car Icon)
     if (_currentPosition != null) {
-      _markers.add(
-        Marker(
-          markerId: const MarkerId('employee'),
-          position: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          infoWindow: const InfoWindow(title: 'Your Location'),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-        ),
+      final BitmapDescriptor employeeIcon = await _createMarkerImageFromIcon(
+        Icons.directions_car,
+        AppColors.primaryTeal,
       );
+
+      setState(() {
+         // Clear existing employee marker if any
+        _markers.removeWhere((m) => m.markerId.value == 'employee');
+        
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('employee'),
+            position: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+            infoWindow: const InfoWindow(title: 'Your Location'),
+            icon: employeeIcon,
+          ),
+        );
+      });
     }
     
     // Customer/Property marker
     if (_customerLocation != null) {
-      final booking = _job?.booking;
-      _markers.add(
-        Marker(
-          markerId: const MarkerId('customer'),
-          position: _customerLocation!,
-          infoWindow: InfoWindow(
-            title: booking?.locationName ?? 'Property Location',
-            snippet: booking?.fullAddress ?? 'Destination',
-          ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        ),
+      final BitmapDescriptor customerIcon = await _createMarkerImageFromIcon(
+        Icons.location_on,
+        Colors.redAccent,
       );
+
+      final booking = _job?.booking;
+      setState(() {
+         // Clear existing customer marker if any
+        _markers.removeWhere((m) => m.markerId.value == 'customer');
+
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('customer'),
+            position: _customerLocation!,
+            infoWindow: InfoWindow(
+              title: booking?.locationName ?? 'Property Location',
+              snippet: booking?.fullAddress ?? 'Destination',
+            ),
+            icon: customerIcon,
+          ),
+        );
+      });
     }
-    
-    if (mounted) setState(() {});
   }
 
   /// Fetch and draw route between employee and customer
@@ -686,9 +744,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.location_on,
-                                  color: AppColors.primaryTeal, size: 20),
-                              const SizedBox(width: 8),
+                          const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   locationAddress,
@@ -699,6 +755,45 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                               ),
                             ],
                           ),
+                        ],
+                        const SizedBox(height: 16),
+                        
+                        // Customer Name & Call Button
+                        if (booking?.customer?.phone != null && booking!.customer!.phone.isNotEmpty) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  booking.customer!.name,
+                                  style: AppTextStyles.body(context).copyWith(
+                                    color: AppColors.darkNavy,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.call, color: AppColors.success),
+                                onPressed: () async {
+                                  final Uri launchUri = Uri(
+                                    scheme: 'tel',
+                                    path: booking.customer!.phone,
+                                  );
+                                  if (await canLaunchUrl(launchUri)) {
+                                    await launchUrl(launchUri);
+                                  } else {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Could not launch dialer')),
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
                         ],
                         const SizedBox(height: 20),
                         
