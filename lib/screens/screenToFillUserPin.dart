@@ -33,10 +33,12 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_job == null) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+          {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
-        
+
         // If the job is "lean" (missing booking info), fetch full details
         if (_job!.booking == null) {
           _fetchFullJobDetails();
@@ -67,7 +69,13 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? image = await _picker.pickImage(source: source);
+      // Compress image to reduce file size for faster uploads
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
       if (image != null) {
         setState(() {
           _capturedPhoto = File(image.path);
@@ -75,9 +83,9 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking image: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
     }
   }
 
@@ -89,8 +97,10 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
       return;
     }
 
-    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
-    
+    final routeArgs =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+        {};
+
     // Get job ID - try from Job object first, then from widget
     int? jobId;
     if (_job != null) {
@@ -135,7 +145,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
       photoPath: _capturedPhoto!.path,
       token: token,
     );
-    
+
     // Print response for debugging/analysis
     debugPrint('=== START WASH API RESPONSE ===');
     debugPrint('Success: ${response['success']}');
@@ -152,7 +162,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
       if (mounted) {
         final jobJson = response['data']?['job'] as Map<String, dynamic>?;
         Job? nextJob = _job;
-        
+
         if (jobJson != null) {
           final newJob = Job.fromJson(jobJson);
           if (_job != null) {
@@ -161,7 +171,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
             nextJob = newJob;
           }
         }
-        
+
         Navigator.pushNamed(
           context,
           '/wash-progress',
@@ -236,7 +246,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _job?.booking?.vehicle != null 
+                          _job?.booking?.vehicle != null
                               ? '${_job!.booking!.vehicle!.brandName} ${_job!.booking!.vehicle!.model}'
                               : widget.carModel,
                           style: const TextStyle(
@@ -269,10 +279,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
               const SizedBox(height: 8),
               Text(
                 'Take a clear photo of the car before starting the wash',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 24),
               if (_isPhotoUploaded && _capturedPhoto != null)
@@ -283,14 +290,14 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
                       height: 300,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primaryTeal, width: 2),
+                        border: Border.all(
+                          color: AppColors.primaryTeal,
+                          width: 2,
+                        ),
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.file(
-                          _capturedPhoto!,
-                          fit: BoxFit.cover,
-                        ),
+                        child: Image.file(_capturedPhoto!, fit: BoxFit.cover),
                       ),
                     ),
                     Positioned(
@@ -387,11 +394,15 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: (_isPhotoUploaded && !_isUploading) ? _verifyAndProceed : null,
+                  onPressed: (_isPhotoUploaded && !_isUploading)
+                      ? _verifyAndProceed
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.darkTeal,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
+                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(
+                      0.4,
+                    ),
                     disabledForegroundColor: Colors.white.withOpacity(0.6),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

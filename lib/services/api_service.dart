@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
@@ -25,19 +26,13 @@ class ApiService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: jsonEncode({
-          'phone': phone,
-          'otp': otp,
-        }),
+        body: jsonEncode({'phone': phone, 'otp': otp}),
       );
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -46,18 +41,13 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
   /// Logout with Bearer token authorization
   /// Returns a map containing the response data
-  Future<Map<String, dynamic>> logout({
-    required String token,
-  }) async {
+  Future<Map<String, dynamic>> logout({required String token}) async {
     try {
       final response = await http.post(
         Uri.parse(ApiConstants.logoutUrl),
@@ -71,10 +61,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -83,18 +70,13 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
   /// Get employee profile information
   /// Returns a map containing the employee profile data including vendor info
-  Future<Map<String, dynamic>> getProfile({
-    required String token,
-  }) async {
+  Future<Map<String, dynamic>> getProfile({required String token}) async {
     try {
       final response = await http.get(
         Uri.parse(ApiConstants.profileUrl),
@@ -108,10 +90,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -120,10 +99,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -152,10 +128,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -165,18 +138,13 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Set availability error: $e');
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
   /// Get employee availability dates
   /// Returns a list of availability records with dates and status
-  Future<Map<String, dynamic>> getAvailability({
-    required String token,
-  }) async {
+  Future<Map<String, dynamic>> getAvailability({required String token}) async {
     try {
       final response = await http.get(
         Uri.parse(ApiConstants.availabilityUrl),
@@ -190,10 +158,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -203,18 +168,13 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Get availability error: $e');
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
   /// Get today's jobs for the authenticated employee
   /// Returns a map containing the response data with jobs list
-  Future<Map<String, dynamic>> getTodaysJobs({
-    required String token,
-  }) async {
+  Future<Map<String, dynamic>> getTodaysJobs({required String token}) async {
     try {
       final response = await http.get(
         Uri.parse(ApiConstants.todaysJobsUrl),
@@ -228,10 +188,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -240,10 +197,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -266,10 +220,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -278,10 +229,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -304,22 +252,17 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Failed to fetch property details',
+          'message':
+              responseData['message'] ?? 'Failed to fetch property details',
           'data': responseData,
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -342,10 +285,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -354,10 +294,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -380,10 +317,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -392,10 +326,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -414,18 +345,13 @@ class ApiService {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'otp': otp,
-        }),
+        body: jsonEncode({'otp': otp}),
       );
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -434,10 +360,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -449,31 +372,44 @@ class ApiService {
     required String token,
   }) async {
     try {
+      // Check file size before upload (max 10MB)
+      final file = File(photoPath);
+      final fileSize = await file.length();
+      const maxSize = 10 * 1024 * 1024; // 10MB
+
+      if (fileSize > maxSize) {
+        return {
+          'success': false,
+          'message':
+              'Photo is too large (${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB). Maximum size is 10MB.',
+        };
+      }
+
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(ApiConstants.startWashUrl(jobId)),
       );
-      
+
       request.headers.addAll({
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
       });
-      
+
       // Add photo file
-      request.files.add(
-        await http.MultipartFile.fromPath('photo', photoPath),
+      request.files.add(await http.MultipartFile.fromPath('photo', photoPath));
+
+      // Send with 30 second timeout
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
       );
-      
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      
+      final response = await http.Response.fromStream(
+        streamedResponse,
+      ).timeout(const Duration(seconds: 10));
+
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -483,10 +419,7 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Start wash error: $e');
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -500,36 +433,49 @@ class ApiService {
     int? durationSeconds,
   }) async {
     try {
+      // Check file size before upload (max 10MB)
+      final file = File(photoPath);
+      final fileSize = await file.length();
+      const maxSize = 10 * 1024 * 1024; // 10MB
+
+      if (fileSize > maxSize) {
+        return {
+          'success': false,
+          'message':
+              'Photo is too large (${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB). Maximum size is 10MB.',
+        };
+      }
+
       final request = http.MultipartRequest(
         'POST',
         Uri.parse(ApiConstants.finishWashUrl(jobId)),
       );
-      
+
       request.headers.addAll({
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
       });
-      
+
       // Add photo file
-      request.files.add(
-        await http.MultipartFile.fromPath('photo', photoPath),
-      );
-      
+      request.files.add(await http.MultipartFile.fromPath('photo', photoPath));
+
       // Add duration if provided
       if (durationSeconds != null) {
         request.fields['duration_seconds'] = durationSeconds.toString();
       }
-      
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      
+
+      // Send with 30 second timeout
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
+      final response = await http.Response.fromStream(
+        streamedResponse,
+      ).timeout(const Duration(seconds: 10));
+
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -539,10 +485,7 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Finish wash error: $e');
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -561,18 +504,13 @@ class ApiService {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'otp': otp,
-        }),
+        body: jsonEncode({'otp': otp}),
       );
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -582,18 +520,13 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Complete job error: $e');
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
   /// Employee attendance check-in
   /// Returns a map containing the response data
-  Future<Map<String, dynamic>> checkIn({
-    required String token,
-  }) async {
+  Future<Map<String, dynamic>> checkIn({required String token}) async {
     try {
       final response = await http.post(
         Uri.parse(ApiConstants.checkInUrl),
@@ -607,10 +540,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -619,18 +549,13 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
   /// Employee attendance check-out
   /// Returns a map containing the response data
-  Future<Map<String, dynamic>> checkOut({
-    required String token,
-  }) async {
+  Future<Map<String, dynamic>> checkOut({required String token}) async {
     try {
       final response = await http.post(
         Uri.parse(ApiConstants.checkOutUrl),
@@ -644,10 +569,7 @@ class ApiService {
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': responseData,
-        };
+        return {'success': true, 'data': responseData};
       } else {
         return {
           'success': false,
@@ -656,10 +578,7 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
@@ -673,11 +592,7 @@ class ApiService {
 
     // Simple mock validation
     if (phoneNumber.length < 8) {
-      return {
-        'success': false,
-        'message': 'Invalid phone number',
-        'data': {},
-      };
+      return {'success': false, 'message': 'Invalid phone number', 'data': {}};
     }
 
     // Mock data
@@ -688,16 +603,18 @@ class ApiService {
       'car_model': 'Toyota Land Cruiser',
       'car_plate': 'DXB 12345',
       'current_plan': 'Weekly Wash',
-      'subscription_end_date': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(), // Expired
-      'last_subscription_date': DateTime.now().subtract(const Duration(days: 35)).toIso8601String(),
+      'subscription_end_date': DateTime.now()
+          .subtract(const Duration(days: 5))
+          .toIso8601String(), // Expired
+      'last_subscription_date': DateTime.now()
+          .subtract(const Duration(days: 35))
+          .toIso8601String(),
       'is_subscription_active': false,
     };
 
     return {
       'success': true,
-      'data': {
-        'customer': mockData,
-      },
+      'data': {'customer': mockData},
     };
   }
 
@@ -708,14 +625,10 @@ class ApiService {
   }) async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 1));
-    
+
     debugPrint('MOCK OTP sent to $phoneNumber: 123456');
 
-    return {
-      'success': true,
-      'message': 'OTP sent successfully',
-      'data': {},
-    };
+    return {'success': true, 'message': 'OTP sent successfully', 'data': {}};
   }
 
   /// MOCKED: Verify renewal OTP
@@ -734,11 +647,7 @@ class ApiService {
         'data': {},
       };
     } else {
-      return {
-        'success': false,
-        'message': 'Invalid OTP',
-        'data': {},
-      };
+      return {'success': false, 'message': 'Invalid OTP', 'data': {}};
     }
   }
 
@@ -754,7 +663,9 @@ class ApiService {
       'success': true,
       'message': 'Subscription renewed successfully',
       'data': {
-          'new_end_date': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+        'new_end_date': DateTime.now()
+            .add(const Duration(days: 30))
+            .toIso8601String(),
       },
     };
   }

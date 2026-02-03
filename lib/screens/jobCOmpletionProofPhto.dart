@@ -27,7 +27,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_job == null) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+          {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
       }
@@ -43,7 +45,13 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? image = await _picker.pickImage(source: source);
+      // Compress image to reduce file size for faster uploads
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
       if (image != null) {
         setState(() {
           _capturedPhoto = File(image.path);
@@ -51,40 +59,49 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking image: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
     }
   }
 
   Future<void> _submitJob() async {
     if (!_isPhotoUploaded || _capturedPhoto == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload a photo before submitting')),
+        const SnackBar(
+          content: Text('Please upload a photo before submitting'),
+        ),
       );
       return;
     }
 
-    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
-    
+    final routeArgs =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+        {};
+
     // Get job ID - try from Job object first, then parse from args
     int? jobId;
     if (_job != null) {
       jobId = _job!.id;
     } else {
-      final jobIdStr = routeArgs['jobId']?.toString().replaceAll('JOB-', '') ?? '';
+      final jobIdStr =
+          routeArgs['jobId']?.toString().replaceAll('JOB-', '') ?? '';
       jobId = int.tryParse(jobIdStr);
     }
 
     if (jobId == null) {
       // Fallback: navigate without API call
       debugPrint('No valid job ID, navigating directly to OTP screen');
-      Navigator.pushNamed(context, '/job-completion-otp', arguments: {
-        ...routeArgs,
-        'photoPath': _capturedPhoto?.path,
-        'washDurationSeconds': _washDurationSeconds,
-        'washDurationFormatted': _washDurationFormatted,
-      });
+      Navigator.pushNamed(
+        context,
+        '/job-completion-otp',
+        arguments: {
+          ...routeArgs,
+          'photoPath': _capturedPhoto?.path,
+          'washDurationSeconds': _washDurationSeconds,
+          'washDurationFormatted': _washDurationFormatted,
+        },
+      );
       return;
     }
 
@@ -125,12 +142,16 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
           }
         }
 
-        Navigator.pushNamed(context, '/job-completion-otp', arguments: {
-          ...routeArgs,
-          'photoPath': _capturedPhoto?.path,
-          'job': nextJob,
-          'finishWashResponse': response['data'],
-        });
+        Navigator.pushNamed(
+          context,
+          '/job-completion-otp',
+          arguments: {
+            ...routeArgs,
+            'photoPath': _capturedPhoto?.path,
+            'job': nextJob,
+            'finishWashResponse': response['data'],
+          },
+        );
       }
     } else {
       if (mounted) {
@@ -211,20 +232,14 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
               const Text(
                 'Please take a clear photo of the clean\ncar as proof of completion.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.darkTeal,
-                ),
+                style: TextStyle(fontSize: 16, color: AppColors.darkTeal),
               ),
               const SizedBox(height: 32),
               Container(
                 height: 300,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.darkNavy,
-                    width: 2,
-                  ),
+                  border: Border.all(color: AppColors.darkNavy, width: 2),
                   borderRadius: BorderRadius.circular(16),
                   color: AppColors.veryLightGray,
                 ),
@@ -262,7 +277,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                                         ),
                                         ListTile(
                                           leading: const Icon(Icons.image),
-                                          title: const Text('Choose from Gallery'),
+                                          title: const Text(
+                                            'Choose from Gallery',
+                                          ),
                                           onTap: () {
                                             Navigator.pop(context);
                                             _pickImage(ImageSource.gallery);
@@ -280,7 +297,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.2),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -353,11 +372,15 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: (_isPhotoUploaded && !_isSubmitting) ? _submitJob : null,
+                  onPressed: (_isPhotoUploaded && !_isSubmitting)
+                      ? _submitJob
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.darkTeal,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
+                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(
+                      0.4,
+                    ),
                     disabledForegroundColor: Colors.white.withOpacity(0.6),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

@@ -53,6 +53,9 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   }
 
   void _changeMonth(int offset) {
+    final now = DateTime.now();
+    final bool wasCurrentMonth = _displayYear == now.year && _displayMonth == now.month;
+    
     setState(() {
       _displayMonth += offset;
       if (_displayMonth > 12) {
@@ -67,7 +70,12 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       _selectedDates.clear(); // Clear selection on month change
       _availableDates.clear(); // Clear availability data for new month
     });
-    // No need to fetch availability for other months since only today is interactable
+    
+    // Fetch availability if we're back to the current month
+    final bool isNowCurrentMonth = _displayYear == now.year && _displayMonth == now.month;
+    if (isNowCurrentMonth && !wasCurrentMonth) {
+      _fetchAvailability();
+    }
   }
 
 
@@ -288,16 +296,16 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                   }
 
                   int day = index - firstDayOffset + 1;
-                bool isAvailable = _availableDates.contains(day);
-                bool isSelected = _selectedDates.contains(day);
-                
-                // Only actual today's date is interactable
-                final now = DateTime.now();
-                bool isToday = _displayYear == now.year && 
-                               _displayMonth == now.month && 
-                               day == now.day;
-                
-                bool isInteractable = isToday;
+                  
+                  // Only check availability for current month
+                  final now = DateTime.now();
+                  bool isCurrentMonth = _displayYear == now.year && _displayMonth == now.month;
+                  bool isToday = isCurrentMonth && day == now.day;
+                  bool isInteractable = isToday;
+                  
+                  // Only show availability status for current month
+                  bool isAvailable = isCurrentMonth && _availableDates.contains(day);
+                  bool isSelected = _selectedDates.contains(day);
 
                 return GestureDetector(
                   onTap: !isInteractable ? null : () {

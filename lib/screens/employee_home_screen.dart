@@ -3,6 +3,7 @@ import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../models/job_model.dart';
 import '../models/employee_profile_model.dart';
+import '../models/notification_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import 'availability_widget.dart';
@@ -207,6 +208,175 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     }
   }
 
+  // Dummy notifications for testing
+  final List<NotificationModel> _dummyNotifications = [
+    const NotificationModel(
+      id: 1,
+      title: 'New Job Assigned',
+      message: 'You have been assigned a new job at Downtown Mall. Please confirm your availability.',
+      time: '10:30 AM',
+      isRead: false,
+    ),
+    const NotificationModel(
+      id: 2,
+      title: 'Job Reminder',
+      message: 'Your shift at City Center starts in 30 minutes. Please ensure you are on time.',
+      time: '09:45 AM',
+      isRead: false,
+    ),
+    const NotificationModel(
+      id: 3,
+      title: 'Job Completed',
+      message: 'Great job! Your job at Riverside Apartments has been marked as completed.',
+      time: 'Yesterday',
+      isRead: true,
+    ),
+    const NotificationModel(
+      id: 4,
+      title: 'Schedule Update',
+      message: 'Your schedule for next week has been updated. Please review your upcoming shifts.',
+      time: '2 days ago',
+      isRead: true,
+    ),
+    const NotificationModel(
+      id: 5,
+      title: 'Payment Received',
+      message: 'Your payment of \$125.50 for this week has been processed and will be deposited soon.',
+      time: '3 days ago',
+      isRead: true,
+    ),
+  ];
+
+  void _showNotificationSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Title
+              Text(
+                'Notifications',
+                style: AppTextStyles.headline(context).copyWith(
+                  fontSize: 20,
+                  color: AppColors.darkNavy,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Notification list
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _dummyNotifications.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final notification = _dummyNotifications[index];
+                    return _buildNotificationItem(notification);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNotificationItem(NotificationModel notification) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: notification.isRead
+            ? AppColors.veryLightGray
+            : AppColors.creamBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: notification.isRead
+              ? AppColors.lightGray
+              : AppColors.gold,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Notification icon
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: notification.isRead
+                  ? AppColors.lightGray.withOpacity(0.2)
+                  : AppColors.gold.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              notification.isRead
+                  ? Icons.notifications_none
+                  : Icons.notifications_active,
+              color: notification.isRead
+                  ? AppColors.textGray
+                  : AppColors.gold,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notification.title,
+                  style: AppTextStyles.title(context).copyWith(
+                    fontSize: 14,
+                    fontWeight: notification.isRead
+                        ? FontWeight.normal
+                        : FontWeight.bold,
+                    color: AppColors.darkNavy,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notification.message,
+                  style: AppTextStyles.body(context).copyWith(
+                    fontSize: 12,
+                    color: AppColors.textGray,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notification.time,
+                  style: AppTextStyles.body(context).copyWith(
+                    fontSize: 10,
+                    color: AppColors.lightGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -265,6 +435,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     ],
                   ),
                 ),
+          actions: [
+            IconButton(
+              onPressed: () => _showNotificationSheet(context),
+              icon: Icon(
+                Icons.notifications_outlined,
+                color: AppColors.darkNavy,
+              ),
+            ),
+          ],
         );
       case 1:
         return AppBar(
