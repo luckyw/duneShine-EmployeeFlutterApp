@@ -516,7 +516,11 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
           onPressed: () {
             _locationService.stopSendingLocation();
-            Navigator.pop(context);
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/employee-home',
+              (route) => false,
+            );
           },
         ),
         title: Text(

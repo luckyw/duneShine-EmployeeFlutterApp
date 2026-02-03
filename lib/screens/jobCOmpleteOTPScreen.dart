@@ -167,7 +167,11 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/employee-home',
+            (route) => false,
+          ),
         ),
         title: const Text(
           'Job Completion',

@@ -20,7 +20,6 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
   Set<int> _availableDates = {};
   Set<int> _selectedDates = {}; // Changed to Set for multi-select
   bool _isLoading = false;
-  bool _isFetchingDates = true;
 
   // Current month info (today)
   late int _currentYear;
@@ -66,9 +65,9 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       
       _updateMonthInfo();
       _selectedDates.clear(); // Clear selection on month change
-      _isFetchingDates = true;
+      _availableDates.clear(); // Clear availability data for new month
     });
-    _fetchAvailability();
+    // No need to fetch availability for other months since only today is interactable
   }
 
 
@@ -76,7 +75,6 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     final token = _authService.token;
     if (token == null) {
       setState(() {
-        _isFetchingDates = false;
         _isLoading = false;
       });
       return;
@@ -107,13 +105,11 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       if (!mounted) return;
       setState(() {
         _availableDates = availableDays;
-        _isFetchingDates = false;
         _isLoading = false;
       });
     } else {
       if (!mounted) return;
       setState(() {
-        _isFetchingDates = false;
         _isLoading = false;
       });
     }
@@ -213,40 +209,11 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     }
   }
   
-  void _selectAllWeekdays() {
-    final Set<int> weekdays = {};
-    for (int day = 1; day <= _daysInMonth; day++) {
-       final date = DateTime(_displayYear, _displayMonth, day);
-       // 1 = Mon, 7 = Sun. We want Mon-Fri (1-5)
-       if (date.weekday >= 1 && date.weekday <= 5) {
-         // Check if past
-         final now = DateTime.now();
-         final today = DateTime(now.year, now.month, now.day);
-         if (!date.isBefore(today)) {
-           weekdays.add(day);
-         }
-       }
-    }
-    
-    setState(() {
-      _selectedDates = weekdays;
-    });
-    
-    _showSnackBar('Selected all upcoming weekdays', isError: false);
-  }
+
 
 
   @override
   Widget build(BuildContext context) {
-    if (_isFetchingDates) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(ResponsiveUtils.w(context, 48)),
-          child: const CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: _fetchAvailability,
       child: SingleChildScrollView(
@@ -280,44 +247,60 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                 ],
               ),
               
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: _selectAllWeekdays,
-                  icon: const Icon(Icons.calendar_view_week, size: 18),
-                  label: const Text('Select M-F'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primaryTeal,
-                  ),
+
+
+              ResponsiveUtils.verticalSpace(context, 12),
+              
+              // Days of week header
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 8)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day) => Expanded(
+                    child: Center(
+                      child: Text(
+                        day,
+                        style: TextStyle(
+                          fontSize: ResponsiveUtils.sp(context, 14),
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryTeal.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ),
+                  )).toList(),
                 ),
               ),
 
-              ResponsiveUtils.verticalSpace(context, 12),
               GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                crossAxisSpacing: ResponsiveUtils.w(context, 8),
-                mainAxisSpacing: ResponsiveUtils.h(context, 8),
-              ),
-              itemCount: _daysInMonth,
-              itemBuilder: (context, index) {
-                int day = index + 1;
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  crossAxisSpacing: ResponsiveUtils.w(context, 8),
+                  mainAxisSpacing: ResponsiveUtils.h(context, 8),
+                ),
+                itemCount: _daysInMonth + (DateTime(_displayYear, _displayMonth, 1).weekday - 1),
+                itemBuilder: (context, index) {
+                  final int firstDayOffset = DateTime(_displayYear, _displayMonth, 1).weekday - 1;
+                  
+                  if (index < firstDayOffset) {
+                    return const SizedBox.shrink(); // Empty space for previous month days
+                  }
+
+                  int day = index - firstDayOffset + 1;
                 bool isAvailable = _availableDates.contains(day);
                 bool isSelected = _selectedDates.contains(day);
                 
-                // Compare with Today for "past" logic
-                final dateToCheck = DateTime(_displayYear, _displayMonth, day);
+                // Only actual today's date is interactable
                 final now = DateTime.now();
-                final today = DateTime(now.year, now.month, now.day);
+                bool isToday = _displayYear == now.year && 
+                               _displayMonth == now.month && 
+                               day == now.day;
                 
-                // Make past dates unselectable
-                bool isPast = dateToCheck.isBefore(today);
-
+                bool isInteractable = isToday;
 
                 return GestureDetector(
-                  onTap: isPast ? null : () {
+                  onTap: !isInteractable ? null : () {
                     setState(() {
                       if (_selectedDates.contains(day)) {
                         _selectedDates.remove(day);
@@ -329,17 +312,24 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isPast
-                          ? AppColors.lightGray.withValues(alpha: 0.5)
+                      color: isInteractable
+                          ? (isAvailable 
+                              ? AppColors.primaryTeal 
+                              : AppColors.lightGray.withValues(alpha: 0.3))
                           : isAvailable
-                              ? AppColors.primaryTeal // Available
-                              : AppColors.lightGray.withOpacity(0.3), // Neutral/Not Set
-                      border: isSelected
+                              ? AppColors.primaryTeal.withValues(alpha: 0.5)
+                              : AppColors.lightGray.withValues(alpha: 0.1),
+                      border: isInteractable
                           ? Border.all(
-                              color: AppColors.amber,
-                              width: ResponsiveUtils.w(context, 3),
+                              color: isSelected ? AppColors.amber : AppColors.primaryTeal.withValues(alpha: 0.5),
+                              width: ResponsiveUtils.w(context, 2),
                             )
-                          : null,
+                          : isSelected
+                              ? Border.all(
+                                  color: AppColors.amber,
+                                  width: ResponsiveUtils.w(context, 3),
+                                )
+                              : null,
                     ),
                     child: Stack(
                       alignment: Alignment.center,
@@ -347,13 +337,13 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                         Text(
                           day.toString(),
                           style: TextStyle(
-                            color: isPast
-                                ? AppColors.white.withValues(alpha: 0.5)
+                            color: isInteractable
+                                ? (isAvailable ? AppColors.white : AppColors.darkNavy)
                                 : isAvailable 
-                                    ? AppColors.white 
-                                    : AppColors.darkNavy,
+                                    ? AppColors.white.withValues(alpha: 0.7) 
+                                    : AppColors.darkNavy.withValues(alpha: 0.4),
                             fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: isInteractable ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                         if (isSelected)

@@ -192,7 +192,11 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/employee-home',
+            (route) => false,
+          ),
         ),
         title: Text(
           'Wash in Progress',
@@ -285,36 +289,95 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.veryLightGray,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.lightGray.withValues(alpha: 0.2)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Job Details',
-                        style: AppTextStyles.subtitle(context).copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darkNavy,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'JOB-${_job?.id}',
+                            style: AppTextStyles.subtitle(context).copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryTeal,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _job?.displayStatus ?? 'IN PROGRESS',
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: AppColors.primaryTeal,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(height: 1),
+                      ),
+                      _buildInfoRow(
+                        Icons.location_on_outlined,
+                        'Location',
+                        _job?.booking?.fullAddress ?? 'Unknown Location',
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        vehicle?.displayName ?? 'Unknown Vehicle',
-                        style: AppTextStyles.body(context).copyWith(
-                          color: AppColors.darkNavy,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      _buildInfoRow(
+                        Icons.directions_car_outlined,
+                        'Vehicle',
+                        '${vehicle?.brandName} ${vehicle?.model} (${vehicle?.color})\nPlate: ${vehicle?.numberPlate}',
                       ),
-                      const SizedBox(height: 4),
-                      Text(
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.person_outline,
+                        'Customer',
+                        '${_job?.booking?.customer?.name ?? 'Unknown'}\n${_job?.booking?.customer?.phone ?? ''}',
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInfoRow(
+                        Icons.list_alt_outlined,
+                        'Services',
                         services.isNotEmpty
                             ? services.map((s) => s.name).join(', ')
                             : 'Car Wash Service',
-                        style: AppTextStyles.caption(
-                          context,
-                        ).copyWith(color: AppColors.lightGray),
                       ),
+                      if (_job?.booking?.notes != null &&
+                          _job!.booking!.notes!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          Icons.note_alt_outlined,
+                          'Customer Notes',
+                          _job!.booking!.notes!,
+                        ),
+                      ],
+                      if (vehicle?.parkingNotes != null &&
+                          vehicle!.parkingNotes!.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          Icons.local_parking_outlined,
+                          'Parking Notes',
+                          vehicle!.parkingNotes!,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -344,6 +407,38 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
           ),
         ],
       ),
+    );
+  }
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: AppColors.primaryTeal),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: AppTextStyles.caption(context).copyWith(
+                  color: AppColors.lightGray,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: AppTextStyles.body(context).copyWith(
+                  color: AppColors.darkNavy,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

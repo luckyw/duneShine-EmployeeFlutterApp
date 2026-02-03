@@ -195,7 +195,11 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/employee-home',
+            (route) => false,
+          ),
         ),
         title: const Text(
           'Job Arrival',
