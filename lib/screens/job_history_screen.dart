@@ -4,6 +4,7 @@ import '../constants/text_styles.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/toast_utils.dart';
 
 class JobHistoryScreen extends StatefulWidget {
   const JobHistoryScreen({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class JobHistoryScreen extends StatefulWidget {
 class _JobHistoryScreenState extends State<JobHistoryScreen> {
   final ApiService _apiService = ApiService();
   final AuthService _authService = AuthService();
-  
+
   bool _isLoading = true;
   String? _errorMessage;
   List<Job> _completedJobs = [];
@@ -42,13 +43,13 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
     }
 
     final response = await _apiService.getTodaysJobs(token: token);
-    
+
     if (!mounted) return;
 
     if (response['success'] == true) {
       final data = response['data'] as Map<String, dynamic>;
       final jobsList = data['jobs'] as List<dynamic>? ?? [];
-      
+
       setState(() {
         _completedJobs = jobsList
             .map((json) => Job.fromJson(json as Map<String, dynamic>))
@@ -90,33 +91,18 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, color: AppColors.error, size: 64),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body(context).copyWith(
-                  color: AppColors.textGray,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _fetchCompletedJobs,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryTeal,
-                  foregroundColor: AppColors.white,
-                ),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+      // Show user-friendly toast instead of raw error text
+      ToastUtils.showErrorToast(context, _errorMessage!);
+
+      // Clear error message and show loading state
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      // Return loading indicator while retrying
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primaryTeal),
       );
     }
 
@@ -125,24 +111,20 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.history,
-              color: AppColors.lightGray,
-              size: 80,
-            ),
+            Icon(Icons.history, color: AppColors.lightGray, size: 80),
             const SizedBox(height: 16),
             Text(
               'No completed jobs yet',
-              style: AppTextStyles.title(context).copyWith(
-                color: AppColors.textGray,
-              ),
+              style: AppTextStyles.title(
+                context,
+              ).copyWith(color: AppColors.textGray),
             ),
             const SizedBox(height: 8),
             Text(
               'Your completed jobs will appear here',
-              style: AppTextStyles.body(context).copyWith(
-                color: AppColors.lightGray,
-              ),
+              style: AppTextStyles.body(
+                context,
+              ).copyWith(color: AppColors.lightGray),
             ),
           ],
         ),
@@ -161,7 +143,7 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
   Widget _buildJobCard(Job job) {
     final vehicle = job.booking?.vehicle;
     final timeSlot = job.timeSlot;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -192,7 +174,10 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.success.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -200,7 +185,11 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, color: AppColors.success, size: 14),
+                      Icon(
+                        Icons.check_circle,
+                        color: AppColors.success,
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'Completed',
@@ -217,14 +206,18 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.directions_car, color: AppColors.primaryTeal, size: 20),
+                Icon(
+                  Icons.directions_car,
+                  color: AppColors.primaryTeal,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     vehicle?.displayName ?? 'Vehicle',
-                    style: AppTextStyles.body(context).copyWith(
-                      color: AppColors.darkNavy,
-                    ),
+                    style: AppTextStyles.body(
+                      context,
+                    ).copyWith(color: AppColors.darkNavy),
                   ),
                 ),
               ],
@@ -237,9 +230,9 @@ class _JobHistoryScreenState extends State<JobHistoryScreen> {
                 Expanded(
                   child: Text(
                     job.booking?.locationName ?? 'Property',
-                    style: AppTextStyles.caption(context).copyWith(
-                      color: AppColors.textGray,
-                    ),
+                    style: AppTextStyles.caption(
+                      context,
+                    ).copyWith(color: AppColors.textGray),
                   ),
                 ),
               ],

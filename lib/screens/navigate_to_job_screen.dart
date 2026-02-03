@@ -94,22 +94,35 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     }
   }
 
-  /// Parse customer location from booking property geo_location
+  /// Parse customer location from booking property
   void _parseCustomerLocation() {
     print('DEBUG: Attempting to parse customer location...');
     
-    final geoStr = _job?.booking?.geoLocation;
+    final property = _job?.booking?.property;
+    final latStr = property?.resolvedLatitude;
+    final lngStr = property?.resolvedLongitude;
+
+    if (latStr != null && lngStr != null) {
+      final lat = double.tryParse(latStr);
+      final lng = double.tryParse(lngStr);
+      if (lat != null && lng != null) {
+        _customerLocation = LatLng(lat, lng);
+        print('DEBUG: Successfully parsed destination from resolved_location: $_customerLocation');
+        return;
+      }
+    }
     
+    // Fallback to legacy geoLocation string
+    final geoStr = _job?.booking?.geoLocation;
     if (geoStr != null && geoStr.isNotEmpty) {
-      print('DEBUG: Found location: $geoStr');
-      // Expected format: "lat,lng" e.g., "25.2048,55.2708"
+      print('DEBUG: Found legacy location string: $geoStr');
       final parts = geoStr.split(',');
       if (parts.length == 2) {
         final lat = double.tryParse(parts[0].trim());
         final lng = double.tryParse(parts[1].trim());
         if (lat != null && lng != null) {
           _customerLocation = LatLng(lat, lng);
-          print('DEBUG: Successfully parsed destination: $_customerLocation');
+          print('DEBUG: Successfully parsed legacy destination: $_customerLocation');
           return;
         }
       }
@@ -305,8 +318,18 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   }
 
   /// Open external Google Maps for turn-by-turn navigation
-  /// Open external Google Maps for turn-by-turn navigation
   Future<void> _openGoogleMaps() async {
+    final apiMapUrl = _job?.booking?.googleMapsUrl;
+    
+    // If we have a direct URL from API, try to use it
+    if (apiMapUrl != null && apiMapUrl.isNotEmpty) {
+      final Uri uri = Uri.parse(apiMapUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+    }
+
     if (_customerLocation == null) return;
     
     final lat = _customerLocation!.latitude;
@@ -314,15 +337,15 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     final title = _job?.booking?.locationName ?? 'Destination';
     
     // Platform specific URLs
-    final Uri googleMapsUrl = Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
+    final Uri googleMapsUri = Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
     final Uri appleMapsUrl = Uri.parse('https://maps.apple.com/?daddr=$lat,$lng');
     final Uri androidUri = Uri.parse('geo:$lat,$lng?q=$lat,$lng($title)');
     final Uri webUrl = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
 
     try {
       if (Theme.of(context).platform == TargetPlatform.iOS) {
-        if (await canLaunchUrl(googleMapsUrl)) {
-          await launchUrl(googleMapsUrl);
+        if (await canLaunchUrl(googleMapsUri)) {
+          await launchUrl(googleMapsUri);
         } else if (await canLaunchUrl(appleMapsUrl)) {
           await launchUrl(appleMapsUrl);
         } else {

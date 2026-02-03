@@ -6,7 +6,6 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
 
-
 class JobDetailsScreen extends StatefulWidget {
   const JobDetailsScreen({Key? key}) : super(key: key);
 
@@ -30,8 +29,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   }
 
   Future<void> _fetchJobDetails() async {
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
-    
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+        {};
+
     // Check if Job object was passed directly
     if (args['job'] != null && args['job'] is Job) {
       setState(() {
@@ -40,11 +41,11 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       });
       return;
     }
-    
+
     // Otherwise fetch from API using job ID
     final jobIdStr = args['jobId'] as String? ?? '';
     final jobId = int.tryParse(jobIdStr.replaceAll('JOB-', '')) ?? 0;
-    
+
     if (jobId == 0) {
       setState(() {
         _isLoading = false;
@@ -62,13 +63,16 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       return;
     }
 
-    final response = await ApiService().getJobDetails(jobId: jobId, token: token);
+    final response = await ApiService().getJobDetails(
+      jobId: jobId,
+      token: token,
+    );
     debugPrint('Job details response: $response');
 
     if (response['success'] == true) {
       final data = response['data'] as Map<String, dynamic>;
       final jobJson = data['job'] as Map<String, dynamic>?;
-      
+
       if (jobJson != null) {
         setState(() {
           _job = Job.fromJson(jobJson);
@@ -93,7 +97,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
     final token = AuthService().token;
     if (token == null) {
-      ToastUtils.showErrorToast(context, 'Not authenticated. Please login again.');
+      ToastUtils.showErrorToast(
+        context,
+        'Not authenticated. Please login again.',
+      );
 
       return;
     }
@@ -115,7 +122,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     if (response['success'] == true) {
       final data = response['data'] as Map<String, dynamic>;
       final jobJson = data['job'] as Map<String, dynamic>?;
-      
+
       // Update local job with new status
       Job updatedJob = _job!;
       if (jobJson != null) {
@@ -129,10 +136,12 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       // Navigate to map screen
       if (mounted) {
         final vehicle = updatedJob.booking?.vehicle;
-        final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
+        final carModel = vehicle != null
+            ? '${vehicle.brandName} ${vehicle.model}'
+            : 'Unknown Vehicle';
         final carColor = vehicle?.color ?? 'Unknown';
         final employeeName = AuthService().employeeName;
-        
+
         double earnedAmount = 0;
         if (updatedJob.booking != null) {
           for (var service in updatedJob.booking!.servicesPayload) {
@@ -155,8 +164,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       }
     } else {
       if (mounted) {
-        ToastUtils.showErrorToast(context, response['message'] ?? 'Failed to start navigation');
-
+        ToastUtils.showErrorToast(
+          context,
+          response['message'] ?? 'Failed to start navigation',
+        );
       }
     }
   }
@@ -169,13 +180,16 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     final token = AuthService().token;
     if (token == null) return;
 
-    final response = await ApiService().getJobDetails(jobId: jobId, token: token);
+    final response = await ApiService().getJobDetails(
+      jobId: jobId,
+      token: token,
+    );
     debugPrint('Refreshed job details: $response');
 
     if (response['success'] == true && mounted) {
       final data = response['data'] as Map<String, dynamic>;
       final jobJson = data['job'] as Map<String, dynamic>?;
-      
+
       if (jobJson != null) {
         setState(() {
           _job = Job.fromJson(jobJson);
@@ -197,10 +211,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         ),
         title: Text(
           'Job Details',
-          style: AppTextStyles.headline(context).copyWith(
-            color: AppColors.white,
-            fontSize: 20,
-          ),
+          style: AppTextStyles.headline(
+            context,
+          ).copyWith(color: AppColors.white, fontSize: 20),
         ),
       ),
       body: _buildBody(),
@@ -213,40 +226,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: AppColors.error,
-                size: 48,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body(context).copyWith(
-                  color: AppColors.textGray,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _isLoading = true;
-                    _errorMessage = null;
-                  });
-                  _fetchJobDetails();
-                },
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
-      );
+      // Show user-friendly toast instead of raw error text
+      ToastUtils.showErrorToast(context, _errorMessage!);
+
+      // Clear error message and show loading state
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      // Return loading indicator while retrying
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_job == null) {
@@ -261,12 +251,14 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     final property = booking?.property;
     final customer = booking?.customer;
     final vehicle = booking?.vehicle;
-    
-    final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
+
+    final carModel = vehicle != null
+        ? '${vehicle.brandName} ${vehicle.model}'
+        : 'Unknown Vehicle';
     final carColor = vehicle?.color ?? 'Unknown';
     final jobId = 'JOB-${_job!.id}';
     final employeeName = AuthService().employeeName;
-    
+
     // Calculate total price from services
     double earnedAmount = 0;
     if (booking != null) {
@@ -284,124 +276,212 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Card 1: Car Information & Address
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.veryLightGray,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.gold.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.directions_car,
-                            color: AppColors.gold, size: 28),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              carModel,
-                              style: AppTextStyles.title(context).copyWith(
-                                fontSize: 18,
-                                color: AppColors.darkNavy,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Container(
-                                  width: 14,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: _getColorFromName(carColor),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                      width: 1,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  carColor,
-                                  style: AppTextStyles.body(context).copyWith(
-                                    color: AppColors.lightGray,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  '• ${vehicle?.numberPlate ?? ''}',
-                                  style: AppTextStyles.body(context).copyWith(
-                                    color: AppColors.textGray,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          jobId,
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: AppColors.primaryTeal,
-                            fontWeight: FontWeight.w600,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Card 1: Car Information & Address
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.veryLightGray,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.directions_car,
+                            color: AppColors.gold,
+                            size: 28,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(height: 40),
-                  if (booking?.fullAddress != null && 
-                      booking!.fullAddress.isNotEmpty && 
-                      !booking.fullAddress.toLowerCase().contains('unknown')) ...[
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                carModel,
+                                style: AppTextStyles.title(context).copyWith(
+                                  fontSize: 18,
+                                  color: AppColors.darkNavy,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: _getColorFromName(carColor),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    carColor,
+                                    style: AppTextStyles.body(
+                                      context,
+                                    ).copyWith(color: AppColors.lightGray),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    '• ${vehicle?.numberPlate ?? ''}',
+                                    style: AppTextStyles.body(context).copyWith(
+                                      color: AppColors.textGray,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            jobId,
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: AppColors.primaryTeal,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
-                    // Address Section
+                    const Divider(height: 40),
+                    if (booking?.fullAddress != null &&
+                        booking!.fullAddress.isNotEmpty &&
+                        !booking.fullAddress.toLowerCase().contains(
+                          'unknown',
+                        )) ...[
+                      const SizedBox(height: 16),
+                      // Address Section
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.redAccent,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Property Details',
+                                  style: AppTextStyles.caption(context)
+                                      .copyWith(
+                                        color: AppColors.lightGray,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  booking.locationName,
+                                  style: AppTextStyles.body(context).copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.darkNavy,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  booking.fullAddress,
+                                  style: AppTextStyles.caption(context)
+                                      .copyWith(
+                                        color: AppColors.lightGray,
+                                        fontSize: 13,
+                                      ),
+                                ),
+                                if (property?.zone != null) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    property!.zone!,
+                                    style: AppTextStyles.caption(context)
+                                        .copyWith(
+                                          color: AppColors.lightGray,
+                                          fontSize: 13,
+                                        ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(height: 1),
+                    ],
+                    // Customer Info Section
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          width: 44,
+                          height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.location_on,
-                            color: Colors.redAccent,
-                            size: 20,
-                          ),
+                          child: customer?.idProofImageUrl != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(22),
+                                  child: Image.network(
+                                    customer!.idProofImageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.person,
+                                              color: AppColors.primaryTeal,
+                                              size: 20,
+                                            ),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  color: AppColors.primaryTeal,
+                                  size: 20,
+                                ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -409,7 +489,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Property Details',
+                                'Customer',
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.lightGray,
                                   fontWeight: FontWeight.w500,
@@ -417,7 +497,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                booking.locationName,
+                                customer?.name ?? 'Unknown Customer',
                                 style: AppTextStyles.body(context).copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.darkNavy,
@@ -425,268 +505,201 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                booking.fullAddress,
+                                customer?.phone ?? '',
                                 style: AppTextStyles.caption(context).copyWith(
                                   color: AppColors.lightGray,
                                   fontSize: 13,
                                 ),
                               ),
-                              if (property?.zone != null) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  property!.zone!,
-                                  style: AppTextStyles.caption(context).copyWith(
-                                    color: AppColors.lightGray,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    const Divider(height: 1),
                   ],
-                  // Customer Info Section
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Card 2: Today's Task
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.veryLightGray,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with Service Type and Status
+                    // Header with Service Type and Status
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Text(
+                          'Today\'s Task',
+                          style: AppTextStyles.title(
+                            context,
+                          ).copyWith(fontSize: 18, color: AppColors.darkNavy),
                         ),
-                        child: customer?.idProofImageUrl != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(22),
-                                child: Image.network(
-                                  customer!.idProofImageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
-                                    Icons.person,
-                                    color: AppColors.primaryTeal,
-                                    size: 20,
-                                  ),
-                                ),
-                              )
-                            : const Icon(
-                                Icons.person,
-                                color: AppColors.primaryTeal,
-                                size: 20,
-                              ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
-                            Text(
-                              'Customer',
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.lightGray,
-                                fontWeight: FontWeight.w500,
+                            // Status Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(
+                                  _job!.status,
+                                ).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                _job!.displayStatus,
+                                style: AppTextStyles.caption(context).copyWith(
+                                  color: _getStatusColor(_job!.status),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              customer?.name ?? 'Unknown Customer',
-                              style: AppTextStyles.body(context).copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.darkNavy,
+                            // Service Type Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              customer?.phone ?? '',
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: AppColors.lightGray,
-                                fontSize: 13,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.gold,
+                                    AppColors.gold.withValues(alpha: 0.8),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.gold.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.star,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    serviceName,
+                                    style: AppTextStyles.caption(context)
+                                        .copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Card 2: Today's Task
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.veryLightGray,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with Service Type and Status
-                  // Header with Service Type and Status
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      Text(
-                        'Today\'s Task',
-                        style: AppTextStyles.title(context).copyWith(
-                          fontSize: 18,
-                          color: AppColors.darkNavy,
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Services List
+                    if (services.isNotEmpty)
+                      ...services.map(
+                        (service) => _buildTaskItem(
+                          service.name,
+                          Icons.local_car_wash,
+                          price: '\$${service.price}',
                         ),
+                      )
+                    else
+                      _buildTaskItem('Car Wash Service', Icons.local_car_wash),
+
+                    // Price Summary
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Status Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: _getStatusColor(_job!.status).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              _job!.displayStatus,
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: _getStatusColor(_job!.status),
-                                fontWeight: FontWeight.w600,
-                              ),
+                          Text(
+                            'Total Earnings',
+                            style: AppTextStyles.body(context).copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.darkNavy,
                             ),
                           ),
-                          // Service Type Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 8),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.gold,
-                                  AppColors.gold.withValues(alpha: 0.8),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.gold.withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  serviceName,
-                                  style: AppTextStyles.caption(context).copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            '\$${earnedAmount.toStringAsFixed(2)}',
+                            style: AppTextStyles.title(context).copyWith(
+                              color: AppColors.gold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // Services List
-                  if (services.isNotEmpty)
-                    ...services.map((service) => _buildTaskItem(
-                          service.name,
-                          Icons.local_car_wash,
-                          price: '\$${service.price}',
-                        ))
-                  else
-                    _buildTaskItem('Car Wash Service', Icons.local_car_wash),
-                  
-                  // Price Summary
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.gold.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Earnings',
-                          style: AppTextStyles.body(context).copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.darkNavy,
-                          ),
-                        ),
-                        Text(
-                          '\$${earnedAmount.toStringAsFixed(2)}',
-                          style: AppTextStyles.title(context).copyWith(
-                            color: AppColors.gold,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isNavigating ? null : _handleNavigateToJob,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryTeal,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  ],
                 ),
-                child: _isNavigating
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: AppColors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Navigate to Job',
-                        style: AppTextStyles.button(context).copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isNavigating ? null : _handleNavigateToJob,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryTeal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isNavigating
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: AppColors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Navigate to Job',
+                          style: AppTextStyles.button(
+                            context,
+                          ).copyWith(color: AppColors.white),
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -740,10 +753,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: Colors.grey.shade200,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey.shade200, width: 1),
         ),
         child: Row(
           children: [
@@ -768,10 +778,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             if (price != null)
               Text(
                 price,
-                style: AppTextStyles.body(context).copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.gold,
-                ),
+                style: AppTextStyles.body(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w600, color: AppColors.gold),
               )
             else
               Icon(

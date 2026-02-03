@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../utils/toast_utils.dart';
 
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
@@ -30,10 +31,12 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_job == null) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+          {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
-        
+
         // If the job is "lean" (missing booking info), fetch full details
         if (_job!.booking == null) {
           _fetchFullJobDetails();
@@ -56,18 +59,33 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     final token = AuthService().token;
     if (token == null || _job == null) return;
 
-    final response = await ApiService().getJobDetails(
-      jobId: _job!.id,
-      token: token,
-    );
+    try {
+      final response = await ApiService().getJobDetails(
+        jobId: _job!.id,
+        token: token,
+      );
 
-    if (response['success'] == true && mounted) {
-      final data = response['data'] as Map<String, dynamic>;
-      final jobJson = data['job'] as Map<String, dynamic>?;
-      if (jobJson != null) {
-        setState(() {
-          _job = _job!.mergeWith(Job.fromJson(jobJson));
-        });
+      if (response['success'] == true && mounted) {
+        final data = response['data'] as Map<String, dynamic>;
+        final jobJson = data['job'] as Map<String, dynamic>?;
+        if (jobJson != null) {
+          setState(() {
+            _job = _job!.mergeWith(Job.fromJson(jobJson));
+          });
+        }
+      } else if (mounted) {
+        // Show user-friendly error message
+        ToastUtils.showErrorToast(
+          context,
+          response['message'] ?? 'Failed to load job details',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastUtils.showErrorToast(
+          context,
+          'Network error. Please check your connection.',
+        );
       }
     }
   }
@@ -76,18 +94,33 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     final token = AuthService().token;
     if (token == null) return;
 
-    final response = await ApiService().getJobDetails(
-      jobId: jobId,
-      token: token,
-    );
+    try {
+      final response = await ApiService().getJobDetails(
+        jobId: jobId,
+        token: token,
+      );
 
-    if (response['success'] == true && mounted) {
-      final data = response['data'] as Map<String, dynamic>;
-      final jobJson = data['job'] as Map<String, dynamic>?;
-      if (jobJson != null) {
-        setState(() {
-          _job = Job.fromJson(jobJson);
-        });
+      if (response['success'] == true && mounted) {
+        final data = response['data'] as Map<String, dynamic>;
+        final jobJson = data['job'] as Map<String, dynamic>?;
+        if (jobJson != null) {
+          setState(() {
+            _job = Job.fromJson(jobJson);
+          });
+        }
+      } else if (mounted) {
+        // Show user-friendly error message
+        ToastUtils.showErrorToast(
+          context,
+          response['message'] ?? 'Failed to load job details',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastUtils.showErrorToast(
+          context,
+          'Network error. Please check your connection.',
+        );
       }
     }
   }
@@ -131,9 +164,11 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
   void _finishWash() {
     // Stop the timer
     _pauseStopwatch();
-    
+
     // Navigate to photo proof screen with elapsed time
-    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+    final routeArgs =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+        {};
     Navigator.pushNamed(
       context,
       '/job-completion-proof',
@@ -149,7 +184,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
   Widget build(BuildContext context) {
     final vehicle = _job?.booking?.vehicle;
     final services = _job?.booking?.servicesPayload ?? [];
-    
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -161,10 +196,9 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
         ),
         title: Text(
           'Wash in Progress',
-          style: AppTextStyles.headline(context).copyWith(
-            color: AppColors.white,
-            fontSize: 20,
-          ),
+          style: AppTextStyles.headline(
+            context,
+          ).copyWith(color: AppColors.white, fontSize: 20),
         ),
       ),
       body: Column(
@@ -203,18 +237,15 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                           style: AppTextStyles.headline(context).copyWith(
                             fontSize: 42,
                             color: AppColors.white,
-                            fontFeatures: const [
-                              FontFeature.tabularFigures()
-                            ],
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           _isRunning ? 'Washing...' : 'Paused',
-                          style: AppTextStyles.body(context).copyWith(
-                            color: AppColors.white,
-                            fontSize: 16,
-                          ),
+                          style: AppTextStyles.body(
+                            context,
+                          ).copyWith(color: AppColors.white, fontSize: 16),
                         ),
                       ],
                     ),
@@ -224,7 +255,9 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                   TextButton.icon(
                     onPressed: _isRunning ? _pauseStopwatch : _resumeStopwatch,
                     icon: Icon(
-                      _isRunning ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                      _isRunning
+                          ? Icons.pause_circle_outline
+                          : Icons.play_circle_outline,
                       color: AppColors.primaryTeal,
                     ),
                     label: Text(
@@ -275,12 +308,12 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        services.isNotEmpty 
+                        services.isNotEmpty
                             ? services.map((s) => s.name).join(', ')
                             : 'Car Wash Service',
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: AppColors.lightGray,
-                        ),
+                        style: AppTextStyles.caption(
+                          context,
+                        ).copyWith(color: AppColors.lightGray),
                       ),
                     ],
                   ),
@@ -300,9 +333,9 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                     ),
                     child: Text(
                       'Take Photo & Finish Wash',
-                      style: AppTextStyles.button(context).copyWith(
-                        color: Colors.white,
-                      ),
+                      style: AppTextStyles.button(
+                        context,
+                      ).copyWith(color: Colors.white),
                     ),
                   ),
                 ),

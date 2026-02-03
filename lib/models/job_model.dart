@@ -84,7 +84,12 @@ class Property {
   final String? address;
   final String? buildingNumber;
   final String? zone;
-  final String geoLocation;
+  final String? geoLocation; // Legacy field
+  final String? latitude;
+  final String? longitude;
+  final String? googleMapsUrl;
+  final String? hierarchyPath;
+  final Map<String, dynamic>? resolvedLocation;
 
   Property({
     required this.id,
@@ -92,7 +97,12 @@ class Property {
     this.address,
     this.buildingNumber,
     this.zone,
-    required this.geoLocation,
+    this.geoLocation,
+    this.latitude,
+    this.longitude,
+    this.googleMapsUrl,
+    this.hierarchyPath,
+    this.resolvedLocation,
   });
 
   factory Property.fromJson(Map<String, dynamic> json) {
@@ -102,12 +112,36 @@ class Property {
       address: json['address'],
       buildingNumber: json['building_number'],
       zone: json['zone'],
-      geoLocation: json['geo_location'] ?? '',
+      geoLocation: json['geo_location'],
+      latitude: json['latitude']?.toString(),
+      longitude: json['longitude']?.toString(),
+      googleMapsUrl: json['google_maps_url'],
+      hierarchyPath: json['hierarchy_path'],
+      resolvedLocation: json['resolved_location'] as Map<String, dynamic>?,
     );
+  }
+
+  /// Get the best available latitude
+  String? get resolvedLatitude {
+    if (resolvedLocation != null && resolvedLocation!['latitude'] != null) {
+      return resolvedLocation!['latitude'].toString();
+    }
+    return latitude;
+  }
+
+  /// Get the best available longitude
+  String? get resolvedLongitude {
+    if (resolvedLocation != null && resolvedLocation!['longitude'] != null) {
+      return resolvedLocation!['longitude'].toString();
+    }
+    return longitude;
   }
 
   /// Full address for display
   String get fullAddress {
+    if (hierarchyPath != null && hierarchyPath!.isNotEmpty) {
+      return hierarchyPath!;
+    }
     if (address != null && address!.isNotEmpty) {
       return '$name, $address';
     }
@@ -249,7 +283,17 @@ class Booking {
   String get fullAddress => property?.fullAddress ?? 'Unknown Address';
 
   /// Helper to get geo location coordinates
-  String get geoLocation => property?.geoLocation ?? '';
+  String get geoLocation {
+    final lat = property?.resolvedLatitude;
+    final lng = property?.resolvedLongitude;
+    if (lat != null && lng != null) {
+      return '$lat,$lng';
+    }
+    return property?.geoLocation ?? '';
+  }
+
+  /// Get direct Google Maps URL if available
+  String? get googleMapsUrl => property?.googleMapsUrl;
 
   /// Create a copy of this Booking with optionally replaced fields
   Booking copyWith({
