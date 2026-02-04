@@ -746,7 +746,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                   ),
                                   Flexible(
                                     child: Text(
-                                      '\${earnedAmount.toStringAsFixed(2)}',
+                                      '\$${earnedAmount.toStringAsFixed(2)}',
                                       style: AppTextStyles.headline(context).copyWith(
                                         color: AppColors.gold,
                                         fontWeight: FontWeight.bold,

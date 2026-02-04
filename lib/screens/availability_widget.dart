@@ -236,104 +236,136 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
+          padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
-                    onPressed: () => _changeMonth(-1),
-                    color: AppColors.primaryTeal,
-                  ),
-                  Text(
-                    '$_monthName $_displayYear',
-                    style: TextStyle(
-                      fontSize: ResponsiveUtils.sp(context, 24),
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.darkNavy,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                    onPressed: () => _changeMonth(1),
-                    color: AppColors.primaryTeal,
-                  ),
-                ],
-              ),
-
-              ResponsiveUtils.verticalSpace(context, 12),
-
-              // Days of week header
-              Padding(
+              // Premium Header
+              Container(
                 padding: EdgeInsets.symmetric(
-                  vertical: ResponsiveUtils.h(context, 8),
+                  vertical: ResponsiveUtils.h(context, 16),
+                  horizontal: ResponsiveUtils.w(context, 16),
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.darkNavy.withOpacity(0.05),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-                      .map(
-                        (day) => Expanded(
-                          child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                day,
-                                style: TextStyle(
-                                  fontSize: ResponsiveUtils.sp(context, 14),
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryTeal.withValues(
-                                    alpha: 0.7,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildNavButton(
+                      icon: Icons.arrow_back_ios_new_rounded,
+                      onTap: () => _changeMonth(-1),
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          _monthName,
+                          style: TextStyle(
+                            fontSize: ResponsiveUtils.sp(context, 20),
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.darkNavy,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        Text(
+                          _displayYear.toString(),
+                          style: TextStyle(
+                            fontSize: ResponsiveUtils.sp(context, 14),
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textGray.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                    _buildNavButton(
+                      icon: Icons.arrow_forward_ios_rounded,
+                      onTap: () => _changeMonth(1),
+                    ),
+                  ],
+                ),
+              ),
+
+              ResponsiveUtils.verticalSpace(context, 24),
+
+              // Calendar Body
+              Container(
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                  border: Border.all(
+                    color: AppColors.lightGray.withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Days of week header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
+                          .map(
+                            (day) => Expanded(
+                              child: Center(
+                                child: Text(
+                                  day,
+                                  style: TextStyle(
+                                    fontSize: ResponsiveUtils.sp(context, 10),
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textGray.withOpacity(0.5),
+                                    letterSpacing: 1,
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
+                          )
+                          .toList(),
+                    ),
+                    ResponsiveUtils.verticalSpace(context, 16),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 7,
+                        crossAxisSpacing: ResponsiveUtils.w(context, 8),
+                        mainAxisSpacing: ResponsiveUtils.h(context, 8),
+                      ),
+                      itemCount: _daysInMonth +
+                          (DateTime(_displayYear, _displayMonth, 1).weekday - 1),
+                      itemBuilder: (context, index) {
+                        final int firstDayOffset =
+                            DateTime(_displayYear, _displayMonth, 1).weekday - 1;
 
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  crossAxisSpacing: ResponsiveUtils.w(context, 8),
-                  mainAxisSpacing: ResponsiveUtils.h(context, 8),
-                ),
-                itemCount:
-                    _daysInMonth +
-                    (DateTime(_displayYear, _displayMonth, 1).weekday - 1),
-                itemBuilder: (context, index) {
-                  final int firstDayOffset =
-                      DateTime(_displayYear, _displayMonth, 1).weekday - 1;
+                        if (index < firstDayOffset) {
+                          return const SizedBox.shrink(); 
+                        }
 
-                  if (index < firstDayOffset) {
-                    return const SizedBox.shrink(); // Empty space for previous month days
-                  }
+                        int day = index - firstDayOffset + 1;
 
-                  int day = index - firstDayOffset + 1;
+                        // Logic checks
+                        final now = DateTime.now();
+                        bool isCurrentMonth =
+                            _displayYear == now.year && _displayMonth == now.month;
+                        bool isToday = isCurrentMonth && day == now.day;
+                        bool isInteractable = true; // Allow selecting any date for planning
 
-                  // Only check availability for current month
-                  final now = DateTime.now();
-                  bool isCurrentMonth =
-                      _displayYear == now.year && _displayMonth == now.month;
-                  bool isToday = isCurrentMonth && day == now.day;
-                  bool isInteractable = isToday;
+                        bool isAvailable =
+                            isCurrentMonth && _availableDates.contains(day);
+                        bool isSelected = _selectedDates.contains(day);
 
-                  // Only show availability status for current month
-                  bool isAvailable =
-                      isCurrentMonth && _availableDates.contains(day);
-                  bool isSelected = _selectedDates.contains(day);
-
-                  return GestureDetector(
-                    onTap: !isInteractable
-                        ? null
-                        : () {
+                        return _buildDateCell(
+                          day: day,
+                          isAvailable: isAvailable,
+                          isSelected: isSelected,
+                          isToday: isToday,
+                          onTap: () {
                             setState(() {
                               if (_selectedDates.contains(day)) {
                                 _selectedDates.remove(day);
@@ -342,91 +374,51 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                               }
                             });
                           },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isInteractable
-                            ? (isAvailable
-                                  ? AppColors.primaryTeal
-                                  : AppColors.lightGray.withValues(alpha: 0.3))
-                            : isAvailable
-                            ? AppColors.primaryTeal.withValues(alpha: 0.5)
-                            : AppColors.lightGray.withValues(alpha: 0.1),
-                        border: isInteractable
-                            ? Border.all(
-                                color: isSelected
-                                    ? AppColors.amber
-                                    : AppColors.primaryTeal.withValues(
-                                        alpha: 0.5,
-                                      ),
-                                width: ResponsiveUtils.w(context, 2),
-                              )
-                            : isSelected
-                            ? Border.all(
-                                color: AppColors.amber,
-                                width: ResponsiveUtils.w(context, 3),
-                              )
-                            : null,
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              day.toString(),
-                              style: TextStyle(
-                                color: isInteractable
-                                    ? (isAvailable
-                                          ? AppColors.white
-                                          : AppColors.darkNavy)
-                                    : isAvailable
-                                    ? AppColors.white.withValues(alpha: 0.7)
-                                    : AppColors.darkNavy.withValues(alpha: 0.4),
-                                fontSize: ResponsiveUtils.sp(context, 14),
-                                fontWeight: isInteractable
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                          if (isSelected)
-                            Positioned(
-                              bottom: 4,
-                              child: Icon(
-                                Icons.check,
-                                size: 10,
-                                color: isAvailable
-                                    ? AppColors.white
-                                    : AppColors.darkNavy,
-                              ),
-                            ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-              ResponsiveUtils.verticalSpace(context, 32),
-              Text(
-                _selectedDates.isEmpty
-                    ? 'Select dates to update status'
-                    : '${_selectedDates.length} days selected',
-                style: TextStyle(
-                  fontSize: ResponsiveUtils.sp(context, 16),
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.darkNavy,
+                  ],
                 ),
               ),
+
               ResponsiveUtils.verticalSpace(context, 24),
+
+              // Action Bar
               if (_isLoading)
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(color: AppColors.primaryTeal),
                   ),
                 )
-              else
+              else ...[
+                // Dynamic Status Text
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _selectedDates.isNotEmpty
+                      ? Container(
+                          key: ValueKey('selected'),
+                          margin: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 16)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: ResponsiveUtils.w(context, 16),
+                            vertical: ResponsiveUtils.h(context, 8),
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTeal.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${_selectedDates.length} days selected',
+                            style: TextStyle(
+                              color: AppColors.primaryTeal,
+                              fontWeight: FontWeight.bold,
+                              fontSize: ResponsiveUtils.sp(context, 14),
+                            ),
+                          ),
+                        )
+                      : const SizedBox(height: 0),
+                ),
+
                 Row(
                   children: [
                     Expanded(
@@ -436,26 +428,31 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                             : () => _processAvailabilityUpdate(true),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryTeal,
-                          disabledBackgroundColor: AppColors.lightGray,
+                          disabledBackgroundColor: AppColors.lightGray.withOpacity(0.3),
+                          elevation: _selectedDates.isEmpty ? 0 : 4,
+                          shadowColor: AppColors.primaryTeal.withOpacity(0.4),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
-                              ResponsiveUtils.r(context, 12),
+                              ResponsiveUtils.r(context, 16),
                             ),
                           ),
                           padding: EdgeInsets.symmetric(
                             vertical: ResponsiveUtils.h(context, 16),
                           ),
                         ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Mark Available',
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: ResponsiveUtils.sp(context, 14),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                             const Icon(Icons.check_circle_outline, size: 20),
+                             const SizedBox(width: 8),
+                             Text(
+                              'Available',
+                              style: TextStyle(
+                                fontSize: ResponsiveUtils.sp(context, 16),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
@@ -468,74 +465,60 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
                             color: _selectedDates.isEmpty
-                                ? AppColors.lightGray
-                                : AppColors.primaryTeal,
-                            width: 2,
+                                ? AppColors.lightGray.withOpacity(0.3)
+                                : AppColors.error.withOpacity(0.5),
+                            width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
-                              ResponsiveUtils.r(context, 12),
+                              ResponsiveUtils.r(context, 16),
                             ),
                           ),
                           padding: EdgeInsets.symmetric(
                             vertical: ResponsiveUtils.h(context, 16),
                           ),
                         ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Mark Unavailable',
-                            style: TextStyle(
-                              color: _selectedDates.isEmpty
-                                  ? AppColors.lightGray
-                                  : AppColors.primaryTeal,
-                              fontWeight: FontWeight.bold,
-                              fontSize: ResponsiveUtils.sp(context, 14),
-                            ),
+                        child: Text(
+                          'Unavailable',
+                          style: TextStyle(
+                            color: _selectedDates.isEmpty
+                                ? AppColors.lightGray
+                                : AppColors.error,
+                            fontWeight: FontWeight.bold,
+                            fontSize: ResponsiveUtils.sp(context, 16),
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ResponsiveUtils.verticalSpace(context, 32),
-              // Legend
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: ResponsiveUtils.w(context, 16),
-                runSpacing: ResponsiveUtils.h(context, 8),
-                children: [
-                  _buildLegendItem(AppColors.primaryTeal, 'Available'),
-                  _buildLegendItem(
-                    AppColors.lightGray.withValues(alpha: 0.3),
-                    'Not Set',
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: ResponsiveUtils.w(context, 16),
-                        height: ResponsiveUtils.h(context, 16),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.amber,
-                            width: ResponsiveUtils.w(context, 2),
-                          ),
-                        ),
-                      ),
-                      ResponsiveUtils.horizontalSpace(context, 8),
-                      Text(
-                        'Selected',
-                        style: TextStyle(
-                          fontSize: ResponsiveUtils.sp(context, 12),
-                          color: AppColors.textGray,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              ],
+
+              ResponsiveUtils.verticalSpace(context, 40),
+
+              // Modern Legend
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveUtils.w(context, 24),
+                  vertical: ResponsiveUtils.h(context, 16),
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(60),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildLegendItem(AppColors.primaryTeal, 'Available'),
+                    ResponsiveUtils.horizontalSpace(context, 24),
+                    _buildLegendItem(AppColors.lightGray.withOpacity(0.3), 'Empty'),
+                    ResponsiveUtils.horizontalSpace(context, 24),
+                    _buildLegendItem(AppColors.amber, 'Selected'),
+                  ],
+                ),
               ),
+              ResponsiveUtils.verticalSpace(context, 40),
             ],
           ),
         ),
@@ -543,19 +526,111 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
     );
   }
 
+  Widget _buildNavButton({required IconData icon, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.veryLightGray,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: AppColors.primaryTeal,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateCell({
+    required int day,
+    required bool isAvailable,
+    required bool isSelected,
+    required bool isToday,
+    required VoidCallback onTap,
+  }) {
+    Color bgColor;
+    Color textColor;
+    Border? border;
+
+    if (isSelected) {
+      bgColor = AppColors.amber.withOpacity(0.15);
+      textColor = AppColors.darkNavy;
+      border = Border.all(color: AppColors.amber, width: 2);
+    } else if (isAvailable) {
+      bgColor = AppColors.primaryTeal;
+      textColor = AppColors.white;
+      border = null;
+    } else {
+      bgColor = Colors.transparent;
+      textColor = AppColors.darkNavy;
+      border = null;
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: bgColor,
+          shape: BoxShape.circle,
+          border: border,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Text(
+              day.toString(),
+              style: TextStyle(
+                color: textColor,
+                fontWeight: isToday || isSelected || isAvailable
+                    ? FontWeight.bold
+                    : FontWeight.normal,
+                fontSize: ResponsiveUtils.sp(context, 14),
+              ),
+            ),
+            if (isToday)
+              Positioned(
+                bottom: 6,
+                child: Container(
+                  width: 4,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isAvailable ? AppColors.white : AppColors.primaryTeal,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLegendItem(Color color, String label) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: ResponsiveUtils.w(context, 16),
-          height: ResponsiveUtils.h(context, 16),
-          decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: label == 'Selected' ? Border.all(color: AppColors.amber, width: 2) : (label == 'Empty' ? Border.all(color: AppColors.lightGray, width: 1) : null),
+          ),
+          // For 'Selected' legend, show the border style
+          child: label == 'Selected' ? null : null, 
         ),
-        ResponsiveUtils.horizontalSpace(context, 8),
+        const SizedBox(width: 6),
         Text(
           label,
           style: TextStyle(
-            fontSize: ResponsiveUtils.sp(context, 12),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
             color: AppColors.textGray,
           ),
         ),
