@@ -420,19 +420,6 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                 ResponsiveUtils.verticalSpace(context, 8),
                                 Row(
                                   children: [
-                                    Container(
-                                      width: ResponsiveUtils.w(context, 16),
-                                      height: ResponsiveUtils.h(context, 16),
-                                      decoration: BoxDecoration(
-                                        color: _getColorFromName(carColor),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                    ResponsiveUtils.horizontalSpace(context, 8),
                                     Text(
                                       carColor,
                                       style: AppTextStyles.body(context).copyWith(
