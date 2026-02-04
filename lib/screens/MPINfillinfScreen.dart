@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
 import '../utils/responsive_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class JobVerificationScreen extends StatefulWidget {
@@ -56,6 +57,31 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
           _job = _job!.mergeWith(Job.fromJson(jobJson));
         });
       }
+    }
+  }
+
+  Future<void> _callCustomer() async {
+    final phone = _job?.booking?.customer?.phone;
+    if (phone != null && phone.isNotEmpty) {
+      final Uri launchUri = Uri(
+        scheme: 'tel',
+        path: phone,
+      );
+      try {
+        if (await canLaunchUrl(launchUri)) {
+          await launchUrl(launchUri);
+        } else {
+          if (mounted) {
+            ToastUtils.showErrorToast(context, 'Could not launch dialer');
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ToastUtils.showErrorToast(context, 'Error launching dialer: $e');
+        }
+      }
+    } else {
+      ToastUtils.showErrorToast(context, 'Customer phone number not found');
     }
   }
 
@@ -143,183 +169,400 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Premium Status Bar Overlay
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+
     return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryTeal,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () => Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/employee-home',
-            (route) => false,
-          ),
-        ),
-        title: Text(
-          'Job Verification',
-          style: AppTextStyles.headline(context).copyWith(
-            color: AppColors.white,
-            fontSize: ResponsiveUtils.sp(context, 20), // AppBar size override
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
-                    border: Border.all(
-                      color: AppColors.darkNavy,
-                      width: ResponsiveUtils.w(context, 2),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Enter Customer PIN',
-                        style: AppTextStyles.headline(context).copyWith(
-                          fontSize: ResponsiveUtils.sp(context, 20),
-                          color: AppColors.darkNavy,
-                        ),
-                      ),
-                      ResponsiveUtils.verticalSpace(context, 12),
-                      Text(
-                        'Ask the customer for the 4-digit PIN\nto start the wash.',
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.body(context).copyWith(
-                          color: AppColors.lightGray,
-                        ),
-                      ),
-                      ResponsiveUtils.verticalSpace(context, 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: List.generate(
-                          4,
-                          (index) => SizedBox(
-                            width: ResponsiveUtils.w(context, 60),
-                            height: ResponsiveUtils.h(context, 60),
-                            child: KeyboardListener(
-                              focusNode: FocusNode(), // Node for listener
-                              onKeyEvent: (event) {
-                                if (event is KeyDownEvent &&
-                                    event.logicalKey ==
-                                        LogicalKeyboardKey.backspace) {
-                                  if (_pinControllers[index].text.isEmpty &&
-                                      index > 0) {
-                                    _focusNodes[index - 1].requestFocus();
-                                  }
-                                }
-                              },
-                              child: TextField(
-                                controller: _pinControllers[index],
-                                focusNode: _focusNodes[index],
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                maxLength: 1,
-                                onChanged: (value) {
-                                  if (value.isNotEmpty) {
-                                    if (index < 3) {
-                                      _focusNodes[index + 1].requestFocus();
-                                    } else {
-                                      // Last digit entered, dismiss keyboard
-                                      _focusNodes[index].unfocus();
-                                    }
-                                  } else {
-                                    // Value became empty
-                                    if (index > 0) {
-                                      _focusNodes[index - 1].requestFocus();
-                                    }
-                                  }
-                                  setState(() {});
-                                },
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                                    borderSide: BorderSide(
-                                      color: AppColors.darkNavy,
-                                      width: ResponsiveUtils.w(context, 2),
-                                    ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                                    borderSide: BorderSide(
-                                      color: AppColors.darkNavy,
-                                      width: ResponsiveUtils.w(context, 2),
-                                    ),
-                                  ),
-                                ),
-                                style: AppTextStyles.title(context).copyWith(
-                                  fontSize: ResponsiveUtils.sp(context, 24),
-                                  color: AppColors.darkNavy,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      ResponsiveUtils.verticalSpace(context, 32),
-                      SizedBox(
-                        width: double.infinity,
-                        height: ResponsiveUtils.h(context, 56),
-                        child: ElevatedButton(
-                          onPressed: (_isPinComplete() && !_isVerifying)
-                              ? _verifyAndStart
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.amber,
-                            disabledBackgroundColor:
-                                AppColors.amber.withOpacity(0.5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                            ),
-                          ),
-                          child: _isVerifying
-                              ? SizedBox(
-                                  width: ResponsiveUtils.w(context, 24),
-                                  height: ResponsiveUtils.h(context, 24),
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.darkNavy,
-                                    strokeWidth: ResponsiveUtils.w(context, 2),
-                                  ),
-                                )
-                              : Text(
-                                  'Verify & Start Wash',
-                                  style: AppTextStyles.button(context).copyWith(
-                                    color: AppColors.darkNavy,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      ResponsiveUtils.verticalSpace(context, 16),
-                      GestureDetector(
-                        onTap: () {
-                          ToastUtils.showSuccessToast(context, 'PIN resent');
-        
-                        },
-                        child: Text(
-                          'Resend PIN',
-                          style: AppTextStyles.body(context).copyWith(
-                            color: AppColors.primaryTeal,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+      backgroundColor: const Color(0xFFF0F2F5),
+      body: Stack(
+        children: [
+          // 1. Immersive Gradient Background
+          Container(
+            height: ResponsiveUtils.h(context, 320),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF00695C), // Deep Teal
+                  Color(0xFF00897B), // Rich Teal
+                  Color(0xFF26A69A), // Lighter Teal
+                ],
+              ),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(ResponsiveUtils.r(context, 40)),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryTeal.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: Offset(0, 10),
                 ),
               ],
             ),
           ),
+
+          // 2. Abstract Geometric Accents (Glassmorphism feel)
+          Positioned(
+            top: -100,
+            right: -80,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 50,
+            left: -40,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
+              ),
+            ),
+          ),
+
+          // 3. Main Content
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  // Custom Navigation Bar
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 20),
+                      vertical: ResponsiveUtils.h(context, 10),
+                    ),
+                    child: Row(
+                      children: [
+                        _buildBackButton(context),
+                        Expanded(
+                          child: Text(
+                            'Security Verification',
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.headline(context).copyWith(
+                              color: Colors.white,
+                              fontSize: ResponsiveUtils.sp(context, 18),
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: ResponsiveUtils.w(context, 44)), // Balance back button
+                      ],
+                    ),
+                  ),
+
+                  ResponsiveUtils.verticalSpace(context, 40),
+
+                  // Verification Card
+                  Container(
+                    margin: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 24),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 24),
+                      vertical: ResponsiveUtils.h(context, 40),
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 28)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 40,
+                          offset: const Offset(0, 16),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Lock Icon
+                        Container(
+                          padding: EdgeInsets.all(ResponsiveUtils.r(context, 18)),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTeal.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.lock_person_rounded,
+                            size: ResponsiveUtils.r(context, 36),
+                            color: AppColors.primaryTeal,
+                          ),
+                        ),
+                        ResponsiveUtils.verticalSpace(context, 24),
+
+                        Text(
+                          'Enter Customer PIN',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.headline(context).copyWith(
+                            fontSize: ResponsiveUtils.sp(context, 24),
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1E293B), // Slate 800
+                          ),
+                        ),
+                        ResponsiveUtils.verticalSpace(context, 36),
+
+                        // PIN Input Area
+                        _buildPinRow(),
+
+                        ResponsiveUtils.verticalSpace(context, 36),
+
+                        // Action Buttons
+                        _buildVerifyButton(),
+
+                        ResponsiveUtils.verticalSpace(context, 20),
+
+                        // Resend Option
+                        GestureDetector(
+                          onTap: () {
+                            // TODO: Implement actual resend API logic if available
+                            ToastUtils.showSuccessToast(context, 'PIN resent to customer');
+                          },
+                          child: Text(
+                            'Resend PIN',
+                            style: AppTextStyles.body(context).copyWith(
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+
+                        // Call Customer Section
+                        if (_job?.booking?.customer?.phone != null && 
+                            _job!.booking!.customer!.phone.isNotEmpty) ...[
+                          ResponsiveUtils.verticalSpace(context, 24),
+                          _buildDivider(),
+                          ResponsiveUtils.verticalSpace(context, 24),
+                          _buildCallCustomerButton(),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  ResponsiveUtils.verticalSpace(context, 40),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/employee-home',
+        (route) => false,
+      ),
+      child: Container(
+        width: ResponsiveUtils.w(context, 44),
+        height: ResponsiveUtils.w(context, 44),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Colors.white,
+          size: ResponsiveUtils.r(context, 18),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPinRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: List.generate(
+        4,
+        (index) => SizedBox(
+          width: ResponsiveUtils.w(context, 52),
+          height: ResponsiveUtils.h(context, 64),
+          child: KeyboardListener(
+            focusNode: FocusNode(),
+            onKeyEvent: (event) {
+              if (event is KeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.backspace) {
+                if (_pinControllers[index].text.isEmpty && index > 0) {
+                  _focusNodes[index - 1].requestFocus();
+                }
+              }
+            },
+            child: TextField(
+              controller: _pinControllers[index],
+              focusNode: _focusNodes[index],
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              maxLength: 1,
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  if (index < 3) {
+                    _focusNodes[index + 1].requestFocus();
+                  } else {
+                    _focusNodes[index].unfocus();
+                  }
+                } else if (index > 0) {
+                  _focusNodes[index - 1].requestFocus();
+                }
+                setState(() {});
+              },
+              decoration: InputDecoration(
+                counterText: '',
+                filled: true,
+                fillColor: _pinControllers[index].text.isNotEmpty
+                    ? AppColors.primaryTeal.withOpacity(0.08)
+                    : Color(0xFFF1F5F9), // Slate 100
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                  borderSide: BorderSide(color: Colors.transparent),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                  borderSide: BorderSide(
+                    color: AppColors.primaryTeal,
+                    width: 2,
+                  ),
+                ),
+              ),
+              style: AppTextStyles.headline(context).copyWith(
+                fontSize: ResponsiveUtils.sp(context, 26),
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVerifyButton() {
+    bool isEnabled = _isPinComplete() && !_isVerifying;
+    
+    return Container(
+      width: double.infinity,
+      height: ResponsiveUtils.h(context, 54),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+        boxShadow: isEnabled
+            ? [
+                BoxShadow(
+                  color: AppColors.primaryTeal.withOpacity(0.4),
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
+                )
+              ]
+            : [],
+      ),
+      child: ElevatedButton(
+        onPressed: isEnabled ? _verifyAndStart : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryTeal,
+          disabledBackgroundColor: Color(0xFFE2E8F0), // Slate 200
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+          ),
+          elevation: 0, // Handled by Container
+        ),
+        child: _isVerifying
+            ? SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Text(
+                'Verify & Start Wash',
+                style: AppTextStyles.button(context).copyWith(
+                  color: isEnabled ? Colors.white : Color(0xFF94A3B8),
+                  fontSize: ResponsiveUtils.sp(context, 16),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 1,
+            color: Color(0xFFE2E8F0),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 12)),
+          child: Text(
+            'OR',
+            style: AppTextStyles.body(context).copyWith(
+              color: Color(0xFF94A3B8),
+              fontSize: ResponsiveUtils.sp(context, 12),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: Color(0xFFE2E8F0),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCallCustomerButton() {
+    return Container(
+      width: double.infinity,
+      height: ResponsiveUtils.h(context, 50),
+      child: OutlinedButton.icon(
+        onPressed: _callCustomer,
+        icon: Icon(
+          Icons.phone_in_talk_rounded,
+          size: ResponsiveUtils.r(context, 20),
+          color: AppColors.primaryTeal,
+        ),
+        label: Text(
+          'Call Customer',
+          style: AppTextStyles.body(context).copyWith(
+            color: AppColors.primaryTeal,
+            fontWeight: FontWeight.w700,
+            fontSize: ResponsiveUtils.sp(context, 15),
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: AppColors.primaryTeal.withOpacity(0.3), width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+          ),
+          backgroundColor: AppColors.primaryTeal.withOpacity(0.04),
         ),
       ),
     );

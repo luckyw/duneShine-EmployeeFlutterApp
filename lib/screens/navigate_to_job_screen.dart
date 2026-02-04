@@ -10,6 +10,7 @@ import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/location_tracking_service.dart';
+import '../utils/responsive_utils.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
@@ -543,71 +544,20 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
-    final String jobId = args['jobId'] ?? 'JOB-56392';
-    final String carModel = args['carModel'] ?? 'Toyota Camry';
-    final String carColor = args['carColor'] ?? 'White';
-    final String employeeName = args['employeeName'] ?? 'Ahmed';
-    final double earnedAmount = (args['earnedAmount'] ?? 120.0).toDouble();
-
     final booking = _job?.booking;
-    final vehicle = booking?.vehicle;
     
-    // Prioritize job model data over passed arguments
-    final String currentCarModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : carModel;
-    final String currentCarColor = vehicle?.color ?? carColor;
-    
-    final locationName = booking?.locationName ?? '';
-    final locationAddress = booking?.fullAddress ?? '';
-
     // Initial camera position
     final initialPosition = _currentPosition != null
         ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
         : (_customerLocation ?? _defaultLocation);
 
     return Scaffold(
-      backgroundColor: AppColors.darkBlue,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryTeal,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () {
-            _locationService.stopSendingLocation();
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              '/employee-home',
-              (route) => false,
-            );
-          },
-        ),
-        title: Text(
-          'Navigate to Job',
-          style: AppTextStyles.headline(context).copyWith(
-            color: AppColors.white,
-            fontSize: 20,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.my_location, color: AppColors.white),
-            onPressed: _centerOnEmployee,
-            tooltip: 'Center on my location',
-          ),
-          IconButton(
-            icon: const Icon(Icons.navigation, color: AppColors.white),
-            onPressed: _openGoogleMaps,
-            tooltip: 'Open Google Maps',
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Google Maps Widget
+          // 1. Fullscreen Map
           _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primaryTeal),
-                )
+              ? const Center(child: CircularProgressIndicator(color: AppColors.primaryTeal))
               : GoogleMap(
                   mapType: MapType.normal,
                   initialCameraPosition: CameraPosition(
@@ -623,241 +573,470 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                       _animateCameraToShowBoth();
                     });
                   },
-                  myLocationEnabled: false, // We show custom marker instead
+                  myLocationEnabled: false,
                   myLocationButtonEnabled: false,
                   zoomControlsEnabled: false,
-                  compassEnabled: true,
+                  compassEnabled: false,
                   mapToolbarEnabled: false,
+                  padding: EdgeInsets.only(
+                    bottom: ResponsiveUtils.h(context, 350), // Padding for bottom sheet
+                    top: ResponsiveUtils.h(context, 100), // Padding for header
+                  ),
                 ),
-          
-          // Bottom sheet with job details
+
+          // 2. Premium Back Button (Floating)
+          Positioned(
+            top: ResponsiveUtils.h(context, 50),
+            left: ResponsiveUtils.w(context, 20),
+            child: GestureDetector(
+              onTap: () {
+                _locationService.stopSendingLocation();
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/employee-home',
+                  (route) => false,
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: AppColors.darkNavy,
+                  size: ResponsiveUtils.r(context, 24),
+                ),
+              ),
+            ),
+          ),
+
+          // 3. Floating Map Controls (Right Side)
+          Positioned(
+            top: ResponsiveUtils.h(context, 50),
+            right: ResponsiveUtils.w(context, 20),
+            child: Column(
+              children: [
+                _buildMapControl(
+                  icon: Icons.my_location_rounded,
+                  onTap: _centerOnEmployee,
+                ),
+                ResponsiveUtils.verticalSpace(context, 12),
+                _buildMapControl(
+                  icon: Icons.map_rounded,
+                  onTap: _openGoogleMaps,
+                  isPrimary: true,
+                ),
+              ],
+            ),
+          ),
+
+          // 4. Premium Bottom Sheet
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(ResponsiveUtils.r(context, 32)),
+                  topRight: Radius.circular(ResponsiveUtils.r(context, 32)),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 25,
+                    offset: const Offset(0, -5),
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(24),
-              child: _hasArrived
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: AppColors.primaryTeal,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'You Have Arrived',
-                          style: AppTextStyles.headline(context).copyWith(
-                            fontSize: 20,
-                            color: AppColors.darkNavy,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Ready to start the job',
-                          style: AppTextStyles.body(context).copyWith(
-                            color: AppColors.lightGray,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/job-verification',
-                                arguments: {
-                                  'jobId': jobId,
-                                  'carModel': carModel,
-                                  'carColor': carColor,
-                                  'employeeName': employeeName,
-                                  'earnedAmount': earnedAmount,
-                                  'job': _job,
-                                  'startOtp': _job?.startOtp,
-                                },
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryTeal,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Proceed to Job',
-                              style: AppTextStyles.button(context).copyWith(
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            const Icon(Icons.assignment_rounded,
-                                color: AppColors.primaryTeal, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              jobId,
-                              style: AppTextStyles.body(context).copyWith(
-                                color: AppColors.darkNavy,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (locationAddress.isNotEmpty && !locationAddress.toLowerCase().contains('unknown')) ...[
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                          const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  locationAddress,
-                                  style: AppTextStyles.body(context).copyWith(
-                                    color: AppColors.darkNavy,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 16),
-                        
-                        // Customer Name & Call Button
-                        if (booking?.customer?.phone != null && booking!.customer!.phone.isNotEmpty) ...[
-                          Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: booking.customer?.idProofImageUrl != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(20),
-                                        child: Image.network(
-                                          booking.customer!.idProofImageUrl!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
-                                        ),
-                                      )
-                                    : const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  booking.customer!.name,
-                                  style: AppTextStyles.body(context).copyWith(
-                                    color: AppColors.darkNavy,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.call, color: AppColors.primaryTeal),
-                                onPressed: () async {
-                                  final Uri launchUri = Uri(
-                                    scheme: 'tel',
-                                    path: booking.customer!.phone,
-                                  );
-                                  if (await canLaunchUrl(launchUri)) {
-                                    await launchUrl(launchUri);
-                                  } else {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Could not launch dialer')),
-                                      );
-                                    }
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                        const SizedBox(height: 20),
-                        
-                        // Open Google Maps button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: OutlinedButton.icon(
-                            onPressed: _openGoogleMaps,
-                            icon: const Icon(Icons.navigation, size: 20),
-                            label: const Text('Open Maps'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primaryTeal,
-                              side: const BorderSide(color: AppColors.primaryTeal),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        
-                        // I Have Arrived button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _isMarkingArrival ? null : _handleArrival,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.amber,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: _isMarkingArrival
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.darkNavy,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : Text(
-                                    'I Have Arrived',
-                                    style: AppTextStyles.button(context).copyWith(
-                                      color: AppColors.darkNavy,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
+              padding: EdgeInsets.fromLTRB(
+                ResponsiveUtils.w(context, 24),
+                ResponsiveUtils.h(context, 12),
+                ResponsiveUtils.w(context, 24),
+                ResponsiveUtils.h(context, 32),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   // Handle bar
+                  Center(
+                    child: Container(
+                      width: ResponsiveUtils.w(context, 40),
+                      height: ResponsiveUtils.h(context, 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
+                  ),
+                  ResponsiveUtils.verticalSpace(context, 24),
+
+                  if (_hasArrived)
+                    _buildArrivedState(context)
+                  else
+                    _buildNavigationState(context, booking),
+                ],
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMapControl({
+    required IconData icon,
+    required VoidCallback onTap,
+    bool isPrimary = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
+        decoration: BoxDecoration(
+          color: isPrimary ? AppColors.primaryTeal : Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: (isPrimary ? AppColors.primaryTeal : Colors.black)
+                  .withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: isPrimary ? Colors.white : AppColors.darkNavy,
+          size: ResponsiveUtils.r(context, 24),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationState(BuildContext context, Booking? booking) {
+    final locationName = booking?.locationName ?? 'Destination';
+    final locationAddress = booking?.fullAddress ?? 'Loading address...';
+    final customerName = booking?.customer?.name ?? 'Unknown Customer';
+    final jobId = _job != null ? 'JOB-${_job!.id}' : 'Loading...';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Job ID Badge
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveUtils.w(context, 10),
+            vertical: ResponsiveUtils.h(context, 4),
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primaryTeal.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: AppColors.primaryTeal.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Text(
+            jobId,
+            style: AppTextStyles.caption(context).copyWith(
+              color: AppColors.primaryTeal,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        ResponsiveUtils.verticalSpace(context, 12),
+        
+        // Location Details
+        Text(
+          locationName,
+          style: AppTextStyles.title(context).copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: ResponsiveUtils.sp(context, 20),
+          ),
+        ),
+        ResponsiveUtils.verticalSpace(context, 8),
+        Row(
+          children: [
+            Icon(
+              Icons.location_on_rounded,
+              size: ResponsiveUtils.r(context, 16),
+              color: AppColors.textGray,
+            ),
+            ResponsiveUtils.horizontalSpace(context, 8),
+            Expanded(
+              child: Text(
+                locationAddress,
+                style: AppTextStyles.body(context).copyWith(
+                  color: AppColors.textGray,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        
+        ResponsiveUtils.verticalSpace(context, 24),
+        
+        // Customer Row
+        Container(
+          padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: ResponsiveUtils.w(context, 44),
+                height: ResponsiveUtils.h(context, 44),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: booking?.customer?.idProofImageUrl != null
+                    ? ClipOval(
+                        child: Image.network(
+                          booking!.customer!.idProofImageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.person,
+                            color: AppColors.primaryTeal,
+                            size: 20,
+                          ),
+                        ),
+                      )
+                    : Icon(Icons.person, color: AppColors.primaryTeal),
+              ),
+              ResponsiveUtils.horizontalSpace(context, 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Customer',
+                      style: AppTextStyles.caption(context).copyWith(
+                        color: AppColors.textGray,
+                      ),
+                    ),
+                    Text(
+                      customerName,
+                      style: AppTextStyles.body(context).copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.darkNavy,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (booking?.customer?.phone != null)
+                IconButton(
+                  onPressed: () async {
+                    final Uri launchUri = Uri(
+                      scheme: 'tel',
+                      path: booking!.customer!.phone,
+                    );
+                    if (await canLaunchUrl(launchUri)) {
+                      await launchUrl(launchUri);
+                    }
+                  },
+                  icon: Container(
+                    padding: EdgeInsets.all(ResponsiveUtils.w(context, 10)),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.phone_rounded,
+                      color: Colors.green,
+                      size: ResponsiveUtils.r(context, 20),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        
+        ResponsiveUtils.verticalSpace(context, 24),
+        
+        // Open Maps Button
+        SizedBox(
+          width: double.infinity,
+          height: ResponsiveUtils.h(context, 48),
+          child: OutlinedButton.icon(
+            onPressed: _openGoogleMaps,
+            icon: Icon(
+              Icons.map_outlined,
+              size: ResponsiveUtils.r(context, 20),
+            ),
+            label: Text(
+              'Open Google Maps',
+              style: AppTextStyles.button(context).copyWith(
+                color: AppColors.primaryTeal,
+                fontSize: ResponsiveUtils.sp(context, 16),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primaryTeal,
+              side: BorderSide(color: AppColors.primaryTeal.withValues(alpha: 0.5)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+              ),
+            ),
+          ),
+        ),
+
+        ResponsiveUtils.verticalSpace(context, 16),
+        
+        // Arrive Button
+        SizedBox(
+          width: double.infinity,
+          height: ResponsiveUtils.h(context, 56),
+          child: ElevatedButton(
+            onPressed: _isMarkingArrival ? null : _handleArrival,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal,
+              elevation: 4,
+              shadowColor: AppColors.primaryTeal.withValues(alpha: 0.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+              ),
+            ),
+            child: _isMarkingArrival
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.flag_rounded, color: Colors.white),
+                      ResponsiveUtils.horizontalSpace(context, 10),
+                      Text(
+                        'Mark as Arrived',
+                        style: AppTextStyles.button(context).copyWith(
+                          color: Colors.white,
+                          fontSize: ResponsiveUtils.sp(context, 16),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildArrivedState(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: ResponsiveUtils.w(context, 80),
+          height: ResponsiveUtils.h(context, 80),
+          decoration: BoxDecoration(
+            color: Colors.green.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.check_circle_rounded,
+            color: Colors.green,
+            size: ResponsiveUtils.r(context, 48),
+          ),
+        ),
+        ResponsiveUtils.verticalSpace(context, 16),
+        Text(
+          'You Have Arrived',
+          style: AppTextStyles.headline(context).copyWith(
+            fontSize: ResponsiveUtils.sp(context, 24),
+            color: AppColors.darkNavy,
+          ),
+        ),
+        ResponsiveUtils.verticalSpace(context, 8),
+        Text(
+          'You are at the destination',
+          style: AppTextStyles.body(context).copyWith(
+            color: AppColors.textGray,
+          ),
+        ),
+        ResponsiveUtils.verticalSpace(context, 32),
+        SizedBox(
+          width: double.infinity,
+          height: ResponsiveUtils.h(context, 56),
+          child: ElevatedButton(
+            onPressed: () {
+               // Logic from previous implementation
+               // We navigate to verification, passing all necessary args
+               if (_job != null) {
+                  // If we have the job, we can pass it
+                   // See _handleArrival logic for what happens next
+                   // This button basically just duplicates the auto-navigation success action
+                   // or manual proceed if auto-nav failed/user stayed on screen
+                   final vehicle = _job?.booking?.vehicle;
+                   final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
+                   final carColor = vehicle?.color ?? 'Unknown';
+                   final employeeName = AuthService().employeeName;
+                   
+                   double earnedAmount = 0;
+                   if (_job?.booking != null) {
+                     for (var service in _job!.booking!.servicesPayload) {
+                       earnedAmount += double.tryParse(service.price) ?? 0;
+                     }
+                   }
+
+                   Navigator.pushNamed(
+                     context,
+                     '/job-verification',
+                     arguments: {
+                       'jobId': 'JOB-${_job!.id}',
+                       'carModel': carModel,
+                       'carColor': carColor,
+                       'employeeName': employeeName,
+                       'earnedAmount': earnedAmount,
+                       'job': _job,
+                       'startOtp': _job?.startOtp,
+                     },
+                   );
+               }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal,
+              elevation: 4,
+              shadowColor: AppColors.primaryTeal.withValues(alpha: 0.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+              ),
+            ),
+            child: Text(
+              'Proceed to Job',
+              style: AppTextStyles.button(context).copyWith(
+                color: Colors.white,
+                fontSize: ResponsiveUtils.sp(context, 16),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

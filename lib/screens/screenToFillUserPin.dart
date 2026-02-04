@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../constants/colors.dart';
+import '../constants/text_styles.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../utils/responsive_utils.dart';
 
 class JobArrivalPhotoScreen extends StatefulWidget {
   final String jobId;
@@ -208,238 +211,517 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.darkTeal,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/employee-home',
-            (route) => false,
+      backgroundColor: const Color(0xFFF0F2F5),
+      body: Stack(
+        children: [
+          // 1. Premium Gradient Header
+          Container(
+            height: ResponsiveUtils.h(context, 260),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF1E293B), // Dark Blue Grey
+                  Color(0xFF334155), // Lighter Blue Grey
+                ],
+              ),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(ResponsiveUtils.r(context, 32)),
+              ),
+            ),
           ),
-        ),
-        title: const Text(
-          'Job Arrival',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+
+          // Decorative elements
+           Positioned(
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.05),
+              ),
+            ),
           ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+
+          SafeArea(
+            child: Column(
+              children: [
+                // AppBar
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveUtils.w(context, 16),
+                    vertical: ResponsiveUtils.h(context, 8),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/employee-home',
+                          (route) => false,
+                        ),
+                        child: Container(
+                          width: ResponsiveUtils.w(context, 40),
+                          height: ResponsiveUtils.w(context, 40),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 10)),
+                          ),
+                          child: Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: ResponsiveUtils.r(context, 18),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Arrival Verification',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.headline(context).copyWith(
+                            color: Colors.white,
+                            fontSize: ResponsiveUtils.sp(context, 18),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: ResponsiveUtils.w(context, 40)),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.directions_car,
-                      size: 40,
-                      color: AppColors.primaryTeal,
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 20),
+                      vertical: ResponsiveUtils.h(context, 24),
                     ),
-                    const SizedBox(width: 12),
-                    Column(
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          _job?.booking?.vehicle != null
-                              ? '${_job!.booking!.vehicle!.brandName} ${_job!.booking!.vehicle!.model}'
-                              : widget.carModel,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.darkTeal,
-                          ),
-                        ),
-                        Text(
-                          _job?.booking?.vehicle?.color ?? widget.carColor,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                'Capture Before Photo',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.darkTeal,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Take a clear photo of the car before starting the wash',
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 24),
-              if (_isPhotoUploaded && _capturedPhoto != null)
-                Stack(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppColors.primaryTeal,
-                          width: 2,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.file(_capturedPhoto!, fit: BoxFit.cover),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _capturedPhoto = null;
-                            _isPhotoUploaded = false;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
+                        // Car Info Ticket
+                        Container(
+                          width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
                             color: Colors.white,
-                            size: 20,
+                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 20,
+                                offset: Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              // Ticket Header
+                              Container(
+                                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryTeal.withOpacity(0.08),
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(ResponsiveUtils.r(context, 20)),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.directions_car_filled_rounded, 
+                                      color: AppColors.primaryTeal,
+                                      size: ResponsiveUtils.r(context, 20),
+                                    ),
+                                    SizedBox(width: ResponsiveUtils.w(context, 8)),
+                                    Text(
+                                      'Vehicle Details',
+                                      style: AppTextStyles.body(context).copyWith(
+                                        color: AppColors.primaryTeal,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Ticket Content
+                              Padding(
+                                padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _job?.booking?.vehicle != null
+                                                ? '${_job!.booking!.vehicle!.brandName} ${_job!.booking!.vehicle!.model}'
+                                                : widget.carModel,
+                                            style: AppTextStyles.headline(context).copyWith(
+                                              fontSize: ResponsiveUtils.sp(context, 20),
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF1E293B),
+                                            ),
+                                          ),
+                                          SizedBox(height: ResponsiveUtils.h(context, 4)),
+                                          Text(
+                                            _job?.booking?.vehicle?.color ?? widget.carColor,
+                                            style: AppTextStyles.body(context).copyWith(
+                                              fontSize: ResponsiveUtils.sp(context, 15),
+                                              color: Color(0xFF64748B),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // License Plate Badge (Mock or from data if available)
+                                    if (_job?.booking?.vehicle?.numberPlate != null)
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: ResponsiveUtils.w(context, 8),
+                                          vertical: ResponsiveUtils.h(context, 4),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 6)),
+                                          border: Border.all(color: Color(0xFFCBD5E1)),
+                                        ),
+                                        child: Text(
+                                          _job!.booking!.vehicle!.numberPlate,
+                                          style: TextStyle(
+                                            fontFamily: 'Roboto', // License plate vibe
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF334155),
+                                            fontSize: ResponsiveUtils.sp(context, 14),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                )
-              else
-                GestureDetector(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (context) => Container(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              leading: const Icon(Icons.camera_alt),
-                              title: const Text('Take Photo'),
-                              onTap: () {
-                                Navigator.pop(context);
-                                _pickImage(ImageSource.camera);
-                              },
-                            ),
-                            ListTile(
-                              leading: const Icon(Icons.image),
-                              title: const Text('Choose from Gallery'),
-                              onTap: () {
-                                Navigator.pop(context);
-                                _pickImage(ImageSource.gallery);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.grey.shade300,
-                        width: 2,
-                        style: BorderStyle.solid,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.camera_alt,
-                          size: 60,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 12),
+
+                        SizedBox(height: ResponsiveUtils.h(context, 32)),
+
                         Text(
-                          'Tap to Upload Photo',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
+                          'Proof of Arrival',
+                          style: AppTextStyles.headline(context).copyWith(
+                            fontSize: ResponsiveUtils.sp(context, 18),
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E293B),
                           ),
                         ),
+
+                        SizedBox(height: ResponsiveUtils.h(context, 20)),
+
+                        // Photo Upload Area
+                        if (_isPhotoUploaded && _capturedPhoto != null)
+                          _buildPhotoPreview()
+                        else
+                          _buildUploadPlaceholder(context),
+
+                        SizedBox(height: ResponsiveUtils.h(context, 40)),
+
+                        // Verify Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: ResponsiveUtils.h(context, 56),
+                          child: ElevatedButton(
+                            onPressed: (_isPhotoUploaded && !_isUploading)
+                                ? _verifyAndProceed
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryTeal,
+                              // If disabled, use a lighter slate
+                              disabledBackgroundColor: Color(0xFFE2E8F0), 
+                              elevation: (_isPhotoUploaded && !_isUploading) ? 8 : 0,
+                              shadowColor: AppColors.primaryTeal.withOpacity(0.4),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                              ),
+                            ),
+                            child: _isUploading
+                                ? SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Verify & Proceed',
+                                        style: AppTextStyles.button(context).copyWith(
+                                          fontSize: ResponsiveUtils.sp(context, 16),
+                                          fontWeight: FontWeight.w700,
+                                          color: (_isPhotoUploaded && !_isUploading) 
+                                              ? Colors.white 
+                                              : Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                      if (_isPhotoUploaded && !_isUploading) ...[
+                                        SizedBox(width: 8),
+                                        Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                                      ]
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        SizedBox(height: ResponsiveUtils.h(context, 20)),
                       ],
                     ),
                   ),
                 ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: (_isPhotoUploaded && !_isUploading)
-                      ? _verifyAndProceed
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.darkTeal,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(
-                      0.4,
-                    ),
-                    disabledForegroundColor: Colors.white.withOpacity(0.6),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isUploading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Verify & Proceed',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUploadPlaceholder(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showImageSourceModal(context),
+      child: Container(
+        height: ResponsiveUtils.h(context, 220),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+          border: Border.all(
+            color: Color(0xFFCBD5E1),
+            width: 2,
+            style: BorderStyle.solid, // Dashed would be cool but solid is cleaner for premium feel sometimes
+          ),
+          boxShadow: [
+             BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            )
+          ]
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Color(0xFFF1F5F9), // Slate 100
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.add_a_photo_rounded,
+                size: ResponsiveUtils.r(context, 32),
+                color: AppColors.primaryTeal,
+              ),
+            ),
+            SizedBox(height: ResponsiveUtils.h(context, 16)),
+            Text(
+              'Tap to Upload Photo',
+              style: AppTextStyles.body(context).copyWith(
+                fontSize: ResponsiveUtils.sp(context, 16),
+                color: Color(0xFF334155),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: ResponsiveUtils.h(context, 4)),
+            Text(
+              'Supports JPG, PNG',
+              style: AppTextStyles.body(context).copyWith(
+                fontSize: ResponsiveUtils.sp(context, 12),
+                color: Color(0xFF94A3B8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhotoPreview() {
+    return Stack(
+      children: [
+        Container(
+          height: ResponsiveUtils.h(context, 300),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: Offset(0, 8),
               ),
             ],
           ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+            child: Image.file(
+              _capturedPhoto!,
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
+        Positioned(
+          top: 12,
+          right: 12,
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _capturedPhoto = null;
+                _isPhotoUploaded = false;
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.5)),
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 12,
+          right: 12,
+          child: GestureDetector(
+            onTap: () => _showImageSourceModal(context),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                  )
+                ]
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit_rounded, size: 14, color: AppColors.darkTeal),
+                  SizedBox(width: 4),
+                  Text(
+                    'Retake',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkTeal,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showImageSourceModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            SizedBox(height: 24),
+            Text(
+              'Select Photo Source',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildSourceOption(
+                  icon: Icons.camera_alt_rounded,
+                  label: 'Camera',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                _buildSourceOption(
+                  icon: Icons.photo_library_rounded,
+                  label: 'Gallery',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSourceOption({required IconData icon, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.primaryTeal.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 32, color: AppColors.primaryTeal),
+          ),
+          SizedBox(height: 12),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF475569),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:employeapplication/constants/colors.dart';
+import 'package:employeapplication/constants/text_styles.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -177,248 +180,438 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+
     return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryTeal,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Job Completion Proof',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: ResponsiveUtils.sp(context, 20),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
-          child: Column(
-            children: [
-              // Show wash duration if available
-              if (_washDurationFormatted != null) ...[
-                Container(
-                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                    border: Border.all(color: AppColors.primaryTeal),
+      backgroundColor: AppColors.veryLightGray,
+      body: Column(
+        children: [
+          // 1. Premium Header
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + ResponsiveUtils.h(context, 16),
+              bottom: ResponsiveUtils.h(context, 24),
+              left: ResponsiveUtils.w(context, 24),
+              right: ResponsiveUtils.w(context, 24),
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0F172A), // Dark Navy
+                  Color(0xFF1E293B), // Slate
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(ResponsiveUtils.r(context, 32)),
+                bottomRight: Radius.circular(ResponsiveUtils.r(context, 32)),
+              ),
+            ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: EdgeInsets.all(ResponsiveUtils.w(context, 10)),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                    ),
+                    child: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: ResponsiveUtils.sp(context, 20),
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.timer, color: AppColors.primaryTeal, size: ResponsiveUtils.sp(context, 24)),
-                      ResponsiveUtils.horizontalSpace(context, 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Wash Duration',
-                            style: TextStyle(
-                              fontSize: ResponsiveUtils.sp(context, 12),
-                              color: AppColors.textGray,
-                            ),
-                          ),
-                          Text(
-                            _washDurationFormatted!,
-                            style: TextStyle(
-                              fontSize: ResponsiveUtils.sp(context, 24),
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryTeal,
-                            ),
+                ),
+                SizedBox(width: ResponsiveUtils.w(context, 16)),
+                Expanded(
+                  child: Text(
+                    'Job Completion',
+                    style: AppTextStyles.headline(context).copyWith(
+                      color: Colors.white,
+                      fontSize: ResponsiveUtils.sp(context, 22),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 2. Wash Duration Card
+                  if (_washDurationFormatted != null) ...[
+                    Container(
+                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 15,
+                            offset: Offset(0, 5),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                ResponsiveUtils.verticalSpace(context, 24),
-              ],
-              Text(
-                'After Photo',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: ResponsiveUtils.sp(context, 16), color: AppColors.darkTeal),
-              ),
-              ResponsiveUtils.verticalSpace(context, 32),
-              Container(
-                height: ResponsiveUtils.h(context, 300),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.darkNavy, width: ResponsiveUtils.w(context, 2)),
-                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
-                  color: AppColors.veryLightGray,
-                ),
-                  child: _isPhotoUploaded && _capturedPhoto != null
-                    ? Stack(
+                      child: Row(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
-                            child: Image.file(
-                              _capturedPhoto!,
-                              fit: BoxFit.cover,
-                              height: ResponsiveUtils.h(context, 300),
-                              width: double.infinity,
+                          Container(
+                            padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryTeal.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.timer_outlined,
+                              color: AppColors.primaryTeal,
+                              size: ResponsiveUtils.sp(context, 28),
                             ),
                           ),
-                          Positioned(
-                            top: ResponsiveUtils.h(context, 12),
-                            right: ResponsiveUtils.w(context, 12),
-                            child: GestureDetector(
-                              onTap: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) => Container(
-                                    padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
-                                    child: Column(
+                          SizedBox(width: ResponsiveUtils.w(context, 16)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Total Wash Duration',
+                                style: AppTextStyles.body(context).copyWith(
+                                  color: AppColors.textGray,
+                                  fontSize: ResponsiveUtils.sp(context, 14),
+                                ),
+                              ),
+                              SizedBox(height: ResponsiveUtils.h(context, 4)),
+                              Text(
+                                _washDurationFormatted!,
+                                style: AppTextStyles.headline(context).copyWith(
+                                  color: AppColors.textDark,
+                                  fontSize: ResponsiveUtils.sp(context, 20),
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    ResponsiveUtils.verticalSpace(context, 24),
+                  ],
+
+                  // 3. Photo Upload Section
+                  Text(
+                    'Proof of Completion',
+                    style: AppTextStyles.headline(context).copyWith(
+                      fontSize: ResponsiveUtils.sp(context, 18),
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  SizedBox(height: ResponsiveUtils.h(context, 8)),
+                  Text(
+                    'Upload a clear photo of the clean vehicle to verify the job is done.',
+                    style: AppTextStyles.body(context).copyWith(
+                      fontSize: ResponsiveUtils.sp(context, 14),
+                      color: AppColors.textGray,
+                      height: 1.5,
+                    ),
+                  ),
+                  ResponsiveUtils.verticalSpace(context, 24),
+
+                  Container(
+                    height: ResponsiveUtils.h(context, 260),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 20,
+                          offset: Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: _isPhotoUploaded && _capturedPhoto != null
+                        ? Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                                child: Image.file(
+                                  _capturedPhoto!,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                bottom: ResponsiveUtils.h(context, 16),
+                                right: ResponsiveUtils.w(context, 16),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) => _buildPhotoOptionsSheet(context),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: ResponsiveUtils.w(context, 16),
+                                      vertical: ResponsiveUtils.h(context, 8),
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.7),
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        ListTile(
-                                          leading: const Icon(Icons.camera_alt),
-                                          title: const Text('Take Photo'),
-                                          onTap: () {
-                                            Navigator.pop(context);
-                                            _pickImage(ImageSource.camera);
-                                          },
-                                        ),
-                                        ListTile(
-                                          leading: const Icon(Icons.image),
-                                          title: const Text(
-                                            'Choose from Gallery',
-                                          ),
-                                          onTap: () {
-                                            Navigator.pop(context);
-                                            _pickImage(ImageSource.gallery);
-                                          },
+                                        Icon(Icons.refresh, color: Colors.white, size: 16),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Retake',
+                                          style: AppTextStyles.button(context).copyWith(fontSize: 14),
                                         ),
                                       ],
                                     ),
                                   ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => _buildPhotoOptionsSheet(context),
                                 );
                               },
-                              child: Container(
-                                padding: EdgeInsets.all(ResponsiveUtils.w(context, 8)),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 8)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.2,
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                              child: DottedBorderPainter(
+                                strokeWidth: 2,
+                                color: AppColors.primaryTeal.withOpacity(0.3),
+                                gap: 6,
+                                radius: 24,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryTeal.withOpacity(0.08),
+                                        shape: BoxShape.circle,
                                       ),
-                                      blurRadius: ResponsiveUtils.r(context, 4),
-                                      offset: Offset(0, ResponsiveUtils.h(context, 2)),
+                                      child: Icon(
+                                        Icons.add_a_photo_outlined,
+                                        size: ResponsiveUtils.sp(context, 40),
+                                        color: AppColors.primaryTeal,
+                                      ),
+                                    ),
+                                    SizedBox(height: ResponsiveUtils.h(context, 16)),
+                                    Text(
+                                      'Tap to Upload Photo',
+                                      style: AppTextStyles.subtitle(context).copyWith(
+                                        color: AppColors.primaryTeal,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                child: Icon(
-                                  Icons.edit,
-                                  color: AppColors.primaryTeal,
-                                  size: ResponsiveUtils.sp(context, 24),
-                                ),
                               ),
                             ),
                           ),
-                        ],
-                      )
-                    : GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (context) => Container(
-                              padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ListTile(
-                                    leading: const Icon(Icons.camera_alt),
-                                    title: const Text('Take Photo'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _pickImage(ImageSource.camera);
-                                    },
-                                  ),
-                                  ListTile(
-                                    leading: const Icon(Icons.image),
-                                    title: const Text('Choose from Gallery'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      _pickImage(ImageSource.gallery);
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.camera_alt,
-                              size: ResponsiveUtils.sp(context, 64),
-                              color: AppColors.darkNavy,
-                            ),
-                            ResponsiveUtils.verticalSpace(context, 16),
-                            Text(
-                              'Tap to Take Photo',
-                              style: TextStyle(
-                                fontSize: ResponsiveUtils.sp(context, 16),
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.darkNavy,
-                              ),
-                            ),
-                          ],
+                  ),
+                  
+                  ResponsiveUtils.verticalSpace(context, 40),
+
+                  // 4. Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: ResponsiveUtils.h(context, 56),
+                    child: ElevatedButton(
+                      onPressed: (_isPhotoUploaded && !_isSubmitting)
+                          ? _submitJob
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryTeal,
+                        foregroundColor: Colors.white,
+                        elevation: 8,
+                        shadowColor: AppColors.primaryTeal.withOpacity(0.4),
+                        disabledBackgroundColor: AppColors.textGray.withOpacity(0.2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
                         ),
                       ),
-              ),
-              ResponsiveUtils.verticalSpace(context, 32),
-              SizedBox(
-                width: double.infinity,
-                height: ResponsiveUtils.h(context, 56),
-                child: ElevatedButton(
-                  onPressed: (_isPhotoUploaded && !_isSubmitting)
-                      ? _submitJob
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.darkTeal,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.darkTeal.withOpacity(
-                      0.4,
-                    ),
-                    disabledForegroundColor: Colors.white.withOpacity(0.6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                      child: _isSubmitting
+                          ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : Text(
+                              'Complete Job',
+                              style: AppTextStyles.button(context).copyWith(
+                                fontSize: ResponsiveUtils.sp(context, 18),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
                     ),
                   ),
-                  child: _isSubmitting
-                      ? SizedBox(
-                          width: ResponsiveUtils.w(context, 24),
-                          height: ResponsiveUtils.h(context, 24),
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: ResponsiveUtils.w(context, 2),
-                          ),
-                        )
-                      : Text(
-                          'Submit Job',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: ResponsiveUtils.sp(context, 16),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
+                  ResponsiveUtils.verticalSpace(context, 20),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  Widget _buildPhotoOptionsSheet(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          SizedBox(height: 20),
+          ListTile(
+            leading: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.camera_alt, color: Colors.blue),
+            ),
+            title: Text('Take Photo', style: AppTextStyles.subtitle(context)),
+            onTap: () {
+              Navigator.pop(context);
+              _pickImage(ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.purple.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.image, color: Colors.purple),
+            ),
+            title: Text('Choose from Gallery', style: AppTextStyles.subtitle(context)),
+            onTap: () {
+              Navigator.pop(context);
+              _pickImage(ImageSource.gallery);
+            },
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+}
+
+// Custom painter for dashed border
+class DottedBorderPainter extends StatelessWidget {
+  final Widget child;
+  final double strokeWidth;
+  final Color color;
+  final double gap;
+  final double radius;
+
+  const DottedBorderPainter({
+    Key? key,
+    required this.child,
+    this.strokeWidth = 1,
+    this.color = Colors.black,
+    this.gap = 4,
+    this.radius = 0,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _DottedPainter(
+        strokeWidth: strokeWidth,
+        color: color,
+        gap: gap,
+        radius: radius,
+      ),
+      child: Center(child: child),
+    );
+  }
+}
+
+class _DottedPainter extends CustomPainter {
+  final double strokeWidth;
+  final Color color;
+  final double gap;
+  final double radius;
+
+  _DottedPainter({
+    required this.strokeWidth,
+    required this.color,
+    required this.gap,
+    required this.radius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final Path path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Radius.circular(radius),
+      ));
+
+    final Path dashedPath = _dashPath(path, width: 8, space: gap);
+    canvas.drawPath(dashedPath, paint);
+  }
+
+  Path _dashPath(Path source, {required double width, required double space}) {
+    final Path dest = Path();
+    for (final PathMetric metric in source.computeMetrics()) {
+      double distance = 0.0;
+      while (distance < metric.length) {
+        dest.addPath(
+          metric.extractPath(distance, distance + width),
+          Offset.zero,
+        );
+        distance += width + space;
+      }
+    }
+    return dest;
+  }
+
+  @override
+  bool shouldRepaint(_DottedPainter oldDelegate) {
+    return oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.color != color ||
+        oldDelegate.gap != gap ||
+        oldDelegate.radius != radius;
   }
 }

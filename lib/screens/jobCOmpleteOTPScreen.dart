@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../constants/text_styles.dart';
 import '../constants/colors.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
@@ -161,177 +162,249 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+
     return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryTeal,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () => Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/employee-home',
-            (route) => false,
+      backgroundColor: AppColors.primaryTeal,
+      body: Stack(
+        children: [
+          // 1. Background Pattern
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
-        ),
-        title: Text(
-          'Job Completion',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: ResponsiveUtils.sp(context, 20),
-            fontWeight: FontWeight.bold,
+          Positioned(
+            bottom: 100,
+            left: -30,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
-        ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
-                        border: Border.all(
-                          color: AppColors.darkNavy,
-                          width: ResponsiveUtils.w(context, 2),
+
+          // 2. Main content
+          SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  // Header
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 20),
+                      vertical: ResponsiveUtils.h(context, 10),
+                    ),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/employee-home',
+                            (route) => false,
+                          ),
+                          child: Container(
+                            width: ResponsiveUtils.w(context, 40),
+                            height: ResponsiveUtils.w(context, 40),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                            ),
+                            child: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: Colors.white,
+                              size: ResponsiveUtils.sp(context, 18),
+                            ),
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Enter Customer\nOTP',
+                        Expanded(
+                          child: Text(
+                            'Job Completion',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: ResponsiveUtils.sp(context, 20),
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.darkNavy,
+                            style: AppTextStyles.headline(context).copyWith(
+                              color: Colors.white,
+                              fontSize: ResponsiveUtils.sp(context, 18),
                             ),
                           ),
-                          ResponsiveUtils.verticalSpace(context, 12),
-                          Text(
-                            'Ask for the 4-digit OTP to finalize\nthe job.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: ResponsiveUtils.sp(context, 14),
-                              color: AppColors.lightGray,
-                            ),
+                        ),
+                        SizedBox(width: ResponsiveUtils.w(context, 40)),
+                      ],
+                    ),
+                  ),
+
+                  ResponsiveUtils.verticalSpace(context, 40),
+
+                  // Content Card
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 24)),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 24),
+                      vertical: ResponsiveUtils.h(context, 32),
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 30,
+                          offset: Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Icon
+                        Container(
+                          padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTeal.withOpacity(0.1),
+                            shape: BoxShape.circle,
                           ),
-                          ResponsiveUtils.verticalSpace(context, 32),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: List.generate(
-                              4,
-                              (index) => SizedBox(
-                                width: ResponsiveUtils.w(context, 60),
-                                height: ResponsiveUtils.h(context, 60),
-                                child: KeyboardListener(
-                                  focusNode: FocusNode(),
-                                  onKeyEvent: (event) {
-                                    if (event is KeyDownEvent &&
-                                        event.logicalKey == LogicalKeyboardKey.backspace) {
-                                      if (index > 0 && _otpControllers[index].text.isEmpty) {
-                                        _otpControllers[index - 1].clear();
-                                        _focusNodes[index - 1].requestFocus();
-                                      }
+                          child: Icon(
+                            Icons.verified_user_rounded,
+                            size: ResponsiveUtils.sp(context, 40),
+                            color: AppColors.primaryTeal,
+                          ),
+                        ),
+                        ResponsiveUtils.verticalSpace(context, 24),
+
+                        Text(
+                          'Enter Customer OTP',
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.headline(context).copyWith(
+                            fontSize: ResponsiveUtils.sp(context, 22),
+                            color: AppColors.textDark,
+                          ),
+                        ),
+
+                        ResponsiveUtils.verticalSpace(context, 32),
+
+                        // OTP Inputs
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: List.generate(
+                            4,
+                            (index) => SizedBox(
+                              width: ResponsiveUtils.w(context, 56),
+                              height: ResponsiveUtils.h(context, 64),
+                              child: KeyboardListener(
+                                focusNode: FocusNode(),
+                                onKeyEvent: (event) {
+                                  if (event is KeyDownEvent &&
+                                      event.logicalKey == LogicalKeyboardKey.backspace) {
+                                    if (index > 0 && _otpControllers[index].text.isEmpty) {
+                                      _otpControllers[index - 1].clear();
+                                      _focusNodes[index - 1].requestFocus();
                                     }
-                                  },
-                                  child: TextField(
-                                    controller: _otpControllers[index],
-                                    focusNode: _focusNodes[index],
-                                    textAlign: TextAlign.center,
-                                    keyboardType: TextInputType.number,
-                                    maxLength: 1,
-                                    onChanged: (value) => _onOtpInput(index, value),
-                                    decoration: InputDecoration(
-                                      counterText: '',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                                        borderSide: BorderSide(
-                                          color: AppColors.darkNavy,
-                                          width: ResponsiveUtils.w(context, 2),
-                                        ),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                                        borderSide: BorderSide(
-                                          color: AppColors.darkNavy,
-                                          width: ResponsiveUtils.w(context, 2),
-                                        ),
+                                  }
+                                },
+                                child: TextField(
+                                  controller: _otpControllers[index],
+                                  focusNode: _focusNodes[index],
+                                  textAlign: TextAlign.center,
+                                  keyboardType: TextInputType.number,
+                                  maxLength: 1,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  onChanged: (value) => _onOtpInput(index, value),
+                                  decoration: InputDecoration(
+                                    counterText: '',
+                                    filled: true,
+                                    fillColor: _otpControllers[index].text.isNotEmpty
+                                        ? AppColors.primaryTeal.withOpacity(0.1)
+                                        : AppColors.veryLightGray,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                      borderSide: BorderSide(
+                                        color: AppColors.primaryTeal,
+                                        width: 1.5,
                                       ),
                                     ),
-                                    style: TextStyle(
-                                      fontSize: ResponsiveUtils.sp(context, 24),
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.darkNavy,
-                                    ),
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: ResponsiveUtils.sp(context, 24),
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textDark,
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          ResponsiveUtils.verticalSpace(context, 32),
-                          SizedBox(
-                            width: double.infinity,
-                            height: ResponsiveUtils.h(context, 56),
-                            child: ElevatedButton(
-                              onPressed: (_isOtpComplete() && !_isVerifying)
-                                  ? _verifyAndComplete
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.darkTeal,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: AppColors.darkTeal.withOpacity(0.4),
-                                disabledForegroundColor: Colors.white.withOpacity(0.6),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                                ),
+                        ),
+
+                        ResponsiveUtils.verticalSpace(context, 32),
+
+                        // Verify Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: ResponsiveUtils.h(context, 56),
+                          child: ElevatedButton(
+                            onPressed: (_isOtpComplete() && !_isVerifying)
+                                ? _verifyAndComplete
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryTeal,
+                              foregroundColor: Colors.white,
+                              elevation: 5,
+                              shadowColor: AppColors.primaryTeal.withOpacity(0.4),
+                              disabledBackgroundColor: AppColors.textGray.withOpacity(0.2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 14)),
                               ),
-                              child: _isVerifying
-                                  ? SizedBox(
-                                      width: ResponsiveUtils.w(context, 24),
-                                      height: ResponsiveUtils.h(context, 24),
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: ResponsiveUtils.w(context, 2),
-                                      ),
-                                    )
-                                  : Text(
-                                      'Verify & Complete Job',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: ResponsiveUtils.sp(context, 16),
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                            ),
+                            child: _isVerifying
+                                ? SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
                                     ),
+                                  )
+                                : Text(
+                                    'Verify & Complete',
+                                    style: AppTextStyles.button(context).copyWith(
+                                      fontSize: ResponsiveUtils.sp(context, 16),
+                                    ),
+                                  ),
+                          ),
+                        ),
+
+                        ResponsiveUtils.verticalSpace(context, 20),
+
+                        // Resend
+                        GestureDetector(
+                          onTap: () {
+                            ToastUtils.showSuccessToast(context, 'OTP resent');
+                          },
+                          child: Text(
+                            'Resend OTP',
+                            style: AppTextStyles.body(context).copyWith(
+                              color: AppColors.textGray,
+                              fontSize: ResponsiveUtils.sp(context, 14),
+                              decoration: TextDecoration.underline,
                             ),
                           ),
-                          ResponsiveUtils.verticalSpace(context, 16),
-                          GestureDetector(
-                            onTap: () {
-                              ToastUtils.showSuccessToast(context, 'OTP resent');
-                            },
-                            child: Text(
-                              'Resend OTP',
-                              style: TextStyle(
-                                color: AppColors.primaryTeal,
-                                fontSize: ResponsiveUtils.sp(context, 14),
-                                fontWeight: FontWeight.bold,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
