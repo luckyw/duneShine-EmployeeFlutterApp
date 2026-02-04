@@ -209,8 +209,24 @@ class _AccountWidgetState extends State<AccountWidget> {
           children: [
             Container(
               width: double.infinity,
-              color: AppColors.primaryTeal,
-              padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 24)),
+              padding: EdgeInsets.only(
+                top: ResponsiveUtils.h(context, 20),
+                bottom: ResponsiveUtils.h(context, 40),
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.primaryTeal,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(ResponsiveUtils.r(context, 40)),
+                  bottomRight: Radius.circular(ResponsiveUtils.r(context, 40)),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryTeal.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
               child: _isLoadingProfile
                   ? const Center(
                       child: Padding(
@@ -242,94 +258,107 @@ class _AccountWidgetState extends State<AccountWidget> {
                           ),
                         )
                       : Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Stack(
-                              children: [
-                                Container(
-                                  width: ResponsiveUtils.r(context, 100),
-                                  height: ResponsiveUtils.r(context, 100),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.lightGray,
-                                  ),
-                                  child: _profile?.idProofImageUrl != null
-                                      ? ClipOval(
-                                          child: Image.network(
-                                            _profile!.idProofImageUrl!,
-                                            fit: BoxFit.cover,
-                                            width: ResponsiveUtils.r(context, 100),
-                                            height: ResponsiveUtils.r(context, 100),
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Icon(Icons.person,
-                                                        size: ResponsiveUtils.r(context, 60),
-                                                        color: AppColors.white),
-                                          ),
-                                        )
-                                      : Icon(Icons.person,
-                                          size: ResponsiveUtils.r(context, 60), color: AppColors.white),
+                            // Profile Image Circle (similar style to timer circle)
+                            Container(
+                              width: ResponsiveUtils.r(context, 160),
+                              height: ResponsiveUtils.r(context, 160),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.white.withValues(alpha: 0.2),
+                                  width: 6,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 15,
+                                    spreadRadius: 2,
+                                  ),
                                 ],
                               ),
-
-                            ResponsiveUtils.verticalSpace(context, 16),
+                              child: Container(
+                                margin: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.white,
+                                ),
+                                child: ClipOval(
+                                  child: _profile?.idProofImageUrl != null
+                                      ? Image.network(
+                                          _profile!.idProofImageUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              Icon(Icons.person,
+                                                  size: ResponsiveUtils.r(context, 80),
+                                                  color: AppColors.primaryTeal.withValues(alpha: 0.2)),
+                                        )
+                                      : Icon(Icons.person,
+                                          size: ResponsiveUtils.r(context, 80),
+                                          color: AppColors.primaryTeal.withValues(alpha: 0.2)),
+                                ),
+                              ),
+                            ),
+                            ResponsiveUtils.verticalSpace(context, 20),
                             Text(
                               _profile?.name ?? _authService.employeeName,
                               style: AppTextStyles.headline(context).copyWith(
                                 color: AppColors.white,
+                                fontSize: ResponsiveUtils.sp(context, 24),
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            ResponsiveUtils.verticalSpace(context, 8),
-                            if (_profile?.phone != null &&
-                                _profile!.phone!.isNotEmpty)
+                            ResponsiveUtils.verticalSpace(context, 4),
+                            if (_profile?.phone != null && _profile!.phone!.isNotEmpty)
                               Text(
-                                _profile!.phone!,
+                                _profile!.phone!.replaceFirst('+971', '+971 '),
                                 style: AppTextStyles.body(context).copyWith(
                                   color: AppColors.white.withValues(alpha: 0.8),
+                                  fontSize: ResponsiveUtils.sp(context, 16),
                                 ),
                               ),
-
-                            ResponsiveUtils.verticalSpace(context, 12),
-                            if (_profile?.vendor != null)
+                            ResponsiveUtils.verticalSpace(context, 16),
+                            if (_profile?.vendorName != null)
                               Container(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: ResponsiveUtils.w(context, 12), vertical: ResponsiveUtils.h(context, 6)),
+                                  horizontal: ResponsiveUtils.w(context, 16),
+                                  vertical: ResponsiveUtils.h(context, 8),
+                                ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.gold.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                                  color: AppColors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(30),
+                                  border: Border.all(color: AppColors.white.withValues(alpha: 0.2)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (_profile!.vendorLogoUrl != null)
+                                    if (_profile?.vendorLogoUrl != null)
                                       Padding(
-                                        padding:
-                                            EdgeInsets.only(right: ResponsiveUtils.w(context, 8)),
-                                        child: ClipOval(
-                                          child: Image.network(
-                                            _profile!.vendorLogoUrl!,
-                                            width: ResponsiveUtils.r(context, 24),
-                                            height: ResponsiveUtils.r(context, 24),
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Icon(
-                                                        Icons.business,
-                                                        size: ResponsiveUtils.r(context, 16),
-                                                        color: AppColors.gold),
+                                        padding: EdgeInsets.only(right: ResponsiveUtils.w(context, 8)),
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                          ),
+                                          child: ClipOval(
+                                            child: Image.network(
+                                              _profile!.vendorLogoUrl!,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                  const Icon(Icons.business, size: 14, color: AppColors.primaryTeal),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    Flexible(
-                                      child: Text(
-                                        _profile!.vendorName,
-                                        style: AppTextStyles.caption(context).copyWith(
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.gold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                    Text(
+                                      _profile!.vendorName,
+                                      style: AppTextStyles.subtitle(context).copyWith(
+                                        color: AppColors.white,
+                                        fontSize: ResponsiveUtils.sp(context, 14),
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ],

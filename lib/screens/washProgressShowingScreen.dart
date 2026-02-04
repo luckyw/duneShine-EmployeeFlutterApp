@@ -395,12 +395,14 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                           Icons.directions_car_outlined,
                           'Vehicle',
                           '${vehicle?.brandName} ${vehicle?.model} (${vehicle?.color ?? ""})\nPlate: ${vehicle?.numberPlate ?? ""}',
+                          imageUrl: vehicle?.imageUrl,
                         ),
                         _buildDivider(),
                         _buildDetailItem(
                           Icons.person_outline,
                           'Customer',
                           '${_job?.booking?.customer?.name ?? "..."}\n${_job?.booking?.customer?.phone ?? ""}',
+                          imageUrl: _job?.booking?.customer?.idProofImageUrl,
                         ),
                         _buildDivider(),
                         _buildDetailItem(
@@ -470,23 +472,52 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     );
   }
 
-  Widget _buildDetailItem(IconData icon, String label, String value, {Color? color, bool isLast = false}) {
+  Widget _buildDetailItem(IconData icon, String label, String value, {Color? color, bool isLast = false, String? imageUrl}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 4)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(ResponsiveUtils.r(context, 8)),
+            width: ResponsiveUtils.r(context, 40),
+            height: ResponsiveUtils.r(context, 40),
             decoration: BoxDecoration(
               color: (color ?? AppColors.primaryTeal).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              size: ResponsiveUtils.r(context, 20),
-              color: color ?? AppColors.primaryTeal,
-            ),
+            child: imageUrl != null && imageUrl.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        icon,
+                        size: ResponsiveUtils.r(context, 20),
+                        color: color ?? AppColors.primaryTeal,
+                      ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                color ?? AppColors.primaryTeal,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : Icon(
+                    icon,
+                    size: ResponsiveUtils.r(context, 20),
+                    color: color ?? AppColors.primaryTeal,
+                  ),
           ),
           ResponsiveUtils.horizontalSpace(context, 16),
           Expanded(

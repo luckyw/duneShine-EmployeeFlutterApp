@@ -80,16 +80,16 @@ The employee app follows this service flow sequence:
 ```json
 {
     "job": {
-        "id": 175,
-        "booking_id": 107,
-        "scheduled_date": "2026-02-01T20:00:00.000000Z",
-        "start_time": "10:00:00",
+        "id": 248,
+        "booking_id": 153,
+        "scheduled_date": "2026-02-03T20:00:00.000000Z",
+        "start_time": "14:30:00",
         "service_duration": 0,
         "travel_duration": 30,
         "time_slot_id": 6,
         "employee_id": 24,
         "status": "assigned",
-        "assigned_at": "2026-02-02T13:13:08.000000Z",
+        "assigned_at": "2026-02-04T16:34:26.000000Z",
         "start_otp": null,
         "start_otp_verified_at": null,
         "end_otp": null,
@@ -98,8 +98,8 @@ The employee app follows this service flow sequence:
         "photos_before": null,
         "photos_after": null,
         "deleted_at": null,
-        "created_at": "2026-02-02T13:12:43.000000Z",
-        "updated_at": "2026-02-02T13:13:08.000000Z",
+        "created_at": "2026-02-04T16:34:07.000000Z",
+        "updated_at": "2026-02-04T16:34:26.000000Z",
         "arrived_at": null,
         "started_at": null,
         "washed_at": null,
@@ -107,9 +107,9 @@ The employee app follows this service flow sequence:
         "photos_before_urls": [],
         "photos_after_urls": [],
         "estimated_duration": 30,
-        "end_time": "10:30",
+        "end_time": "15:00",
         "booking": {
-            "id": 107,
+            "id": 153,
             "user_id": 49,
             "property_id": 15,
             "vehicle_id": 29,
@@ -117,27 +117,46 @@ The employee app follows this service flow sequence:
             "vendor_id": 2,
             "type": "on_demand",
             "subscription_package_id": null,
-            "total_price": "200.00",
+            "total_price": "80.00",
             "payment_status": "paid",
             "status": "confirmed",
             "expires_at": null,
             "services_payload": [
                 {
-                    "id": 5,
-                    "name": "Interior Cleaning",
-                    "price": "200.00"
+                    "id": 1,
+                    "name": "Premium Wash",
+                    "price": "80.00"
                 }
             ],
             "notes": null,
             "deleted_at": null,
-            "created_at": "2026-02-02T13:12:43.000000Z",
-            "updated_at": "2026-02-02T13:12:46.000000Z",
+            "created_at": "2026-02-04T16:34:07.000000Z",
+            "updated_at": "2026-02-04T16:34:11.000000Z",
             "customer": {
                 "id": 49,
                 "name": "Sagar Rai",
                 "email": "customer_1769855919@duneshine.com",
+                "service_id": null,
+                "logo": null,
+                "description": null,
+                "id_card_number": null,
+                "id_proof_image": "profile_photos/ZdIKEtFtkzprVWQbefAuJw4YCvvLFAWtjcms5n3P.jpg",
+                "cr_number": null,
+                "cr_proof_image": null,
                 "phone": "+971989323305",
-                "id_proof_image": "profile_photos/ZdIKEtFtkzprVWQbefAuJw4YCvvLFAWtjcms5n3P.jpg"
+                "role": "customer",
+                "status": true,
+                "email_verified_at": null,
+                "plain_password": null,
+                "otp": null,
+                "otp_expires_at": null,
+                "created_at": "2026-01-31T10:38:39.000000Z",
+                "updated_at": "2026-02-03T22:34:02.000000Z",
+                "deleted_at": null,
+                "custom_role_id": null,
+                "vendor_id": null,
+                "address": null,
+                "rate": null
             },
             "apartment": null,
             "vehicle": {
@@ -146,14 +165,46 @@ The employee app follows this service flow sequence:
                 "brand_name": "Toyota",
                 "model": "Nexon",
                 "color": "Black",
-                "number_plate": "MP 04 23 2323"
+                "vehicle_type": null,
+                "number_plate": "MP 04 23 2323",
+                "parking_notes": null,
+                "image": "vehicles/XiTnLAD8UAU2lRQqJY3bNdrBZTnEIg7dJVlkQ5SN.jpg",
+                "status": true,
+                "deleted_at": null,
+                "created_at": "2026-01-31T15:30:40.000000Z",
+                "updated_at": "2026-02-04T17:45:39.000000Z",
+                "image_url": "https://duneshine.bztechhub.com/storage/vehicles/XiTnLAD8UAU2lRQqJY3bNdrBZTnEIg7dJVlkQ5SN.jpg"
             },
             "property": {
                 "id": 15,
                 "name": "Door 121",
                 "type": "door",
                 "parent_id": 3,
+                "emirate": null,
+                "area": null,
+                "community": null,
+                "street": null,
+                "building_name": null,
+                "building_number": null,
+                "villa_number": null,
+                "floor_number": null,
                 "door_number": "121",
+                "makani_number": null,
+                "plot_number": null,
+                "latitude": null,
+                "longitude": null,
+                "google_maps_url": null,
+                "landmark": null,
+                "security_gate": null,
+                "access_instructions": null,
+                "parking_info": null,
+                "service_otp": null,
+                "status": "active",
+                "created_by": 43,
+                "vendor_id": null,
+                "deleted_at": null,
+                "created_at": "2026-01-30T13:41:36.000000Z",
+                "updated_at": "2026-01-30T13:41:36.000000Z",
                 "hierarchy_path": "Green View Society → Block A → Floor 2 → Door 121",
                 "resolved_location": {
                     "latitude": "23.1996395",
@@ -164,6 +215,31 @@ The employee app follows this service flow sequence:
                     "name": "Floor 2",
                     "type": "floor",
                     "parent_id": 2,
+                    "emirate": null,
+                    "area": null,
+                    "community": null,
+                    "street": null,
+                    "building_name": null,
+                    "building_number": null,
+                    "villa_number": null,
+                    "floor_number": "1",
+                    "door_number": null,
+                    "makani_number": null,
+                    "plot_number": null,
+                    "latitude": null,
+                    "longitude": null,
+                    "google_maps_url": null,
+                    "landmark": null,
+                    "security_gate": null,
+                    "access_instructions": null,
+                    "parking_info": null,
+                    "service_otp": null,
+                    "status": "active",
+                    "created_by": null,
+                    "vendor_id": null,
+                    "deleted_at": null,
+                    "created_at": "2026-01-24T10:34:30.000000Z",
+                    "updated_at": "2026-01-24T10:34:30.000000Z",
                     "hierarchy_path": "Green View Society → Block A → Floor 2",
                     "resolved_location": {
                         "latitude": "23.1996395",
@@ -174,6 +250,31 @@ The employee app follows this service flow sequence:
                         "name": "Block A",
                         "type": "building",
                         "parent_id": 1,
+                        "emirate": null,
+                        "area": null,
+                        "community": null,
+                        "street": null,
+                        "building_name": null,
+                        "building_number": "1",
+                        "villa_number": null,
+                        "floor_number": null,
+                        "door_number": null,
+                        "makani_number": null,
+                        "plot_number": null,
+                        "latitude": null,
+                        "longitude": null,
+                        "google_maps_url": null,
+                        "landmark": null,
+                        "security_gate": null,
+                        "access_instructions": null,
+                        "parking_info": null,
+                        "service_otp": null,
+                        "status": "active",
+                        "created_by": null,
+                        "vendor_id": null,
+                        "deleted_at": null,
+                        "created_at": "2026-01-24T10:34:04.000000Z",
+                        "updated_at": "2026-01-24T10:34:04.000000Z",
                         "hierarchy_path": "Green View Society → Block A",
                         "resolved_location": {
                             "latitude": "23.1996395",
@@ -187,9 +288,28 @@ The employee app follows this service flow sequence:
                             "emirate": "Dubai",
                             "area": "Jumeirah Village Circle",
                             "community": "JVC District 10",
+                            "street": null,
+                            "building_name": null,
+                            "building_number": null,
+                            "villa_number": null,
+                            "floor_number": null,
+                            "door_number": null,
+                            "makani_number": null,
+                            "plot_number": null,
                             "latitude": "23.1996395",
                             "longitude": "77.2410799",
                             "google_maps_url": "https://www.google.com/maps?q=23.1996395,77.2410799",
+                            "landmark": null,
+                            "security_gate": "yes",
+                            "access_instructions": null,
+                            "parking_info": null,
+                            "service_otp": null,
+                            "status": "active",
+                            "created_by": null,
+                            "vendor_id": null,
+                            "deleted_at": null,
+                            "created_at": "2026-01-24T10:33:43.000000Z",
+                            "updated_at": "2026-01-31T12:39:47.000000Z",
                             "hierarchy_path": "Green View Society",
                             "resolved_location": {
                                 "latitude": "23.1996395",
@@ -205,7 +325,10 @@ The employee app follows this service flow sequence:
             "id": 6,
             "start_time": "23:00",
             "end_time": "23:59",
-            "status": true
+            "status": true,
+            "created_at": "2025-12-19T17:27:25.000000Z",
+            "updated_at": "2026-02-01T13:43:14.000000Z",
+            "deleted_at": null
         }
     }
 }
@@ -215,16 +338,16 @@ The employee app follows this service flow sequence:
 
 | Field Path | Has Data | Sample Value | Notes |
 |------------|----------|--------------|-------|
-| `job.id` | ✅ | `175` | Always present |
-| `job.booking_id` | ✅ | `107` | Always present |
-| `job.scheduled_date` | ✅ | `"2026-02-01T20:00:00.000000Z"` | ISO 8601 format |
-| `job.start_time` | ✅ | `"10:00:00"` | HH:MM:SS format |
+| `job.id` | ✅ | `248` | Always present |
+| `job.booking_id` | ✅ | `153` | Always present |
+| `job.scheduled_date` | ✅ | `"2026-02-03T20:00:00.000000Z"` | ISO 8601 format |
+| `job.start_time` | ✅ | `"14:30:00"` | HH:MM:SS format |
 | `job.service_duration` | ✅ | `0` | Minutes |
 | `job.travel_duration` | ✅ | `30` | Minutes |
 | `job.time_slot_id` | ✅ | `6` | Reference to time_slot |
 | `job.employee_id` | ✅ | `24` | Always present |
 | `job.status` | ✅ | `"assigned"` | Status changes through flow |
-| `job.assigned_at` | ✅ | `"2026-02-02T13:13:08.000000Z"` | Timestamp |
+| `job.assigned_at` | ✅ | `"2026-02-04T16:34:26.000000Z"` | Timestamp |
 | `job.start_otp` | ❌ | `null` | Generated on arrival |
 | `job.start_otp_verified_at` | ❌ | `null` | Set after OTP verification |
 | `job.end_otp` | ❌ | `null` | Generated after wash finish |
@@ -239,8 +362,8 @@ The employee app follows this service flow sequence:
 | `job.photos_before_urls` | ✅ | `[]` | Empty until photo uploaded |
 | `job.photos_after_urls` | ✅ | `[]` | Empty until photo uploaded |
 | `job.estimated_duration` | ✅ | `30` | Minutes |
-| `job.end_time` | ✅ | `"10:30"` | HH:MM format |
-| `job.booking.id` | ✅ | `107` | Booking reference |
+| `job.end_time` | ✅ | `"15:00"` | HH:MM format |
+| `job.booking.id` | ✅ | `153` | Booking reference |
 | `job.booking.user_id` | ✅ | `49` | Customer user ID |
 | `job.booking.property_id` | ✅ | `15` | Property reference |
 | `job.booking.vehicle_id` | ✅ | `29` | Vehicle reference |
@@ -248,14 +371,14 @@ The employee app follows this service flow sequence:
 | `job.booking.vendor_id` | ✅ | `2` | Vendor reference |
 | `job.booking.type` | ✅ | `"on_demand"` | Booking type |
 | `job.booking.subscription_package_id` | ❌ | `null` | For subscription bookings |
-| `job.booking.total_price` | ✅ | `"200.00"` | String format |
+| `job.booking.total_price` | ✅ | `"80.00"` | String format |
 | `job.booking.payment_status` | ✅ | `"paid"` | Payment status |
 | `job.booking.status` | ✅ | `"confirmed"` | Booking status |
 | `job.booking.expires_at` | ❌ | `null` | For subscriptions |
 | `job.booking.services_payload` | ✅ | `[{...}]` | Array of services |
-| `job.booking.services_payload[].id` | ✅ | `5` | Service ID |
-| `job.booking.services_payload[].name` | ✅ | `"Interior Cleaning"` | Service name |
-| `job.booking.services_payload[].price` | ✅ | `"200.00"` | Service price |
+| `job.booking.services_payload[].id` | ✅ | `1` | Service ID |
+| `job.booking.services_payload[].name` | ✅ | `"Premium Wash"` | Service name |
+| `job.booking.services_payload[].price` | ✅ | `"80.00"` | Service price |
 | `job.booking.notes` | ❌ | `null` | Optional customer notes |
 | `job.booking.customer.id` | ✅ | `49` | Customer ID |
 | `job.booking.customer.name` | ✅ | `"Sagar Rai"` | Customer name |
@@ -268,8 +391,8 @@ The employee app follows this service flow sequence:
 | `job.booking.property.id` | ✅ | `15` | Property ID |
 | `job.booking.property.name` | ✅ | `"Door 121"` | Property Name |
 | `job.booking.property.hierarchy_path` | ✅ | `"Green View Society → ..."` | Full property path |
-| `job.booking.property.resolved_location.latitude` | ✅ | `"23.1996395"` | **NEW**: Coordinate |
-| `job.booking.property.resolved_location.longitude` | ✅ | `"77.2410799"` | **NEW**: Coordinate |
+| `job.booking.property.resolved_location.latitude` | ✅ | `"23.1996395"` | Coordinate |
+| `job.booking.property.resolved_location.longitude` | ✅ | `"77.2410799"` | Coordinate |
 | `job.booking.vehicle.id` | ✅ | `29` | Vehicle ID |
 | `job.booking.vehicle.brand_name` | ✅ | `"Toyota"` | Vehicle brand |
 | `job.booking.vehicle.model` | ✅ | `"Nexon"` | Vehicle model |
@@ -277,8 +400,8 @@ The employee app follows this service flow sequence:
 | `job.booking.vehicle.vehicle_type` | ❌ | `null` | Optional |
 | `job.booking.vehicle.number_plate` | ✅ | `"MP 04 23 2323"` | License plate |
 | `job.booking.vehicle.parking_notes` | ❌ | `null` | Optional parking instructions |
-| `job.booking.vehicle.image` | ❌ | `null` | Vehicle image path |
-| `job.booking.vehicle.image_url` | ❌ | `null` | Vehicle image URL |
+| `job.booking.vehicle.image` | ✅ | `"vehicles/XiTnLAD..."` | Vehicle image path |
+| `job.booking.vehicle.image_url` | ✅ | `"https://duneshine.bztechhub.com/storage/vehicles/..."` | **Full vehicle image URL** |
 | `job.time_slot.id` | ✅ | `6` | Time slot ID |
 | `job.time_slot.start_time` | ✅ | `"23:00"` | Slot start time |
 | `job.time_slot.end_time` | ✅ | `"23:59"` | Slot end time |

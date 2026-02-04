@@ -459,10 +459,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         return AppBar(
           title: Text(
             'My Account',
-            style: AppTextStyles.headline(context).copyWith(fontSize: 20),
+            style: AppTextStyles.headline(context).copyWith(
+              fontSize: 20,
+              color: AppColors.white,
+            ),
           ),
           centerTitle: true,
-          backgroundColor: AppColors.white,
+          backgroundColor: AppColors.primaryTeal,
           elevation: 0,
         );
       default:
@@ -519,6 +522,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                                     text: 'Upcoming: ${_upcomingJobs.length} ',
                                     style: AppTextStyles.body(context).copyWith(
                                       color: AppColors.darkNavy,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   TextSpan(
@@ -550,6 +554,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         indicatorSize: TabBarIndicatorSize.tab,
                         labelColor: AppColors.white,
                         unselectedLabelColor: AppColors.darkNavy,
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: ResponsiveUtils.sp(context, 14),
+                        ),
+                        unselectedLabelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: ResponsiveUtils.sp(context, 14),
+                        ),
                         tabs: const [
                           Tab(text: 'Upcoming'),
                           Tab(text: 'Completed'),
@@ -950,6 +962,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         car,
                         style: AppTextStyles.body(context).copyWith(
                           color: textColor,
+                          fontWeight: FontWeight.bold,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -987,6 +1000,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                           location,
                           style: AppTextStyles.caption(context).copyWith(
                             color: textColor,
+                            fontWeight: FontWeight.bold,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -1078,6 +1092,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   car,
                   style: AppTextStyles.body(context).copyWith(
                     color: AppColors.textGray,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -1095,6 +1110,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     location,
                     style: AppTextStyles.caption(context).copyWith(
                       color: AppColors.textGray,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -1120,6 +1136,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       completedTime,
                       style: AppTextStyles.caption(context).copyWith(
                         color: AppColors.textGray,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],

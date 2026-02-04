@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../constants/colors.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
@@ -77,15 +78,23 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
         imageQuality: 85,
       );
       if (image != null) {
+        // Save to permanent storage to avoid "path not found" errors
+        // during the upload process if the temp file gets cleaned up
+        final directory = await getApplicationDocumentsDirectory();
+        final fileName = 'arrival_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final savedImage = await File(image.path).copy('${directory.path}/$fileName');
+        
         setState(() {
-          _capturedPhoto = File(image.path);
+          _capturedPhoto = savedImage;
           _isPhotoUploaded = true;
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+      }
     }
   }
 

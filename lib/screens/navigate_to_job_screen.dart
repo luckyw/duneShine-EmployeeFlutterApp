@@ -714,28 +714,17 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            if (locationName.isNotEmpty && !locationName.toLowerCase().contains('unknown'))
-                              Text(
-                                'En Route to $locationName',
-                                style: AppTextStyles.title(context).copyWith(
-                                  fontSize: 18,
-                                  color: AppColors.darkNavy,
-                                ),
-                              ),
-                          ],
-                        ),
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            const Icon(Icons.directions_car,
+                            const Icon(Icons.assignment_rounded,
                                 color: AppColors.primaryTeal, size: 20),
                             const SizedBox(width: 8),
                             Text(
-                              '$currentCarModel - $currentCarColor',
+                              jobId,
                               style: AppTextStyles.body(context).copyWith(
                                 color: AppColors.darkNavy,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -762,7 +751,25 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                         if (booking?.customer?.phone != null && booking!.customer!.phone.isNotEmpty) ...[
                           Row(
                             children: [
-                              const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: booking.customer?.idProofImageUrl != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Image.network(
+                                          booking.customer!.idProofImageUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
+                                        ),
+                                      )
+                                    : const Icon(Icons.person, color: AppColors.primaryTeal, size: 20),
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -774,7 +781,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.call, color: AppColors.success),
+                                icon: const Icon(Icons.call, color: AppColors.primaryTeal),
                                 onPressed: () async {
                                   final Uri launchUri = Uri(
                                     scheme: 'tel',

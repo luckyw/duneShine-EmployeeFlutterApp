@@ -259,7 +259,6 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         : 'Unknown Vehicle';
     final carColor = vehicle?.color ?? 'Unknown';
     final jobId = 'JOB-${_job!.id}';
-    final employeeName = AuthService().employeeName;
 
     // Calculate total price from services
     double earnedAmount = 0;
@@ -275,265 +274,490 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
     return RefreshIndicator(
       onRefresh: _refreshJobDetails,
+      color: AppColors.primaryTeal,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Card 1: Car Information & Address
-              Container(
-                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-                decoration: BoxDecoration(
-                  color: AppColors.veryLightGray,
-                  borderRadius: BorderRadius.circular(
-                    ResponsiveUtils.r(context, 16),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: ResponsiveUtils.r(context, 8),
-                      offset: const Offset(0, 2),
-                    ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Hero Header with Gradient
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primaryTeal,
+                    AppColors.primaryTeal.withValues(alpha: 0.85),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(
-                            ResponsiveUtils.w(context, 10),
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.gold.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(
-                              ResponsiveUtils.r(context, 12),
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.directions_car,
-                            color: AppColors.gold,
-                            size: ResponsiveUtils.r(context, 28),
-                          ),
-                        ),
-                        ResponsiveUtils.horizontalSpace(context, 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                carModel,
-                                style: AppTextStyles.title(context).copyWith(
-                                  fontSize: ResponsiveUtils.sp(context, 18),
-                                  color: AppColors.darkNavy,
-                                ),
-                              ),
-                              ResponsiveUtils.verticalSpace(context, 4),
-                              Row(
-                                children: [
-                                  Container(
-                                    width: ResponsiveUtils.w(context, 14),
-                                    height: ResponsiveUtils.h(context, 14),
-                                    decoration: BoxDecoration(
-                                      color: _getColorFromName(carColor),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
-                                        width: ResponsiveUtils.w(context, 1),
-                                      ),
-                                    ),
-                                  ),
-                                  ResponsiveUtils.horizontalSpace(context, 6),
-                                  Text(
-                                    carColor,
-                                    style: AppTextStyles.body(
-                                      context,
-                                    ).copyWith(color: AppColors.lightGray),
-                                  ),
-                                  ResponsiveUtils.horizontalSpace(context, 12),
-                                  Flexible(
-                                    child: Text(
-                                      '• ${vehicle?.numberPlate ?? ''}',
-                                      style: AppTextStyles.body(context)
-                                          .copyWith(
-                                            color: AppColors.textGray,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: ResponsiveUtils.w(context, 10),
-                            vertical: ResponsiveUtils.h(context, 6),
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(
-                              ResponsiveUtils.r(context, 8),
-                            ),
-                          ),
-                          child: Text(
-                            jobId,
-                            style: AppTextStyles.caption(context).copyWith(
-                              color: AppColors.primaryTeal,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    ResponsiveUtils.verticalSpace(context, 16),
-                    Divider(height: ResponsiveUtils.h(context, 40)),
-                    if (booking?.fullAddress != null &&
-                        booking!.fullAddress.isNotEmpty &&
-                        !booking.fullAddress.toLowerCase().contains(
-                          'unknown',
-                        )) ...[
-                      ResponsiveUtils.verticalSpace(context, 16),
-                      // Address Section
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+                  child: Column(
+                    children: [
+                      // Job ID and Status Row
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: EdgeInsets.all(
-                              ResponsiveUtils.w(context, 8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: ResponsiveUtils.w(context, 14),
+                              vertical: ResponsiveUtils.h(context, 8),
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.1),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(
-                                ResponsiveUtils.r(context, 8),
+                                ResponsiveUtils.r(context, 20),
                               ),
                             ),
-                            child: Icon(
-                              Icons.location_on,
-                              color: Colors.redAccent,
-                              size: ResponsiveUtils.r(context, 20),
+                            child: Text(
+                              jobId,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
-                          ResponsiveUtils.horizontalSpace(context, 12),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: ResponsiveUtils.w(context, 14),
+                              vertical: ResponsiveUtils.h(context, 8),
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(_job!.status),
+                              borderRadius: BorderRadius.circular(
+                                ResponsiveUtils.r(context, 20),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _getStatusColor(_job!.status)
+                                      .withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              _job!.displayStatus,
+                              style: AppTextStyles.caption(context).copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      ResponsiveUtils.verticalSpace(context, 20),
+                      // Vehicle Info
+                      Row(
+                        children: [
+                          // Vehicle Image or Icon
+                          Container(
+                            width: ResponsiveUtils.w(context, 80),
+                            height: ResponsiveUtils.h(context, 60),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(
+                                ResponsiveUtils.r(context, 12),
+                              ),
+                            ),
+                            child: vehicle?.imageUrl != null && vehicle!.imageUrl!.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      ResponsiveUtils.r(context, 12),
+                                    ),
+                                    child: Image.network(
+                                      vehicle.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Center(
+                                          child: SizedBox(
+                                            width: ResponsiveUtils.w(context, 20),
+                                            height: ResponsiveUtils.h(context, 20),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white.withValues(alpha: 0.7),
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) => Center(
+                                        child: Icon(
+                                          Icons.directions_car_rounded,
+                                          color: Colors.white,
+                                          size: ResponsiveUtils.r(context, 32),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Center(
+                                    child: Icon(
+                                      Icons.directions_car_rounded,
+                                      color: Colors.white,
+                                      size: ResponsiveUtils.r(context, 32),
+                                    ),
+                                  ),
+                          ),
+                          ResponsiveUtils.horizontalSpace(context, 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Property Details',
-                                  style: AppTextStyles.caption(context)
-                                      .copyWith(
-                                        color: AppColors.lightGray,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                ),
-                                ResponsiveUtils.verticalSpace(context, 4),
-                                Text(
-                                  booking.locationName,
-                                  style: AppTextStyles.body(context).copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.darkNavy,
+                                  carModel,
+                                  style: AppTextStyles.headline(context).copyWith(
+                                    color: Colors.white,
+                                    fontSize: ResponsiveUtils.sp(context, 22),
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                ResponsiveUtils.verticalSpace(context, 2),
-                                Text(
-                                  booking.fullAddress,
-                                  style: AppTextStyles.caption(context)
-                                      .copyWith(
-                                        color: AppColors.lightGray,
-                                        fontSize: ResponsiveUtils.sp(
-                                          context,
-                                          13,
+                                ResponsiveUtils.verticalSpace(context, 8),
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: ResponsiveUtils.w(context, 16),
+                                      height: ResponsiveUtils.h(context, 16),
+                                      decoration: BoxDecoration(
+                                        color: _getColorFromName(carColor),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
                                         ),
                                       ),
-                                ),
-                                if (property?.zone != null) ...[
-                                  ResponsiveUtils.verticalSpace(context, 2),
-                                  Text(
-                                    property!.zone!,
-                                    style: AppTextStyles.caption(context)
-                                        .copyWith(
-                                          color: AppColors.lightGray,
-                                          fontSize: ResponsiveUtils.sp(
-                                            context,
-                                            13,
-                                          ),
+                                    ),
+                                    ResponsiveUtils.horizontalSpace(context, 8),
+                                    Text(
+                                      carColor,
+                                      style: AppTextStyles.body(context).copyWith(
+                                        color: Colors.white.withValues(alpha: 0.9),
+                                      ),
+                                    ),
+                                    ResponsiveUtils.horizontalSpace(context, 16),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: ResponsiveUtils.w(context, 10),
+                                        vertical: ResponsiveUtils.h(context, 4),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(
+                                          ResponsiveUtils.r(context, 6),
                                         ),
-                                  ),
-                                ],
+                                      ),
+                                      child: Text(
+                                        vehicle?.numberPlate ?? '',
+                                        style: AppTextStyles.caption(context).copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                      ResponsiveUtils.verticalSpace(context, 16),
-                      Divider(height: ResponsiveUtils.h(context, 1)),
                     ],
-                    // Customer Info Section
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                ),
+              ),
+            ),
+
+            // Content Area
+            Padding(
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Customer Card
+                  _buildSectionCard(
+                    icon: Icons.person_rounded,
+                    iconColor: AppColors.primaryTeal,
+                    title: 'Customer',
+                    child: Row(
                       children: [
                         Container(
-                          width: ResponsiveUtils.w(context, 44),
-                          height: ResponsiveUtils.h(context, 44),
+                          width: ResponsiveUtils.w(context, 56),
+                          height: ResponsiveUtils.h(context, 56),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryTeal.withValues(alpha: 0.1),
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primaryTeal.withValues(alpha: 0.2),
+                                AppColors.primaryTeal.withValues(alpha: 0.1),
+                              ],
+                            ),
                             shape: BoxShape.circle,
                           ),
                           child: customer?.idProofImageUrl != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(
-                                    ResponsiveUtils.r(context, 22),
+                                    ResponsiveUtils.r(context, 28),
                                   ),
                                   child: Image.network(
                                     customer!.idProofImageUrl!,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) => Icon(
-                                          Icons.person,
-                                          color: AppColors.primaryTeal,
-                                          size: ResponsiveUtils.r(context, 20),
-                                        ),
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Icon(
+                                      Icons.person_rounded,
+                                      color: AppColors.primaryTeal,
+                                      size: ResponsiveUtils.r(context, 28),
+                                    ),
                                   ),
                                 )
                               : Icon(
-                                  Icons.person,
+                                  Icons.person_rounded,
                                   color: AppColors.primaryTeal,
-                                  size: ResponsiveUtils.r(context, 20),
+                                  size: ResponsiveUtils.r(context, 28),
                                 ),
                         ),
-                        ResponsiveUtils.horizontalSpace(context, 12),
+                        ResponsiveUtils.horizontalSpace(context, 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Customer',
-                                style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.lightGray,
-                                  fontWeight: FontWeight.w500,
+                                customer?.name ?? 'Unknown Customer',
+                                style: AppTextStyles.title(context).copyWith(
+                                  color: AppColors.darkNavy,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               ResponsiveUtils.verticalSpace(context, 4),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.phone_rounded,
+                                    size: ResponsiveUtils.r(context, 16),
+                                    color: AppColors.lightGray,
+                                  ),
+                                  ResponsiveUtils.horizontalSpace(context, 6),
+                                  Text(
+                                    customer?.phone ?? 'No phone',
+                                    style: AppTextStyles.body(context).copyWith(
+                                      color: AppColors.textGray,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ResponsiveUtils.verticalSpace(context, 16),
+
+                  // Location Card
+                  if (booking?.fullAddress != null &&
+                      booking!.fullAddress.isNotEmpty &&
+                      !booking.fullAddress.toLowerCase().contains('unknown'))
+                    Column(
+                      children: [
+                        _buildSectionCard(
+                          icon: Icons.location_on_rounded,
+                          iconColor: Colors.redAccent,
+                          title: 'Location',
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
-                                customer?.name ?? 'Unknown Customer',
-                                style: AppTextStyles.body(context).copyWith(
-                                  fontWeight: FontWeight.w600,
+                                booking.locationName,
+                                style: AppTextStyles.title(context).copyWith(
                                   color: AppColors.darkNavy,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              ResponsiveUtils.verticalSpace(context, 2),
+                              ResponsiveUtils.verticalSpace(context, 8),
+                              Container(
+                                padding: EdgeInsets.all(
+                                  ResponsiveUtils.w(context, 12),
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(
+                                    ResponsiveUtils.r(context, 10),
+                                  ),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                  ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.map_rounded,
+                                      size: ResponsiveUtils.r(context, 18),
+                                      color: AppColors.lightGray,
+                                    ),
+                                    ResponsiveUtils.horizontalSpace(context, 10),
+                                    Expanded(
+                                      child: Text(
+                                        booking.fullAddress,
+                                        style: AppTextStyles.body(context).copyWith(
+                                          color: AppColors.textGray,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (property?.zone != null) ...[
+                                ResponsiveUtils.verticalSpace(context, 8),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.grid_view_rounded,
+                                      size: ResponsiveUtils.r(context, 16),
+                                      color: AppColors.lightGray,
+                                    ),
+                                    ResponsiveUtils.horizontalSpace(context, 8),
+                                    Text(
+                                      'Zone: ${property!.zone}',
+                                      style: AppTextStyles.caption(context).copyWith(
+                                        color: AppColors.textGray,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        ResponsiveUtils.verticalSpace(context, 16),
+                      ],
+                    ),
+
+                  // Services Card
+                  _buildSectionCard(
+                    icon: Icons.local_car_wash_rounded,
+                    iconColor: AppColors.gold,
+                    title: 'Services',
+                    trailing: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveUtils.w(context, 12),
+                        vertical: ResponsiveUtils.h(context, 6),
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.gold,
+                            AppColors.gold.withValues(alpha: 0.85),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.r(context, 16),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.gold.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.star_rounded,
+                            color: Colors.white,
+                            size: ResponsiveUtils.r(context, 14),
+                          ),
+                          SizedBox(width: ResponsiveUtils.w(context, 4)),
+                          Text(
+                            serviceName,
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Services List
+                        if (services.isNotEmpty)
+                          ...services.map(
+                            (service) => _buildServiceItem(
+                              service.name,
+                              Icons.check_circle_rounded,
+                              price: '\$${service.price}',
+                            ),
+                          )
+                        else
+                          _buildServiceItem(
+                            'Car Wash Service',
+                            Icons.check_circle_rounded,
+                          ),
+
+                        ResponsiveUtils.verticalSpace(context, 16),
+
+                        // Total Earnings
+                        Container(
+                          padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.gold.withValues(alpha: 0.15),
+                                AppColors.gold.withValues(alpha: 0.08),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveUtils.r(context, 14),
+                            ),
+                            border: Border.all(
+                              color: AppColors.gold.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(
+                                      ResponsiveUtils.w(context, 8),
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.gold.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(
+                                        ResponsiveUtils.r(context, 8),
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.attach_money_rounded,
+                                      color: AppColors.gold,
+                                      size: ResponsiveUtils.r(context, 20),
+                                    ),
+                                  ),
+                                  ResponsiveUtils.horizontalSpace(context, 12),
+                                  Text(
+                                    'Total Earnings',
+                                    style: AppTextStyles.body(context).copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.darkNavy,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               Text(
-                                customer?.phone ?? '',
-                                style: AppTextStyles.caption(context).copyWith(
-                                  color: AppColors.lightGray,
-                                  fontSize: ResponsiveUtils.sp(context, 13),
+                                '\$${earnedAmount.toStringAsFixed(2)}',
+                                style: AppTextStyles.headline(context).copyWith(
+                                  color: AppColors.gold,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: ResponsiveUtils.sp(context, 24),
                                 ),
                               ),
                             ],
@@ -541,209 +765,195 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              ResponsiveUtils.verticalSpace(context, 16),
-
-              // Card 2: Today's Task
-              Container(
-                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-                decoration: BoxDecoration(
-                  color: AppColors.veryLightGray,
-                  borderRadius: BorderRadius.circular(
-                    ResponsiveUtils.r(context, 16),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: ResponsiveUtils.r(context, 8),
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with Service Type and Status
-                    Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: ResponsiveUtils.w(context, 8),
-                      runSpacing: ResponsiveUtils.h(context, 8),
-                      children: [
-                        Text(
-                          'Today\'s Task',
-                          style: AppTextStyles.title(context).copyWith(
-                            fontSize: ResponsiveUtils.sp(context, 18),
-                            color: AppColors.darkNavy,
-                          ),
-                        ),
-                        Wrap(
-                          spacing: ResponsiveUtils.w(context, 8),
-                          runSpacing: ResponsiveUtils.h(context, 8),
-                          children: [
-                            // Status Badge
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: ResponsiveUtils.w(context, 10),
-                                vertical: ResponsiveUtils.h(context, 6),
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(
-                                  _job!.status,
-                                ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(
-                                  ResponsiveUtils.r(context, 8),
-                                ),
-                              ),
-                              child: Text(
-                                _job!.displayStatus,
-                                style: AppTextStyles.caption(context).copyWith(
-                                  color: _getStatusColor(_job!.status),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            // Service Type Badge
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: ResponsiveUtils.w(context, 14),
-                                vertical: ResponsiveUtils.h(context, 8),
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.gold,
-                                    AppColors.gold.withValues(alpha: 0.8),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  ResponsiveUtils.r(context, 20),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.gold.withValues(
-                                      alpha: 0.3,
-                                    ),
-                                    blurRadius: ResponsiveUtils.r(context, 8),
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    color: Colors.white,
-                                    size: ResponsiveUtils.r(context, 16),
-                                  ),
-                                  SizedBox(
-                                    width: ResponsiveUtils.w(context, 6),
-                                  ),
-                                  Text(
-                                    serviceName,
-                                    style: AppTextStyles.caption(context)
-                                        .copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                  ResponsiveUtils.verticalSpace(context, 24),
+
+                  // Navigate Button
+                  Container(
+                    width: double.infinity,
+                    height: ResponsiveUtils.h(context, 60),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primaryTeal,
+                          AppColors.primaryTeal.withValues(alpha: 0.9),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 16),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryTeal.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    ResponsiveUtils.verticalSpace(context, 20),
-                    // Services List
-                    if (services.isNotEmpty)
-                      ...services.map(
-                        (service) => _buildTaskItem(
-                          service.name,
-                          Icons.local_car_wash,
-                          price: '\$${service.price}',
-                        ),
-                      )
-                    else
-                      _buildTaskItem('Car Wash Service', Icons.local_car_wash),
-
-                    // Price Summary
-                    ResponsiveUtils.verticalSpace(context, 12),
-                    Container(
-                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
-                      decoration: BoxDecoration(
-                        color: AppColors.gold.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(
-                          ResponsiveUtils.r(context, 10),
+                    child: ElevatedButton(
+                      onPressed: _isNavigating ? null : _handleNavigateToJob,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            ResponsiveUtils.r(context, 16),
+                          ),
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              'Total Earnings',
-                              style: AppTextStyles.body(context).copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.darkNavy,
+                      child: _isNavigating
+                          ? SizedBox(
+                              width: ResponsiveUtils.w(context, 24),
+                              height: ResponsiveUtils.h(context, 24),
+                              child: CircularProgressIndicator(
+                                color: AppColors.white,
+                                strokeWidth: ResponsiveUtils.w(context, 2.5),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.navigation_rounded,
+                                  color: Colors.white,
+                                  size: ResponsiveUtils.r(context, 24),
+                                ),
+                                ResponsiveUtils.horizontalSpace(context, 10),
+                                Text(
+                                  'Navigate to Job',
+                                  style: AppTextStyles.button(context).copyWith(
+                                    color: Colors.white,
+                                    fontSize: ResponsiveUtils.sp(context, 17),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          SizedBox(width: ResponsiveUtils.w(context, 8)),
-                          Text(
-                            '\$${earnedAmount.toStringAsFixed(2)}',
-                            style: AppTextStyles.title(context).copyWith(
-                              color: AppColors.gold,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ResponsiveUtils.verticalSpace(context, 24),
-              SizedBox(
-                width: double.infinity,
-                height: ResponsiveUtils.h(context, 56),
-                child: ElevatedButton(
-                  onPressed: _isNavigating ? null : _handleNavigateToJob,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryTeal,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        ResponsiveUtils.r(context, 12),
-                      ),
                     ),
                   ),
-                  child: _isNavigating
-                      ? SizedBox(
-                          width: ResponsiveUtils.w(context, 24),
-                          height: ResponsiveUtils.h(context, 24),
-                          child: CircularProgressIndicator(
-                            color: AppColors.white,
-                            strokeWidth: ResponsiveUtils.w(context, 2),
-                          ),
-                        )
-                      : Text(
-                          'Navigate to Job',
-                          style: AppTextStyles.button(
-                            context,
-                          ).copyWith(color: AppColors.white),
-                        ),
+                  ResponsiveUtils.verticalSpace(context, 16),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds a styled section card with icon header
+  Widget _buildSectionCard({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required Widget child,
+    Widget? trailing,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 18)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 10)),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 12),
+                  ),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor,
+                  size: ResponsiveUtils.r(context, 22),
                 ),
               ),
+              ResponsiveUtils.horizontalSpace(context, 12),
+              Text(
+                title,
+                style: AppTextStyles.caption(context).copyWith(
+                  color: AppColors.lightGray,
+                  fontWeight: FontWeight.w600,
+                  fontSize: ResponsiveUtils.sp(context, 13),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const Spacer(),
+              if (trailing != null) trailing,
             ],
           ),
+          ResponsiveUtils.verticalSpace(context, 16),
+          child,
+        ],
+      ),
+    );
+  }
+
+  /// Builds a styled service item row
+  Widget _buildServiceItem(String name, IconData icon, {String? price}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 10)),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: ResponsiveUtils.w(context, 14),
+          vertical: ResponsiveUtils.h(context, 14),
+        ),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: AppColors.success,
+              size: ResponsiveUtils.r(context, 22),
+            ),
+            ResponsiveUtils.horizontalSpace(context, 14),
+            Expanded(
+              child: Text(
+                name,
+                style: AppTextStyles.body(context).copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.darkNavy,
+                ),
+              ),
+            ),
+            if (price != null)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveUtils.w(context, 12),
+                  vertical: ResponsiveUtils.h(context, 6),
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 8),
+                  ),
+                ),
+                child: Text(
+                  price,
+                  style: AppTextStyles.body(context).copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.gold,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -788,66 +998,5 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       default:
         return AppColors.textGray;
     }
-  }
-
-  Widget _buildTaskItem(String task, IconData icon, {String? price}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 12)),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: ResponsiveUtils.w(context, 12),
-          vertical: ResponsiveUtils.h(context, 12),
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 10)),
-          border: Border.all(
-            color: Colors.grey.shade200,
-            width: ResponsiveUtils.w(context, 1),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(ResponsiveUtils.w(context, 8)),
-              decoration: BoxDecoration(
-                color: AppColors.primaryTeal.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(
-                  ResponsiveUtils.r(context, 8),
-                ),
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.primaryTeal,
-                size: ResponsiveUtils.r(context, 20),
-              ),
-            ),
-            ResponsiveUtils.horizontalSpace(context, 12),
-            Expanded(
-              child: Text(
-                task,
-                style: AppTextStyles.body(context).copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.darkNavy,
-                ),
-              ),
-            ),
-            if (price != null)
-              Text(
-                price,
-                style: AppTextStyles.body(
-                  context,
-                ).copyWith(fontWeight: FontWeight.w600, color: AppColors.gold),
-              )
-            else
-              Icon(
-                Icons.check_circle,
-                color: AppColors.primaryTeal.withValues(alpha: 0.3),
-                size: ResponsiveUtils.r(context, 22),
-              ),
-          ],
-        ),
-      ),
-    );
   }
 }
