@@ -367,25 +367,7 @@ class _AccountWidgetState extends State<AccountWidget> {
                           ],
                         ),
             ),
-            // TODO: Uncomment when earnings API is integrated
-            // const SizedBox(height: 24),
-            // Container(
-            //   width: double.infinity,
-            //   padding: const EdgeInsets.all(20),
-            //   decoration: BoxDecoration(
-            //     color: AppColors.gold,
-            //     borderRadius: BorderRadius.circular(16),
-            //   ),
-            //   child: Column(
-            //     children: [
-            //       const Text('Weekly Earnings', style: TextStyle(fontSize: 14, color: AppColors.darkNavy)),
-            //       const SizedBox(height: 8),
-            //       const Text('350.00 AED', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.white)),
-            //       const SizedBox(height: 8),
-            //       const Text('12 Jobs Completed', style: TextStyle(fontSize: 14, color: AppColors.darkNavy)),
-            //     ],
-            //   ),
-            // ),
+
             ResponsiveUtils.verticalSpace(context, 24),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),

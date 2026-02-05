@@ -697,7 +697,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         // 3. Services & Payment
                         _buildPremiumCard(
                           context,
-                          title: 'Services & Payment',
+                          title: 'Services',
                           icon: Icons.receipt_long_rounded,
                           iconColor: AppColors.gold,
                           child: Column(
@@ -720,44 +720,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                             ),
                                           ),
                                         ),
-                                        Text(
-                                          '\$${double.tryParse(s.price)?.toStringAsFixed(2) ?? s.price}',
-                                          style: AppTextStyles.body(context).copyWith(
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.darkNavy,
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   )),
-                              Divider(height: 24, color: Colors.grey.shade200),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      'Total Earnings',
-                                      style: AppTextStyles.title(context).copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.darkNavy,
-                                      ),
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: Text(
-                                      '\$${earnedAmount.toStringAsFixed(2)}',
-                                      style: AppTextStyles.headline(context).copyWith(
-                                        color: AppColors.gold,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: ResponsiveUtils.sp(context, 22),
-                                      ),
-                                      textAlign: TextAlign.end,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                             ],
                           ),
                         ),
                         

@@ -3,7 +3,6 @@ import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../utils/toast_utils.dart';
 
-
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({Key? key}) : super(key: key);
 
@@ -15,23 +14,23 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   final List<Map<String, String>> _faqs = [
     {
       'question': 'How do I start a job?',
-      'answer': 'Navigate to your scheduled job and tap "Start Shift". Once your shift is started, navigate to the job location and verify the OTP with the customer.',
+      'answer':
+          'Navigate to your scheduled job and tap "Start Shift". Once your shift is started, navigate to the job location and verify the OTP with the customer.',
     },
     {
       'question': 'What if I cannot find the customer\'s car?',
-      'answer': 'Contact the customer using the phone icon in the job details screen. If unreachable, contact support immediately.',
+      'answer':
+          'Contact the customer using the phone icon in the job details screen. If unreachable, contact support immediately.',
     },
     {
       'question': 'How do I request equipment replacement?',
-      'answer': 'Go to Account > Equipment Support and tap "Request" next to the item you need replaced.',
-    },
-    {
-      'question': 'How are my earnings calculated?',
-      'answer': 'Earnings are based on the number of completed jobs. Check your account section for detailed earnings breakdown.',
+      'answer':
+          'Go to Account > Equipment Support and tap "Request" next to the item you need replaced.',
     },
     {
       'question': 'What if I need to cancel a job?',
-      'answer': 'Contact support immediately if you need to cancel a scheduled job. Do not mark it as completed if you haven\'t done the work.',
+      'answer':
+          'Contact support immediately if you need to cancel a scheduled job. Do not mark it as completed if you haven\'t done the work.',
     },
   ];
 
@@ -61,10 +60,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 children: [
                   Text(
                     'How can we help?',
-                    style: AppTextStyles.headline(context).copyWith(
-                      color: AppColors.darkNavy,
-                      fontSize: 24,
-                    ),
+                    style: AppTextStyles.headline(
+                      context,
+                    ).copyWith(color: AppColors.darkNavy, fontSize: 24),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -75,8 +73,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           title: 'Call Us',
                           subtitle: '+971 XXX XXXX',
                           onTap: () {
-                            ToastUtils.showSuccessToast(context, 'Calling support...');
-
+                            ToastUtils.showSuccessToast(
+                              context,
+                              'Calling support...',
+                            );
                           },
                         ),
                       ),
@@ -87,8 +87,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                           title: 'Email',
                           subtitle: 'support@duneshine.com',
                           onTap: () {
-                            ToastUtils.showSuccessToast(context, 'Opening email...');
-
+                            ToastUtils.showSuccessToast(
+                              context,
+                              'Opening email...',
+                            );
                           },
                         ),
                       ),
@@ -97,9 +99,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // FAQ Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -112,7 +114,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // FAQ List
             ListView.builder(
               shrinkWrap: true,
@@ -123,9 +125,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                 return _buildFaqItem(index);
               },
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Report Issue Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -151,9 +153,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                     Text(
                       'Having trouble? Let us know and we\'ll help you resolve it.',
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.body(context).copyWith(
-                        color: AppColors.textGray,
-                      ),
+                      style: AppTextStyles.body(
+                        context,
+                      ).copyWith(color: AppColors.textGray),
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -226,9 +228,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.textGray,
-              ),
+              style: AppTextStyles.caption(
+                context,
+              ).copyWith(color: AppColors.textGray),
               textAlign: TextAlign.center,
             ),
           ],
@@ -240,7 +242,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
   Widget _buildFaqItem(int index) {
     final isExpanded = _expandedIndex == index;
     final faq = _faqs[index];
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -272,9 +274,9 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
               child: Text(
                 faq['answer']!,
-                style: AppTextStyles.body(context).copyWith(
-                  color: AppColors.textGray,
-                ),
+                style: AppTextStyles.body(
+                  context,
+                ).copyWith(color: AppColors.textGray),
               ),
             ),
         ],
@@ -284,7 +286,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
 
   void _showReportDialog() {
     final TextEditingController controller = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -294,9 +296,7 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           maxLines: 4,
           decoration: InputDecoration(
             hintText: 'Describe your issue...',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
         actions: [
@@ -307,8 +307,10 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              ToastUtils.showSuccessToast(context, 'Report submitted. We\'ll get back to you soon.');
-
+              ToastUtils.showSuccessToast(
+                context,
+                'Report submitted. We\'ll get back to you soon.',
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryTeal,

@@ -16,17 +16,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingData(
       image: 'assets/images/onboarding_car_wash.png',
       title: 'Professional Car Care',
-      description: 'Deliver premium car washing services to customers at their convenience. Your expertise makes the difference.',
+      description:
+          'Deliver premium car washing services to customers at their convenience. Your expertise makes the difference.',
     ),
     OnboardingData(
       image: 'assets/images/onboarding_schedule.png',
       title: 'Flexible Schedule',
-      description: 'Set your own availability and manage your work hours. Work when it suits you best.',
-    ),
-    OnboardingData(
-      image: 'assets/images/onboarding_earnings.png',
-      title: 'Track Your Earnings',
-      description: 'Monitor your earnings in real-time. Get paid for every job completed successfully.',
+      description:
+          'Set your own availability and manage your work hours. Work when it suits you best.',
     ),
   ];
 
@@ -167,10 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(24),
-              child: Image.asset(
-                data.image,
-                fit: BoxFit.cover,
-              ),
+              child: Image.asset(data.image, fit: BoxFit.cover),
             ),
           ),
           const SizedBox(height: 48),

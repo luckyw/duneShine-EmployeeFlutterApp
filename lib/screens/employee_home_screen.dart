@@ -13,7 +13,6 @@ import '../utils/toast_utils.dart';
 import '../services/background_location_service.dart';
 import '../services/location_tracking_service.dart';
 
-
 class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({Key? key}) : super(key: key);
 
@@ -32,11 +31,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   bool _isLoading = true;
   String? _errorMessage;
   List<Job> _allJobs = [];
-  
+
   // Shift state
   late bool _isShiftStarted;
   bool _isAttendanceLoading = false;
-  
+
   // Filter out cancelled jobs and sort by time (closest first)
   List<Job> get _upcomingJobs {
     return _allJobs
@@ -49,8 +48,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         return aTime.compareTo(bTime);
       });
   }
-  
-  List<Job> get _completedJobs => _allJobs.where((job) => job.isCompleted).toList();
+
+  List<Job> get _completedJobs =>
+      _allJobs.where((job) => job.isCompleted).toList();
 
   // Profile state
   EmployeeProfileModel? _profile;
@@ -59,13 +59,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // Setup Pulse Animation for Start Shift Button
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
@@ -73,7 +73,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     _isShiftStarted = AuthService().isShiftStarted;
     _fetchTodaysJobs();
     _fetchProfile();
-    
+
     // Ensure tracking is active if shift is already started
     if (_isShiftStarted) {
       final employeeId = AuthService().employeeId;
@@ -91,10 +91,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     if (result['success'] == true && mounted) {
       final data = result['data'] as Map<String, dynamic>;
       final userData = data['user'] as Map<String, dynamic>;
-      
+
       // Update shift status from profile response if available
       if (data['session_status'] != null) {
-        final apiShiftStarted = data['session_status'] == 1 || data['session_status'] == true || data['session_status'] == '1';
+        final apiShiftStarted =
+            data['session_status'] == 1 ||
+            data['session_status'] == true ||
+            data['session_status'] == '1';
         if (_isShiftStarted != apiShiftStarted) {
           setState(() {
             _isShiftStarted = apiShiftStarted;
@@ -133,7 +136,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       // Update shift status from API response if available
       // The session_status is usually 1 for started and 0 for not started
       if (data['session_status'] != null) {
-        final apiShiftStarted = data['session_status'] == 1 || data['session_status'] == true || data['session_status'] == '1';
+        final apiShiftStarted =
+            data['session_status'] == 1 ||
+            data['session_status'] == true ||
+            data['session_status'] == '1';
         if (_isShiftStarted != apiShiftStarted) {
           setState(() {
             _isShiftStarted = apiShiftStarted;
@@ -172,10 +178,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     });
 
     // Request permissions before starting shift
-    bool hasPermission = await LocationTrackingService().requestLocationPermission();
+    bool hasPermission = await LocationTrackingService()
+        .requestLocationPermission();
     if (!hasPermission) {
       if (mounted) {
-        ToastUtils.showErrorToast(context, 'Location permission is required to start shift');
+        ToastUtils.showErrorToast(
+          context,
+          'Location permission is required to start shift',
+        );
       }
       setState(() => _isAttendanceLoading = false);
       return;
@@ -191,25 +201,25 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           _isAttendanceLoading = false;
         });
         _fetchTodaysJobs();
-        
+
         // Start background tracking service
         final employeeId = AuthService().employeeId;
         if (employeeId != null) {
           BackgroundLocationService.start(employeeId);
         }
-        
-        ToastUtils.showSuccessToast(context, 'Shift started! Good luck today!');
 
+        ToastUtils.showSuccessToast(context, 'Shift started! Good luck today!');
       } else {
         setState(() {
           _isAttendanceLoading = false;
         });
-        ToastUtils.showErrorToast(context, result['message'] ?? 'Failed to start shift');
-
+        ToastUtils.showErrorToast(
+          context,
+          result['message'] ?? 'Failed to start shift',
+        );
       }
     }
   }
-
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
@@ -227,35 +237,40 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     const NotificationModel(
       id: 1,
       title: 'New Job Assigned',
-      message: 'You have been assigned a new job at Downtown Mall. Please confirm your availability.',
+      message:
+          'You have been assigned a new job at Downtown Mall. Please confirm your availability.',
       time: '10:30 AM',
       isRead: false,
     ),
     const NotificationModel(
       id: 2,
       title: 'Job Reminder',
-      message: 'Your shift at City Center starts in 30 minutes. Please ensure you are on time.',
+      message:
+          'Your shift at City Center starts in 30 minutes. Please ensure you are on time.',
       time: '09:45 AM',
       isRead: false,
     ),
     const NotificationModel(
       id: 3,
       title: 'Job Completed',
-      message: 'Great job! Your job at Riverside Apartments has been marked as completed.',
+      message:
+          'Great job! Your job at Riverside Apartments has been marked as completed.',
       time: 'Yesterday',
       isRead: true,
     ),
     const NotificationModel(
       id: 4,
       title: 'Schedule Update',
-      message: 'Your schedule for next week has been updated. Please review your upcoming shifts.',
+      message:
+          'Your schedule for next week has been updated. Please review your upcoming shifts.',
       time: '2 days ago',
       isRead: true,
     ),
     const NotificationModel(
       id: 5,
       title: 'Payment Received',
-      message: 'Your payment of \$125.50 for this week has been processed and will be deposited soon.',
+      message:
+          'Your payment of \$125.50 for this week has been processed and will be deposited soon.',
       time: '3 days ago',
       isRead: true,
     ),
@@ -287,10 +302,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               // Title
               Text(
                 'Notifications',
-                style: AppTextStyles.headline(context).copyWith(
-                  fontSize: 20,
-                  color: AppColors.darkNavy,
-                ),
+                style: AppTextStyles.headline(
+                  context,
+                ).copyWith(fontSize: 20, color: AppColors.darkNavy),
               ),
               const SizedBox(height: 16),
               // Notification list
@@ -321,9 +335,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             : AppColors.creamBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: notification.isRead
-              ? AppColors.lightGray
-              : AppColors.gold,
+          color: notification.isRead ? AppColors.lightGray : AppColors.gold,
           width: 1,
         ),
       ),
@@ -343,9 +355,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               notification.isRead
                   ? Icons.notifications_none
                   : Icons.notifications_active,
-              color: notification.isRead
-                  ? AppColors.textGray
-                  : AppColors.gold,
+              color: notification.isRead ? AppColors.textGray : AppColors.gold,
               size: 20,
             ),
           ),
@@ -368,20 +378,18 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 const SizedBox(height: 4),
                 Text(
                   notification.message,
-                  style: AppTextStyles.body(context).copyWith(
-                    fontSize: 12,
-                    color: AppColors.textGray,
-                  ),
+                  style: AppTextStyles.body(
+                    context,
+                  ).copyWith(fontSize: 12, color: AppColors.textGray),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   notification.time,
-                  style: AppTextStyles.body(context).copyWith(
-                    fontSize: 10,
-                    color: AppColors.lightGray,
-                  ),
+                  style: AppTextStyles.body(
+                    context,
+                  ).copyWith(fontSize: 10, color: AppColors.lightGray),
                 ),
               ],
             ),
@@ -450,7 +458,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             slivers: [
               // 1. Premium Sliver App Bar
               SliverAppBar(
-                expandedHeight: _isShiftStarted ? ResponsiveUtils.h(context, 160) : ResponsiveUtils.h(context, 120),
+                expandedHeight: _isShiftStarted
+                    ? ResponsiveUtils.h(context, 160)
+                    : ResponsiveUtils.h(context, 120),
                 floating: false,
                 pinned: true,
                 backgroundColor: AppColors.veryLightGray,
@@ -489,10 +499,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.white,
-                          AppColors.veryLightGray,
-                        ],
+                        colors: [AppColors.white, AppColors.veryLightGray],
                       ),
                     ),
                     child: Stack(
@@ -510,7 +517,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             ),
                           ),
                         ),
-                        
+
                         // Content for Shift Started
                         if (_isShiftStarted)
                           Positioned(
@@ -531,11 +538,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                                 const SizedBox(height: 4),
                                 Text(
                                   _profile?.name ?? AuthService().employeeName,
-                                  style: AppTextStyles.headline(context).copyWith(
-                                    color: AppColors.darkNavy,
-                                    fontSize: ResponsiveUtils.sp(context, 24),
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: AppTextStyles.headline(context)
+                                      .copyWith(
+                                        color: AppColors.darkNavy,
+                                        fontSize: ResponsiveUtils.sp(
+                                          context,
+                                          24,
+                                        ),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                 ),
                               ],
                             ),
@@ -545,20 +556,22 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   ),
                 ),
                 actions: [
-                   Container(
-                     margin: EdgeInsets.only(right: ResponsiveUtils.w(context, 16)),
-                     decoration: BoxDecoration(
-                       color: AppColors.white,
-                       shape: BoxShape.circle,
-                       boxShadow: [
-                         BoxShadow(
-                           color: Colors.black.withOpacity(0.05),
-                           blurRadius: 10,
-                           offset: Offset(0, 4),
-                         ),
-                       ],
-                     ),
-                     child: IconButton(
+                  Container(
+                    margin: EdgeInsets.only(
+                      right: ResponsiveUtils.w(context, 16),
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
                       onPressed: () => _showNotificationSheet(context),
                       icon: Icon(
                         Icons.notifications_outlined,
@@ -566,12 +579,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                         size: ResponsiveUtils.sp(context, 24),
                       ),
                     ),
-                   ),
+                  ),
                 ],
               ),
 
               // 2. Main Content
-              if (!_isShiftStarted) 
+              if (!_isShiftStarted)
                 SliverToBoxAdapter(child: _buildStartShiftView())
               else ...[
                 // Stats Row
@@ -581,19 +594,21 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ResponsiveUtils.w(context, 20),
                       0,
                       ResponsiveUtils.w(context, 20),
-                      ResponsiveUtils.h(context, 20)
+                      ResponsiveUtils.h(context, 20),
                     ),
                     padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 16),
+                      ),
                       boxShadow: [
-                         BoxShadow(
-                           color: AppColors.darkNavy.withOpacity(0.08),
-                           blurRadius: 15,
-                           offset: Offset(0, 8),
-                         ),
-                       ],
+                        BoxShadow(
+                          color: AppColors.darkNavy.withOpacity(0.08),
+                          blurRadius: 15,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
@@ -614,19 +629,27 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                                   children: [
                                     TextSpan(
                                       text: '${_upcomingJobs.length}',
-                                      style: AppTextStyles.headline(context).copyWith(
-                                        color: AppColors.darkNavy,
-                                        fontSize: ResponsiveUtils.sp(context, 24),
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: AppTextStyles.headline(context)
+                                          .copyWith(
+                                            color: AppColors.darkNavy,
+                                            fontSize: ResponsiveUtils.sp(
+                                              context,
+                                              24,
+                                            ),
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
                                     TextSpan(
                                       text: ' Upcoming',
-                                      style: AppTextStyles.body(context).copyWith(
-                                        color: AppColors.darkNavy,
-                                        fontSize: ResponsiveUtils.sp(context, 14),
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: AppTextStyles.body(context)
+                                          .copyWith(
+                                            color: AppColors.darkNavy,
+                                            fontSize: ResponsiveUtils.sp(
+                                              context,
+                                              14,
+                                            ),
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -672,10 +695,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   delegate: _SliverAppBarDelegate(
                     TabBar(
                       controller: _tabController,
-                      padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 20)),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveUtils.w(context, 20),
+                      ),
                       indicator: BoxDecoration(
                         color: AppColors.darkNavy,
-                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 30)),
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.r(context, 30),
+                        ),
                       ),
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelColor: AppColors.white,
@@ -683,12 +710,12 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       labelStyle: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: ResponsiveUtils.sp(context, 14),
-                        fontFamily: 'Manrope', 
+                        fontFamily: 'Manrope',
                       ),
                       unselectedLabelStyle: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: ResponsiveUtils.sp(context, 14),
-                         fontFamily: 'Manrope',
+                        fontFamily: 'Manrope',
                       ),
                       tabs: const [
                         Tab(text: 'Upcoming Jobs'),
@@ -704,8 +731,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     controller: _tabController,
                     children: [
                       // Upcoming Jobs Tab
-                       _buildUpcomingJobsTab(),
-                      
+                      _buildUpcomingJobsTab(),
+
                       // Completed Jobs Tab
                       _buildCompletedJobsTab(),
                     ],
@@ -741,7 +768,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ResponsiveUtils.verticalSpace(context, 40),
-          
+
           ScaleTransition(
             scale: _pulseAnimation,
             child: Container(
@@ -769,9 +796,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               ),
             ),
           ),
-          
+
           ResponsiveUtils.verticalSpace(context, 40),
-          
+
           Text(
             'Ready to start?',
             style: AppTextStyles.headline(context).copyWith(
@@ -782,7 +809,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             textAlign: TextAlign.center,
           ),
           ResponsiveUtils.verticalSpace(context, 48),
-          
+
           SizedBox(
             width: double.infinity,
             height: ResponsiveUtils.h(context, 56),
@@ -794,14 +821,19 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 elevation: 8,
                 shadowColor: AppColors.primaryTeal.withOpacity(0.5),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 16),
+                  ),
                 ),
               ),
               child: _isAttendanceLoading
                   ? SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -819,24 +851,24 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     ),
             ),
           ),
-          
+
           ResponsiveUtils.verticalSpace(context, 32),
-          
+
           // Preview of upcoming work
           if (_upcomingJobs.isNotEmpty) ...[
-             Text(
+            Text(
               "Sneak peek: ${_upcomingJobs.length} jobs waiting",
               style: AppTextStyles.caption(context).copyWith(
                 color: AppColors.textGray,
                 fontWeight: FontWeight.w600,
               ),
-             ),
-             ResponsiveUtils.verticalSpace(context, 16),
-             // Just show the first one as a preview
-             Opacity(
-               opacity: 0.6,
-               child: _buildJobPreviewItem(_upcomingJobs.first, 0),
-             ),
+            ),
+            ResponsiveUtils.verticalSpace(context, 16),
+            // Just show the first one as a preview
+            Opacity(
+              opacity: 0.6,
+              child: _buildJobPreviewItem(_upcomingJobs.first, 0),
+            ),
           ],
         ],
       ),
@@ -859,9 +891,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.body(context).copyWith(
-                  color: AppColors.textGray,
-                ),
+                style: AppTextStyles.body(
+                  context,
+                ).copyWith(color: AppColors.textGray),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -886,9 +918,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             const SizedBox(height: 16),
             Text(
               'No upcoming jobs',
-              style: AppTextStyles.title(context).copyWith(
-                color: AppColors.textGray,
-              ),
+              style: AppTextStyles.title(
+                context,
+              ).copyWith(color: AppColors.textGray),
             ),
           ],
         ),
@@ -897,7 +929,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     return ListView.separated(
       padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
       itemCount: _upcomingJobs.length,
-      separatorBuilder: (context, index) => SizedBox(height: ResponsiveUtils.h(context, 12)),
+      separatorBuilder: (context, index) =>
+          SizedBox(height: ResponsiveUtils.h(context, 12)),
       itemBuilder: (context, index) {
         // Add a slight delay for entrance animation effect if desired
         // For now just the card
@@ -915,17 +948,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.inbox_outlined,
-              color: AppColors.lightGray,
-              size: 64,
-            ),
+            Icon(Icons.inbox_outlined, color: AppColors.lightGray, size: 64),
             const SizedBox(height: 16),
             Text(
               'No completed jobs yet',
-              style: AppTextStyles.title(context).copyWith(
-                color: AppColors.textGray,
-              ),
+              style: AppTextStyles.title(
+                context,
+              ).copyWith(color: AppColors.textGray),
             ),
           ],
         ),
@@ -934,11 +963,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     return ListView.separated(
       padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
       itemCount: _completedJobs.length,
-      separatorBuilder: (context, index) => SizedBox(height: ResponsiveUtils.h(context, 12)),
+      separatorBuilder: (context, index) =>
+          SizedBox(height: ResponsiveUtils.h(context, 12)),
       itemBuilder: (context, index) {
-        return _buildCompletedJobCardFromApi(
-          job: _completedJobs[index],
-        );
+        return _buildCompletedJobCardFromApi(job: _completedJobs[index]);
       },
     );
   }
@@ -947,9 +975,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   Widget _buildJobPreviewItem(Job job, int index) {
     final vehicle = job.booking?.vehicle;
     final timeSlot = job.timeSlot;
-    
+
     return Container(
-      margin: EdgeInsets.only(top: index > 0 ? ResponsiveUtils.h(context, 10) : 0),
+      margin: EdgeInsets.only(
+        top: index > 0 ? ResponsiveUtils.h(context, 10) : 0,
+      ),
       padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -962,30 +992,41 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             padding: EdgeInsets.all(ResponsiveUtils.w(context, 8)),
             decoration: BoxDecoration(
               color: AppColors.primaryTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 8)),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.r(context, 8),
+              ),
             ),
-            child: Icon(Icons.directions_car, color: AppColors.primaryTeal, size: ResponsiveUtils.r(context, 20)),
+            child: Icon(
+              Icons.directions_car,
+              color: AppColors.primaryTeal,
+              size: ResponsiveUtils.r(context, 20),
+            ),
           ),
           ResponsiveUtils.horizontalSpace(context, 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Text(
-                   vehicle?.displayName ?? 'Vehicle',
-                   style: AppTextStyles.body(context).copyWith(
-                     fontWeight: FontWeight.w600,
-                     color: AppColors.darkNavy,
-                   ),
-                 ),
+                Text(
+                  vehicle?.displayName ?? 'Vehicle',
+                  style: AppTextStyles.body(context).copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkNavy,
+                  ),
+                ),
               ],
             ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 10), vertical: ResponsiveUtils.h(context, 6)),
+            padding: EdgeInsets.symmetric(
+              horizontal: ResponsiveUtils.w(context, 10),
+              vertical: ResponsiveUtils.h(context, 6),
+            ),
             decoration: BoxDecoration(
               color: AppColors.primaryTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 8)),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.r(context, 8),
+              ),
             ),
             child: Text(
               timeSlot?.formattedStartTime ?? '',
@@ -1005,6 +1046,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     required String car,
     required String location,
     required String status,
+    List<ServicePayload> services = const [],
     String buttonText = 'Navigate',
     Color bgColor = AppColors.primaryTeal,
     Color statusColor = Colors.transparent,
@@ -1031,7 +1073,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     color: AppColors.primaryTeal.withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
-                  )
+                  ),
                 ]
               : [
                   BoxShadow(
@@ -1041,67 +1083,32 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   ),
                 ],
         ),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  time,
-                  style: AppTextStyles.body(context).copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    time,
+                    style: AppTextStyles.body(
+                      context,
+                    ).copyWith(color: textColor, fontWeight: FontWeight.bold),
                   ),
-                ),
-                ResponsiveUtils.verticalSpace(context, 12),
-                Row(
-                  children: [
-                    Icon(Icons.directions_car, color: iconColor, size: ResponsiveUtils.r(context, 20)),
-                    ResponsiveUtils.horizontalSpace(context, 8),
-                    Expanded(
-                      child: Text(
-                        car,
-                        style: AppTextStyles.body(context).copyWith(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (status.isNotEmpty)
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: ResponsiveUtils.w(context, 8), vertical: ResponsiveUtils.h(context, 4)),
-                        decoration: BoxDecoration(
-                          color: statusColor == AppColors.white
-                              ? AppColors.darkNavy.withValues(alpha: 0.8)
-                              : statusColor.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 4)),
-                        ),
-                        child: Text(
-                          status,
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: statusColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                        ),
-                      ),
-                  ],
-                ),
-                if (location.isNotEmpty && !location.toLowerCase().contains('unknown')) ...[
-                  ResponsiveUtils.verticalSpace(context, 8),
+                  ResponsiveUtils.verticalSpace(context, 12),
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: iconColor, size: ResponsiveUtils.r(context, 20)),
+                      Icon(
+                        Icons.directions_car,
+                        color: iconColor,
+                        size: ResponsiveUtils.r(context, 20),
+                      ),
                       ResponsiveUtils.horizontalSpace(context, 8),
                       Expanded(
                         child: Text(
-                          location,
-                          style: AppTextStyles.caption(context).copyWith(
+                          car,
+                          style: AppTextStyles.body(context).copyWith(
                             color: textColor,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1109,34 +1116,112 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (status.isNotEmpty)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: ResponsiveUtils.w(context, 8),
+                            vertical: ResponsiveUtils.h(context, 4),
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor == AppColors.white
+                                ? AppColors.darkNavy.withValues(alpha: 0.8)
+                                : statusColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveUtils.r(context, 4),
+                            ),
+                          ),
+                          child: Text(
+                            status,
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: statusColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ),
                     ],
                   ),
+                  if (services.isNotEmpty) ...[
+                    ResponsiveUtils.verticalSpace(context, 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: services.map((service) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Row(
+                            children: [
+                              Icon(Icons.circle, color: iconColor, size: 6),
+                              ResponsiveUtils.horizontalSpace(context, 8),
+                              Expanded(
+                                child: Text(
+                                  service.name,
+                                  style: AppTextStyles.caption(context)
+                                      .copyWith(
+                                        color: textColor,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                  if (location.isNotEmpty &&
+                      !location.toLowerCase().contains('unknown')) ...[
+                    ResponsiveUtils.verticalSpace(context, 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: iconColor,
+                          size: ResponsiveUtils.r(context, 20),
+                        ),
+                        ResponsiveUtils.horizontalSpace(context, 8),
+                        Expanded(
+                          child: Text(
+                            location,
+                            style: AppTextStyles.caption(context).copyWith(
+                              color: textColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          if (onNavigate != null)
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-              child: ElevatedButton(
-                onPressed: onNavigate,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.amber,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+            if (onNavigate != null)
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+                child: ElevatedButton(
+                  onPressed: onNavigate,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.amber,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 12),
+                      ),
+                    ),
                   ),
-                ),
-                child: Text(
-                  buttonText,
-                  style: AppTextStyles.button(context).copyWith(
-                    color: AppColors.darkNavy,
+                  child: Text(
+                    buttonText,
+                    style: AppTextStyles.button(
+                      context,
+                    ).copyWith(color: AppColors.darkNavy),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -1146,7 +1231,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     required String car,
     required String location,
     required String completedTime,
-    required String earnings,
+    List<ServicePayload> services = const [],
   }) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4),
@@ -1155,9 +1240,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
         boxShadow: [
           BoxShadow(
-             color: Colors.black.withOpacity(0.04),
-             blurRadius: 10,
-             offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1169,9 +1254,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
             // Green success strip
             Container(
               width: 6,
-              decoration: BoxDecoration(
-                color: AppColors.success,
-              ),
+              decoration: BoxDecoration(color: AppColors.success),
             ),
             Expanded(
               child: Padding(
@@ -1192,7 +1275,10 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.success.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(100),
@@ -1200,7 +1286,11 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.check_circle_rounded, size: 14, color: AppColors.success),
+                              Icon(
+                                Icons.check_circle_rounded,
+                                size: 14,
+                                color: AppColors.success,
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 "Completed",
@@ -1217,99 +1307,126 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ],
                     ),
                     ResponsiveUtils.verticalSpace(context, 16),
-                    
+
                     // Vehicle Info
                     Row(
                       children: [
-                         Container(
-                           padding: EdgeInsets.all(8),
-                           decoration: BoxDecoration(
-                             color: AppColors.veryLightGray,
-                             shape: BoxShape.circle,
-                           ),
-                           child: Icon(Icons.directions_car_filled_rounded, size: 20, color: AppColors.darkNavy),
-                         ),
-                         SizedBox(width: 12),
-                         Expanded(
-                           child: Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: [
-                               Text(
-                                 car,
-                                 maxLines: 1,
-                                 overflow: TextOverflow.ellipsis,
-                                 style: AppTextStyles.body(context).copyWith(
-                                   fontWeight: FontWeight.bold,
-                                   color: AppColors.darkNavy,
-                                   fontSize: ResponsiveUtils.sp(context, 16),
-                                 ),
-                               ),
-                               if (location.isNotEmpty) ...[
-                                 SizedBox(height: 4),
-                                 Row(
-                                   children: [
-                                      Icon(Icons.location_on_outlined, size: 14, color: AppColors.textGray),
-                                      SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          location,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: AppTextStyles.caption(context).copyWith(
-                                            color: AppColors.textGray,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
+                        Container(
+                          padding: EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.veryLightGray,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.directions_car_filled_rounded,
+                            size: 20,
+                            color: AppColors.darkNavy,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                car,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.body(context).copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.darkNavy,
+                                  fontSize: ResponsiveUtils.sp(context, 16),
+                                ),
+                              ),
+                              if (location.isNotEmpty) ...[
+                                SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on_outlined,
+                                      size: 14,
+                                      color: AppColors.textGray,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        location,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTextStyles.caption(context)
+                                            .copyWith(
+                                              color: AppColors.textGray,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                       ),
-                                   ],
-                                 ),
-                               ],
-                             ],
-                           ),
-                         ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              if (services.isNotEmpty) ...[
+                                SizedBox(height: 4),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: services.map((service) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 2),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.circle,
+                                            size: 4,
+                                            color: AppColors.textGray,
+                                          ),
+                                          SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              service.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style:
+                                                  AppTextStyles.caption(
+                                                    context,
+                                                  ).copyWith(
+                                                    color: AppColors.textGray,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                    
+
                     ResponsiveUtils.verticalSpace(context, 16),
-                    Divider(height: 1, color: AppColors.lightGray.withOpacity(0.3)),
+                    Divider(
+                      height: 1,
+                      color: AppColors.lightGray.withOpacity(0.3),
+                    ),
                     ResponsiveUtils.verticalSpace(context, 12),
-                    
-                    // Footer: Completed Time & Earnings
+
+                    // Footer: Completed Time
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                         Row(
-                           children: [
-                             Icon(Icons.access_time_rounded, size: 16, color: AppColors.textGray),
-                             SizedBox(width: 6),
-                             Text(
-                               completedTime,
-                               style: AppTextStyles.caption(context).copyWith(
-                                 fontWeight: FontWeight.w600,
-                                 color: AppColors.textGray,
-                               ),
-                             ),
-                           ],
-                         ),
-                         Container(
-                           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                           decoration: BoxDecoration(
-                             color: AppColors.gold.withOpacity(0.12),
-                             borderRadius: BorderRadius.circular(12),
-                             border: Border.all(color: AppColors.gold.withOpacity(0.3)),
-                           ),
-                           child: Row(
-                             children: [
-                               Text(
-                                 earnings,
-                                 style: AppTextStyles.body(context).copyWith(
-                                   fontWeight: FontWeight.w800,
-                                   color: Color(0xFFB8860B), // Dark Goldenrod for better readability on light bg
-                                 ),
-                               ),
-                             ],
-                           ),
-                         ),
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 16,
+                          color: AppColors.textGray,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          completedTime,
+                          style: AppTextStyles.caption(context).copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textGray,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -1324,10 +1441,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
 
   /// Build a job card from API Job model
   /// Dynamically changes button text and navigation based on job status
-  Widget _buildJobCardFromApi({
-    required Job job,
-    required bool isNextJob,
-  }) {
+  Widget _buildJobCardFromApi({required Job job, required bool isNextJob}) {
     final vehicle = job.booking?.vehicle;
     final timeSlot = job.timeSlot;
     final booking = job.booking;
@@ -1348,8 +1462,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     // Common arguments for all navigations
     final commonArgs = {
       'jobId': 'JOB-${job.id}',
-      'carModel':
-          vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle',
+      'carModel': vehicle != null
+          ? '${vehicle.brandName} ${vehicle.model}'
+          : 'Unknown Vehicle',
       'carColor': vehicle?.color ?? 'Unknown',
       'employeeName': AuthService().employeeName,
       'earnedAmount': totalPrice,
@@ -1399,6 +1514,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       car: carName,
       location: booking?.fullAddress ?? '',
       status: job.displayStatus,
+      services: booking?.servicesPayload ?? [],
       buttonText: buttonText,
       // For Next Job: use gradient and white text
       // For Normal Job: use white bg and dark text
@@ -1430,33 +1546,22 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   }
 
   /// Build a completed job card from API Job model
-  Widget _buildCompletedJobCardFromApi({
-    required Job job,
-  }) {
+  Widget _buildCompletedJobCardFromApi({required Job job}) {
     final vehicle = job.booking?.vehicle;
     final timeSlot = job.timeSlot;
     final booking = job.booking;
-    
+
     final carName = vehicle?.displayName ?? 'Unknown Vehicle';
     final location = booking?.fullAddress ?? '';
-    
-    // Calculate total price from services
-    double totalPrice = 0;
-    if (booking != null) {
-      for (var service in booking.servicesPayload) {
-        totalPrice += double.tryParse(service.price) ?? 0;
-      }
-    }
-    
+
     return _buildCompletedJobCard(
       time: 'COMPLETED - ${timeSlot?.formattedStartTime ?? ''}',
       car: carName,
       location: location,
       completedTime: 'Completed',
-      earnings: '\$${totalPrice.toStringAsFixed(2)}',
+      services: booking?.servicesPayload ?? [],
     );
   }
-
 
   Widget _buildBottomNav() {
     return BottomNavigationBar(
@@ -1475,24 +1580,30 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       ),
       items: [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home,
-              color: _currentIndex == 0
-                  ? AppColors.primaryTeal
-                  : AppColors.lightGray),
+          icon: Icon(
+            Icons.home,
+            color: _currentIndex == 0
+                ? AppColors.primaryTeal
+                : AppColors.lightGray,
+          ),
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today,
-              color: _currentIndex == 1
-                  ? AppColors.primaryTeal
-                  : AppColors.lightGray),
+          icon: Icon(
+            Icons.calendar_today,
+            color: _currentIndex == 1
+                ? AppColors.primaryTeal
+                : AppColors.lightGray,
+          ),
           label: 'Availability',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person,
-              color: _currentIndex == 2
-                  ? AppColors.primaryTeal
-                  : AppColors.lightGray),
+          icon: Icon(
+            Icons.person,
+            color: _currentIndex == 2
+                ? AppColors.primaryTeal
+                : AppColors.lightGray,
+          ),
           label: 'Account',
         ),
       ],
@@ -1511,7 +1622,11 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => _tabBar.preferredSize.height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     return Container(
       color: AppColors.veryLightGray, // Match background
       child: _tabBar,
