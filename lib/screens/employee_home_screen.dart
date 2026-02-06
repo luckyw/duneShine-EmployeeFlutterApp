@@ -1492,16 +1492,28 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         navigationRoute = '/navigate-to-job';
         break;
       case 'arrived':
-        buttonText = 'Enter Start OTP';
-        navigationRoute = '/job-verification';
+        // For subscription jobs, skip OTP and go directly to photo upload
+        if (job.isSubscription) {
+          buttonText = 'Upload Photo';
+          navigationRoute = '/job-arrival-photo';
+        } else {
+          buttonText = 'Enter Start OTP';
+          navigationRoute = '/job-verification';
+        }
         break;
       case 'in_progress':
         buttonText = 'View Progress';
         navigationRoute = '/wash-progress';
         break;
       case 'washed':
-        buttonText = 'Complete Job';
-        navigationRoute = '/job-completion-otp';
+        // For subscription jobs, skip OTP and go directly to completion photo
+        if (job.isSubscription) {
+          buttonText = 'Upload Completion Photo';
+          navigationRoute = '/job-completion-proof';
+        } else {
+          buttonText = 'Complete Job';
+          navigationRoute = '/job-completion-otp';
+        }
         break;
       default:
         buttonText = 'View Details';

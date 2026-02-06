@@ -332,12 +332,17 @@ class ApiService {
 
   /// Verify start OTP to begin the job
   /// Returns success/failure based on OTP verification
+  /// For subscription jobs, OTP is optional - pass null or empty to skip
   Future<Map<String, dynamic>> verifyStartOtp({
     required int jobId,
-    required String otp,
+    String? otp,
     required String token,
   }) async {
     try {
+      final body = <String, dynamic>{};
+      if (otp != null && otp.isNotEmpty) {
+        body['otp'] = otp;
+      }
       final response = await http.post(
         Uri.parse(ApiConstants.verifyStartOtpUrl(jobId)),
         headers: {
@@ -345,7 +350,7 @@ class ApiService {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'otp': otp}),
+        body: jsonEncode(body),
       );
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;
@@ -491,12 +496,17 @@ class ApiService {
 
   /// Complete job with end OTP verification
   /// Marks the job as completed after verifying customer's end OTP
+  /// For subscription jobs, OTP is optional - pass null or empty to skip
   Future<Map<String, dynamic>> completeJob({
     required int jobId,
-    required String otp,
+    String? otp,
     required String token,
   }) async {
     try {
+      final body = <String, dynamic>{};
+      if (otp != null && otp.isNotEmpty) {
+        body['otp'] = otp;
+      }
       final response = await http.post(
         Uri.parse(ApiConstants.completeJobUrl(jobId)),
         headers: {
@@ -504,7 +514,7 @@ class ApiService {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'otp': otp}),
+        body: jsonEncode(body),
       );
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;

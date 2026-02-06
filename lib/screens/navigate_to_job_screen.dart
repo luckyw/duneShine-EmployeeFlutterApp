@@ -26,27 +26,27 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   bool _isMarkingArrival = false;
   bool _isLoading = true;
   Job? _job;
-  
+
   GoogleMapController? _mapController;
   final LocationTrackingService _locationService = LocationTrackingService();
-  
+
   // Employee's current position
   Position? _currentPosition;
   StreamSubscription<Position>? _positionStream;
-  
+
   // Customer location (destination)
   LatLng? _customerLocation;
-  
+
   // Map markers
   final Set<Marker> _markers = {};
-  
+
   // Route polyline
   final Set<Polyline> _polylines = {};
   List<LatLng> _polylineCoordinates = [];
-  
+
   // Google Directions API key (same as Maps key)
   static const String _googleApiKey = 'AIzaSyD3Zy41HBhg8K73xjRMeZyCRceJfShzkMs';
-  
+
   // Default location (fallback) - Bhopal, India
   static const LatLng _defaultLocation = LatLng(23.030451, 78.076358);
 
@@ -60,11 +60,13 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_job == null) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+          {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
         _parseCustomerLocation();
-        
+
         // If the job is "lean" (missing booking info), fetch full details
         if (_job!.booking == null) {
           _fetchFullJobDetails();
@@ -100,7 +102,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   /// Parse customer location from booking property
   void _parseCustomerLocation() {
     print('DEBUG: Attempting to parse customer location...');
-    
+
     final property = _job?.booking?.property;
     final latStr = property?.resolvedLatitude;
     final lngStr = property?.resolvedLongitude;
@@ -110,11 +112,13 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       final lng = double.tryParse(lngStr);
       if (lat != null && lng != null) {
         _customerLocation = LatLng(lat, lng);
-        print('DEBUG: Successfully parsed destination from resolved_location: $_customerLocation');
+        print(
+          'DEBUG: Successfully parsed destination from resolved_location: $_customerLocation',
+        );
         return;
       }
     }
-    
+
     // Fallback to legacy geoLocation string
     final geoStr = _job?.booking?.geoLocation;
     if (geoStr != null && geoStr.isNotEmpty) {
@@ -125,12 +129,14 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
         final lng = double.tryParse(parts[1].trim());
         if (lat != null && lng != null) {
           _customerLocation = LatLng(lat, lng);
-          print('DEBUG: Successfully parsed legacy destination: $_customerLocation');
+          print(
+            'DEBUG: Successfully parsed legacy destination: $_customerLocation',
+          );
           return;
         }
       }
     }
-    
+
     // Fallback to default if parsing fails
     print('DEBUG: Falling back to default location (Bhopal)');
     _customerLocation = _defaultLocation;
@@ -156,16 +162,16 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
 
       // Get current position
       _currentPosition = await _locationService.getCurrentPosition();
-      
+
       // Start position stream for real-time updates
       _startPositionStream();
-      
+
       setState(() => _isLoading = false);
-      
+
       // Update markers and route
       _updateMarkers();
       _fetchRoute();
-      
+
       // Start sending location to Firebase if job exists
       if (_job != null) {
         _startFirebaseTracking();
@@ -178,27 +184,28 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
 
   /// Start listening to position updates
   void _startPositionStream() {
-    _positionStream = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update every 10 meters
-      ),
-    ).listen((Position position) {
-      setState(() {
-        _currentPosition = position;
-      });
-      _updateMarkers();
-      _animateCameraToShowBoth();
-    });
+    _positionStream =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 10, // Update every 10 meters
+          ),
+        ).listen((Position position) {
+          setState(() {
+            _currentPosition = position;
+          });
+          _updateMarkers();
+          _animateCameraToShowBoth();
+        });
   }
 
   /// Start sending location to Firebase
   Future<void> _startFirebaseTracking() async {
     if (_job == null) return;
-    
+
     try {
       final employeeId = AuthService().employeeId?.toString() ?? 'unknown';
-      
+
       // Set customer location in Firestore
       if (_customerLocation != null) {
         await _locationService.setCustomerLocation(
@@ -207,7 +214,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
           longitude: _customerLocation!.longitude,
         );
       }
-      
+
       // Start sending employee location
       await _locationService.startSendingLocation(
         jobId: _job!.id,
@@ -218,9 +225,11 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     }
   }
 
-
   /// Create a custom marker icon from a Flutter Icon
-  Future<BitmapDescriptor> _createMarkerImageFromIcon(IconData icon, Color color) async {
+  Future<BitmapDescriptor> _createMarkerImageFromIcon(
+    IconData icon,
+    Color color,
+  ) async {
     final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(pictureRecorder);
     final Paint paint = Paint()..color = color;
@@ -244,17 +253,16 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     textPainter.layout();
     textPainter.paint(
       canvas,
-      Offset(
-        (size - textPainter.width) / 2,
-        (size - textPainter.height) / 2,
-      ),
+      Offset((size - textPainter.width) / 2, (size - textPainter.height) / 2),
     );
 
     final ui.Image image = await pictureRecorder.endRecording().toImage(
       size.toInt(),
       size.toInt(),
     );
-    final ByteData? data = await image.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? data = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     return BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
   }
 
@@ -268,20 +276,23 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       );
 
       setState(() {
-         // Clear existing employee marker if any
+        // Clear existing employee marker if any
         _markers.removeWhere((m) => m.markerId.value == 'employee');
-        
+
         _markers.add(
           Marker(
             markerId: const MarkerId('employee'),
-            position: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+            position: LatLng(
+              _currentPosition!.latitude,
+              _currentPosition!.longitude,
+            ),
             infoWindow: const InfoWindow(title: 'Your Location'),
             icon: employeeIcon,
           ),
         );
       });
     }
-    
+
     // Customer/Property marker
     if (_customerLocation != null) {
       final BitmapDescriptor customerIcon = await _createMarkerImageFromIcon(
@@ -291,7 +302,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
 
       final booking = _job?.booking;
       setState(() {
-         // Clear existing customer marker if any
+        // Clear existing customer marker if any
         _markers.removeWhere((m) => m.markerId.value == 'customer');
 
         _markers.add(
@@ -312,23 +323,29 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   /// Fetch and draw route between employee and customer
   Future<void> _fetchRoute() async {
     if (_currentPosition == null || _customerLocation == null) return;
-    
+
     try {
       final polylinePoints = PolylinePoints();
       final result = await polylinePoints.getRouteBetweenCoordinates(
         googleApiKey: _googleApiKey,
         request: PolylineRequest(
-          origin: PointLatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          destination: PointLatLng(_customerLocation!.latitude, _customerLocation!.longitude),
+          origin: PointLatLng(
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          ),
+          destination: PointLatLng(
+            _customerLocation!.latitude,
+            _customerLocation!.longitude,
+          ),
           mode: TravelMode.driving,
         ),
       );
-      
+
       if (result.points.isNotEmpty) {
         _polylineCoordinates = result.points
             .map((point) => LatLng(point.latitude, point.longitude))
             .toList();
-        
+
         _polylines.clear();
         _polylines.add(
           Polyline(
@@ -338,7 +355,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
             width: 5,
           ),
         );
-        
+
         if (mounted) setState(() {});
         _animateCameraToShowBoth();
       }
@@ -351,7 +368,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   void _animateCameraToShowBoth() {
     if (_mapController == null) return;
     if (_currentPosition == null || _customerLocation == null) return;
-    
+
     final bounds = LatLngBounds(
       southwest: LatLng(
         _currentPosition!.latitude < _customerLocation!.latitude
@@ -370,16 +387,14 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
             : _customerLocation!.longitude,
       ),
     );
-    
-    _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 80),
-    );
+
+    _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
   }
 
   /// Open external Google Maps for turn-by-turn navigation
   Future<void> _openGoogleMaps() async {
     final apiMapUrl = _job?.booking?.googleMapsUrl;
-    
+
     // If we have a direct URL from API, try to use it
     if (apiMapUrl != null && apiMapUrl.isNotEmpty) {
       final Uri uri = Uri.parse(apiMapUrl);
@@ -390,16 +405,22 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     }
 
     if (_customerLocation == null) return;
-    
+
     final lat = _customerLocation!.latitude;
     final lng = _customerLocation!.longitude;
     final title = _job?.booking?.locationName ?? 'Destination';
-    
+
     // Platform specific URLs
-    final Uri googleMapsUri = Uri.parse('comgooglemaps://?daddr=$lat,$lng&directionsmode=driving');
-    final Uri appleMapsUrl = Uri.parse('https://maps.apple.com/?daddr=$lat,$lng');
+    final Uri googleMapsUri = Uri.parse(
+      'comgooglemaps://?daddr=$lat,$lng&directionsmode=driving',
+    );
+    final Uri appleMapsUrl = Uri.parse(
+      'https://maps.apple.com/?daddr=$lat,$lng',
+    );
     final Uri androidUri = Uri.parse('geo:$lat,$lng?q=$lat,$lng($title)');
-    final Uri webUrl = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
+    final Uri webUrl = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving',
+    );
 
     try {
       if (Theme.of(context).platform == TargetPlatform.iOS) {
@@ -420,9 +441,9 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not match map: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not match map: $e')));
       }
       // Last resort fallback
       if (await canLaunchUrl(webUrl)) {
@@ -434,11 +455,14 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   /// Center on employee location
   void _centerOnEmployee() {
     if (_mapController == null || _currentPosition == null) return;
-    
+
     _mapController!.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+          target: LatLng(
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          ),
           zoom: 16,
         ),
       ),
@@ -479,7 +503,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
     if (response['success'] == true) {
       final data = response['data'] as Map<String, dynamic>;
       final jobJson = data['job'] as Map<String, dynamic>?;
-      
+
       // Update local job with new status
       Job? updatedJob = _job;
       if (jobJson != null) {
@@ -501,10 +525,12 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
 
       if (mounted) {
         final vehicle = updatedJob?.booking?.vehicle;
-        final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
+        final carModel = vehicle != null
+            ? '${vehicle.brandName} ${vehicle.model}'
+            : 'Unknown Vehicle';
         final carColor = vehicle?.color ?? 'Unknown';
         final employeeName = AuthService().employeeName;
-        
+
         double earnedAmount = 0;
         if (updatedJob?.booking != null) {
           for (var service in updatedJob!.booking!.servicesPayload) {
@@ -513,22 +539,62 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
         }
 
         // Retrieve fallback args from route settings
-        final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+        final args =
+            ModalRoute.of(context)?.settings.arguments
+                as Map<String, dynamic>? ??
+            {};
         final fallbackJobId = args['jobId'];
 
-        Navigator.pushNamed(
-          context,
-          '/job-verification',
-          arguments: {
-            'jobId': updatedJob != null ? 'JOB-${updatedJob.id}' : fallbackJobId,
-            'carModel': carModel,
-            'carColor': carColor,
-            'employeeName': employeeName,
-            'earnedAmount': earnedAmount,
-            'job': updatedJob,
-            'startOtp': updatedJob?.startOtp,
-          },
-        );
+        // Check if this is a subscription job
+        if (updatedJob != null && updatedJob.isSubscription) {
+          // For subscription jobs, verify OTP without code (API skips verification)
+          final verifyResponse = await ApiService().verifyStartOtp(
+            jobId: updatedJob.id,
+            token: token,
+          );
+
+          if (!mounted) return;
+
+          if (verifyResponse['success'] == true) {
+            // Navigate directly to photo upload
+            Navigator.pushNamed(
+              context,
+              '/job-arrival-photo',
+              arguments: {
+                'jobId': 'JOB-${updatedJob.id}',
+                'carModel': carModel,
+                'carColor': carColor,
+                'employeeName': employeeName,
+                'earnedAmount': earnedAmount,
+                'job': updatedJob,
+              },
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(verifyResponse['message'] ?? 'Failed to verify'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        } else if (mounted) {
+          // For on-demand jobs, show OTP verification screen
+          Navigator.pushNamed(
+            context,
+            '/job-verification',
+            arguments: {
+              'jobId': updatedJob != null
+                  ? 'JOB-${updatedJob.id}'
+                  : fallbackJobId,
+              'carModel': carModel,
+              'carColor': carColor,
+              'employeeName': employeeName,
+              'earnedAmount': earnedAmount,
+              'job': updatedJob,
+              'startOtp': updatedJob?.startOtp,
+            },
+          );
+        }
       }
     } else {
       if (mounted) {
@@ -545,7 +611,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
   @override
   Widget build(BuildContext context) {
     final booking = _job?.booking;
-    
+
     // Initial camera position
     final initialPosition = _currentPosition != null
         ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
@@ -557,7 +623,11 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
         children: [
           // 1. Fullscreen Map
           _isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.primaryTeal))
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryTeal,
+                  ),
+                )
               : GoogleMap(
                   mapType: MapType.normal,
                   initialCameraPosition: CameraPosition(
@@ -579,7 +649,10 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                   compassEnabled: false,
                   mapToolbarEnabled: false,
                   padding: EdgeInsets.only(
-                    bottom: ResponsiveUtils.h(context, 350), // Padding for bottom sheet
+                    bottom: ResponsiveUtils.h(
+                      context,
+                      350,
+                    ), // Padding for bottom sheet
                     top: ResponsiveUtils.h(context, 100), // Padding for header
                   ),
                 ),
@@ -669,7 +742,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   // Handle bar
+                  // Handle bar
                   Center(
                     child: Container(
                       width: ResponsiveUtils.w(context, 40),
@@ -757,7 +830,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
           ),
         ),
         ResponsiveUtils.verticalSpace(context, 12),
-        
+
         // Location Details
         Text(
           locationName,
@@ -778,19 +851,18 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
             Expanded(
               child: Text(
                 locationAddress,
-                style: AppTextStyles.body(context).copyWith(
-                  color: AppColors.textGray,
-                  height: 1.4,
-                ),
+                style: AppTextStyles.body(
+                  context,
+                ).copyWith(color: AppColors.textGray, height: 1.4),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        
+
         ResponsiveUtils.verticalSpace(context, 24),
-        
+
         // Customer Row
         Container(
           padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
@@ -829,9 +901,9 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
                   children: [
                     Text(
                       'Customer',
-                      style: AppTextStyles.caption(context).copyWith(
-                        color: AppColors.textGray,
-                      ),
+                      style: AppTextStyles.caption(
+                        context,
+                      ).copyWith(color: AppColors.textGray),
                     ),
                     Text(
                       customerName,
@@ -870,9 +942,9 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
             ],
           ),
         ),
-        
+
         ResponsiveUtils.verticalSpace(context, 24),
-        
+
         // Open Maps Button
         SizedBox(
           width: double.infinity,
@@ -893,16 +965,20 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primaryTeal,
-              side: BorderSide(color: AppColors.primaryTeal.withValues(alpha: 0.5)),
+              side: BorderSide(
+                color: AppColors.primaryTeal.withValues(alpha: 0.5),
+              ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.r(context, 16),
+                ),
               ),
             ),
           ),
         ),
 
         ResponsiveUtils.verticalSpace(context, 16),
-        
+
         // Arrive Button
         SizedBox(
           width: double.infinity,
@@ -914,7 +990,9 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
               elevation: 4,
               shadowColor: AppColors.primaryTeal.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.r(context, 16),
+                ),
               ),
             ),
             child: _isMarkingArrival
@@ -974,9 +1052,9 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
         ResponsiveUtils.verticalSpace(context, 8),
         Text(
           'You are at the destination',
-          style: AppTextStyles.body(context).copyWith(
-            color: AppColors.textGray,
-          ),
+          style: AppTextStyles.body(
+            context,
+          ).copyWith(color: AppColors.textGray),
         ),
         ResponsiveUtils.verticalSpace(context, 32),
         SizedBox(
@@ -984,46 +1062,50 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
           height: ResponsiveUtils.h(context, 56),
           child: ElevatedButton(
             onPressed: () {
-               // Logic from previous implementation
-               // We navigate to verification, passing all necessary args
-               if (_job != null) {
-                  // If we have the job, we can pass it
-                   // See _handleArrival logic for what happens next
-                   // This button basically just duplicates the auto-navigation success action
-                   // or manual proceed if auto-nav failed/user stayed on screen
-                   final vehicle = _job?.booking?.vehicle;
-                   final carModel = vehicle != null ? '${vehicle.brandName} ${vehicle.model}' : 'Unknown Vehicle';
-                   final carColor = vehicle?.color ?? 'Unknown';
-                   final employeeName = AuthService().employeeName;
-                   
-                   double earnedAmount = 0;
-                   if (_job?.booking != null) {
-                     for (var service in _job!.booking!.servicesPayload) {
-                       earnedAmount += double.tryParse(service.price) ?? 0;
-                     }
-                   }
+              // Logic from previous implementation
+              // We navigate to verification, passing all necessary args
+              if (_job != null) {
+                // If we have the job, we can pass it
+                // See _handleArrival logic for what happens next
+                // This button basically just duplicates the auto-navigation success action
+                // or manual proceed if auto-nav failed/user stayed on screen
+                final vehicle = _job?.booking?.vehicle;
+                final carModel = vehicle != null
+                    ? '${vehicle.brandName} ${vehicle.model}'
+                    : 'Unknown Vehicle';
+                final carColor = vehicle?.color ?? 'Unknown';
+                final employeeName = AuthService().employeeName;
 
-                   Navigator.pushNamed(
-                     context,
-                     '/job-verification',
-                     arguments: {
-                       'jobId': 'JOB-${_job!.id}',
-                       'carModel': carModel,
-                       'carColor': carColor,
-                       'employeeName': employeeName,
-                       'earnedAmount': earnedAmount,
-                       'job': _job,
-                       'startOtp': _job?.startOtp,
-                     },
-                   );
-               }
+                double earnedAmount = 0;
+                if (_job?.booking != null) {
+                  for (var service in _job!.booking!.servicesPayload) {
+                    earnedAmount += double.tryParse(service.price) ?? 0;
+                  }
+                }
+
+                Navigator.pushNamed(
+                  context,
+                  '/job-verification',
+                  arguments: {
+                    'jobId': 'JOB-${_job!.id}',
+                    'carModel': carModel,
+                    'carColor': carColor,
+                    'employeeName': employeeName,
+                    'earnedAmount': earnedAmount,
+                    'job': _job,
+                    'startOtp': _job?.startOtp,
+                  },
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryTeal,
               elevation: 4,
               shadowColor: AppColors.primaryTeal.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.r(context, 16),
+                ),
               ),
             ),
             child: Text(

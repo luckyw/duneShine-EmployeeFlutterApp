@@ -175,6 +175,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
       '/job-completion-proof',
       arguments: {
         ...routeArgs,
+        'job': _job,
         'washDurationSeconds': _elapsedSeconds,
         'washDurationFormatted': _formatDuration(_elapsedSeconds),
       },
@@ -271,14 +272,18 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 12)),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: ResponsiveUtils.w(context, 12),
+                              ),
                               child: Text(
                                 _formatDuration(_elapsedSeconds),
                                 style: AppTextStyles.headline(context).copyWith(
                                   fontSize: ResponsiveUtils.sp(context, 40),
                                   color: AppColors.primaryTeal,
                                   fontWeight: FontWeight.bold,
-                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
                                 ),
                               ),
                             ),
@@ -290,15 +295,17 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                               vertical: ResponsiveUtils.h(context, 4),
                             ),
                             decoration: BoxDecoration(
-                              color: _isRunning 
-                                ? AppColors.success.withValues(alpha: 0.1)
-                                : AppColors.gold.withValues(alpha: 0.1),
+                              color: _isRunning
+                                  ? AppColors.success.withValues(alpha: 0.1)
+                                  : AppColors.gold.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               _isRunning ? 'WASHING' : 'PAUSED',
                               style: AppTextStyles.caption(context).copyWith(
-                                color: _isRunning ? AppColors.success : AppColors.gold,
+                                color: _isRunning
+                                    ? AppColors.success
+                                    : AppColors.gold,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1.2,
                                 fontSize: ResponsiveUtils.sp(context, 10),
@@ -321,13 +328,17 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: AppColors.white.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.white.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _isRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            _isRunning
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
                             color: AppColors.white,
                             size: ResponsiveUtils.r(context, 24),
                           ),
@@ -346,7 +357,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                 ],
               ),
             ),
-            
+
             // Bottom Section with Job Details
             Padding(
               padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
@@ -366,7 +377,9 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 20),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.03),
@@ -412,7 +425,8 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                               ? services.map((s) => s.name).join(', ')
                               : 'Standard Wash',
                         ),
-                        if (_job?.booking?.notes != null && _job!.booking!.notes!.isNotEmpty) ...[
+                        if (_job?.booking?.notes != null &&
+                            _job!.booking!.notes!.isNotEmpty) ...[
                           _buildDivider(),
                           _buildDetailItem(
                             Icons.info_outline,
@@ -420,7 +434,8 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                             _job!.booking!.notes!,
                           ),
                         ],
-                        if (vehicle?.parkingNotes != null && vehicle!.parkingNotes!.isNotEmpty) ...[
+                        if (vehicle?.parkingNotes != null &&
+                            vehicle!.parkingNotes!.isNotEmpty) ...[
                           _buildDivider(),
                           _buildDetailItem(
                             Icons.local_parking_outlined,
@@ -443,20 +458,25 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                         backgroundColor: AppColors.darkNavy,
                         foregroundColor: AppColors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                          borderRadius: BorderRadius.circular(
+                            ResponsiveUtils.r(context, 16),
+                          ),
                         ),
                         elevation: 4,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.camera_alt_outlined, size: ResponsiveUtils.r(context, 22)),
+                          Icon(
+                            Icons.camera_alt_outlined,
+                            size: ResponsiveUtils.r(context, 22),
+                          ),
                           ResponsiveUtils.horizontalSpace(context, 10),
                           Text(
                             'FINISH WASH',
-                            style: AppTextStyles.button(context).copyWith(
-                              letterSpacing: 1.1,
-                            ),
+                            style: AppTextStyles.button(
+                              context,
+                            ).copyWith(letterSpacing: 1.1),
                           ),
                         ],
                       ),
@@ -472,7 +492,14 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     );
   }
 
-  Widget _buildDetailItem(IconData icon, String label, String value, {Color? color, bool isLast = false, String? imageUrl}) {
+  Widget _buildDetailItem(
+    IconData icon,
+    String label,
+    String value, {
+    Color? color,
+    bool isLast = false,
+    String? imageUrl,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: ResponsiveUtils.h(context, 4)),
       child: Row(

@@ -61,9 +61,12 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
         // Save to permanent storage to avoid "path not found" errors
         // during the upload process if the temp file gets cleaned up
         final directory = await getApplicationDocumentsDirectory();
-        final fileName = 'completion_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final savedImage = await File(image.path).copy('${directory.path}/$fileName');
-        
+        final fileName =
+            'completion_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final savedImage = await File(
+          image.path,
+        ).copy('${directory.path}/$fileName');
+
         setState(() {
           _capturedPhoto = savedImage;
           _isPhotoUploaded = true;
@@ -142,7 +145,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
     });
 
     if (response['success'] == true) {
-      // Photo uploaded, navigate to end OTP screen
+      // Photo uploaded successfully
       if (mounted) {
         final jobJson = response['data']?['job'] as Map<String, dynamic>?;
         Job? nextJob = _job;
@@ -155,16 +158,56 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
           }
         }
 
-        Navigator.pushNamed(
-          context,
-          '/job-completion-otp',
-          arguments: {
-            ...routeArgs,
-            'photoPath': _capturedPhoto?.path,
-            'job': nextJob,
-            'finishWashResponse': response['data'],
-          },
-        );
+        // Check if this is a subscription job
+        if (nextJob?.isSubscription == true) {
+          // For subscription jobs, complete job without OTP
+          // Add small delay to allow backend to commit the washed status
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          final completeResponse = await ApiService().completeJob(
+            jobId: jobId,
+            token: token,
+          );
+
+          if (completeResponse['success'] == true) {
+            // Navigate to job completed screen
+            if (mounted) {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/job-completed',
+                (route) => false,
+                arguments: {
+                  ...routeArgs,
+                  'job': nextJob,
+                  'completionResponse': completeResponse['data'],
+                },
+              );
+            }
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    completeResponse['message'] ?? 'Failed to complete job',
+                  ),
+                  backgroundColor: AppColors.error,
+                ),
+              );
+            }
+          }
+        } else {
+          // For on-demand jobs, show OTP verification screen
+          Navigator.pushNamed(
+            context,
+            '/job-completion-otp',
+            arguments: {
+              ...routeArgs,
+              'photoPath': _capturedPhoto?.path,
+              'job': nextJob,
+              'finishWashResponse': response['data'],
+            },
+          );
+        }
       }
     } else {
       if (mounted) {
@@ -189,7 +232,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
           // 1. Premium Header
           Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + ResponsiveUtils.h(context, 16),
+              top:
+                  MediaQuery.of(context).padding.top +
+                  ResponsiveUtils.h(context, 16),
               bottom: ResponsiveUtils.h(context, 24),
               left: ResponsiveUtils.w(context, 24),
               right: ResponsiveUtils.w(context, 24),
@@ -216,7 +261,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                     padding: EdgeInsets.all(ResponsiveUtils.w(context, 10)),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 12),
+                      ),
                     ),
                     child: Icon(
                       Icons.arrow_back_ios_new_rounded,
@@ -252,7 +299,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                       padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.r(context, 20),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.05),
@@ -264,7 +313,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                       child: Row(
                         children: [
                           Container(
-                            padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
+                            padding: EdgeInsets.all(
+                              ResponsiveUtils.w(context, 12),
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.primaryTeal.withOpacity(0.1),
                               shape: BoxShape.circle,
@@ -327,13 +378,15 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 24),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.05),
                           blurRadius: 20,
                           offset: Offset(0, 4),
-                        )
+                        ),
                       ],
                     ),
                     child: _isPhotoUploaded && _capturedPhoto != null
@@ -341,7 +394,9 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                             fit: StackFit.expand,
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                                borderRadius: BorderRadius.circular(
+                                  ResponsiveUtils.r(context, 24),
+                                ),
                                 child: Image.file(
                                   _capturedPhoto!,
                                   fit: BoxFit.cover,
@@ -354,12 +409,16 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                                   onTap: () {
                                     showModalBottomSheet(
                                       context: context,
-                                      builder: (context) => _buildPhotoOptionsSheet(context),
+                                      builder: (context) =>
+                                          _buildPhotoOptionsSheet(context),
                                     );
                                   },
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: ResponsiveUtils.w(context, 16),
+                                      horizontal: ResponsiveUtils.w(
+                                        context,
+                                        16,
+                                      ),
                                       vertical: ResponsiveUtils.h(context, 8),
                                     ),
                                     decoration: BoxDecoration(
@@ -369,11 +428,17 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.refresh, color: Colors.white, size: 16),
+                                        Icon(
+                                          Icons.refresh,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
                                         SizedBox(width: 8),
                                         Text(
                                           'Retake',
-                                          style: AppTextStyles.button(context).copyWith(fontSize: 14),
+                                          style: AppTextStyles.button(
+                                            context,
+                                          ).copyWith(fontSize: 14),
                                         ),
                                       ],
                                     ),
@@ -388,10 +453,13 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                               onTap: () {
                                 showModalBottomSheet(
                                   context: context,
-                                  builder: (context) => _buildPhotoOptionsSheet(context),
+                                  builder: (context) =>
+                                      _buildPhotoOptionsSheet(context),
                                 );
                               },
-                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                              borderRadius: BorderRadius.circular(
+                                ResponsiveUtils.r(context, 24),
+                              ),
                               child: DottedBorderPainter(
                                 strokeWidth: 2,
                                 color: AppColors.primaryTeal.withOpacity(0.3),
@@ -401,9 +469,12 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+                                      padding: EdgeInsets.all(
+                                        ResponsiveUtils.w(context, 20),
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primaryTeal.withOpacity(0.08),
+                                        color: AppColors.primaryTeal
+                                            .withOpacity(0.08),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
@@ -412,13 +483,16 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                                         color: AppColors.primaryTeal,
                                       ),
                                     ),
-                                    SizedBox(height: ResponsiveUtils.h(context, 16)),
+                                    SizedBox(
+                                      height: ResponsiveUtils.h(context, 16),
+                                    ),
                                     Text(
                                       'Tap to Upload Photo',
-                                      style: AppTextStyles.subtitle(context).copyWith(
-                                        color: AppColors.primaryTeal,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                      style: AppTextStyles.subtitle(context)
+                                          .copyWith(
+                                            color: AppColors.primaryTeal,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -426,7 +500,7 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                             ),
                           ),
                   ),
-                  
+
                   ResponsiveUtils.verticalSpace(context, 40),
 
                   // 4. Submit Button
@@ -442,9 +516,13 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
                         foregroundColor: Colors.white,
                         elevation: 8,
                         shadowColor: AppColors.primaryTeal.withOpacity(0.4),
-                        disabledBackgroundColor: AppColors.textGray.withOpacity(0.2),
+                        disabledBackgroundColor: AppColors.textGray.withOpacity(
+                          0.2,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                          borderRadius: BorderRadius.circular(
+                            ResponsiveUtils.r(context, 16),
+                          ),
                         ),
                       ),
                       child: _isSubmitting
@@ -518,7 +596,10 @@ class _JobCompletionProofScreenState extends State<JobCompletionProofScreen> {
               ),
               child: Icon(Icons.image, color: Colors.purple),
             ),
-            title: Text('Choose from Gallery', style: AppTextStyles.subtitle(context)),
+            title: Text(
+              'Choose from Gallery',
+              style: AppTextStyles.subtitle(context),
+            ),
             onTap: () {
               Navigator.pop(context);
               _pickImage(ImageSource.gallery);
@@ -583,10 +664,12 @@ class _DottedPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final Path path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Radius.circular(radius),
-      ));
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          Radius.circular(radius),
+        ),
+      );
 
     final Path dashedPath = _dashPath(path, width: 8, space: gap);
     canvas.drawPath(dashedPath, paint);

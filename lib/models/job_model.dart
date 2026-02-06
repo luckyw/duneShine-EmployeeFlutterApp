@@ -197,11 +197,7 @@ class ServicePayload {
   final String name;
   final String price;
 
-  ServicePayload({
-    required this.id,
-    required this.name,
-    required this.price,
-  });
+  ServicePayload({required this.id, required this.name, required this.price});
 
   factory ServicePayload.fromJson(Map<String, dynamic> json) {
     return ServicePayload(
@@ -259,7 +255,8 @@ class Booking {
       totalPrice: json['total_price'] ?? '0.00',
       paymentStatus: json['payment_status'] ?? '',
       status: json['status'] ?? '',
-      servicesPayload: (json['services_payload'] as List<dynamic>?)
+      servicesPayload:
+          (json['services_payload'] as List<dynamic>?)
               ?.map((e) => ServicePayload.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -269,9 +266,9 @@ class Booking {
           : null,
       property: json['property'] != null
           ? Property.fromJson(json['property'] as Map<String, dynamic>)
-          : (json['apartment'] != null 
-              ? Property.fromJson(json['apartment'] as Map<String, dynamic>)
-              : null),
+          : (json['apartment'] != null
+                ? Property.fromJson(json['apartment'] as Map<String, dynamic>)
+                : null),
       vehicle: json['vehicle'] != null
           ? Vehicle.fromJson(json['vehicle'] as Map<String, dynamic>)
           : null,
@@ -403,19 +400,23 @@ class Job {
       startedAt: json['started_at'],
       washedAt: json['washed_at'],
       completedAt: json['completed_at'],
-      photosBefore: (json['photos_before'] as List<dynamic>?)
+      photosBefore:
+          (json['photos_before'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      photosAfter: (json['photos_after'] as List<dynamic>?)
+      photosAfter:
+          (json['photos_after'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      photosBeforeUrls: (json['photos_before_urls'] as List<dynamic>?)
+      photosBeforeUrls:
+          (json['photos_before_urls'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      photosAfterUrls: (json['photos_after_urls'] as List<dynamic>?)
+      photosAfterUrls:
+          (json['photos_after_urls'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
@@ -435,6 +436,9 @@ class Job {
 
   /// Check if job is upcoming (not yet started or in progress)
   bool get isUpcoming => !isCompleted;
+
+  /// Check if job is a subscription booking
+  bool get isSubscription => booking?.type == 'subscription';
 
   /// Get display status text
   String get displayStatus {
