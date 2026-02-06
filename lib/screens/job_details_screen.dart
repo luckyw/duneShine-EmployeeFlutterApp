@@ -579,6 +579,47 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
                         ResponsiveUtils.verticalSpace(context, 16),
 
+                        // 1.5. Schedule Card - Show Start Time
+                        _buildPremiumCard(
+                          context,
+                          title: 'Scheduled Time',
+                          icon: Icons.schedule_outlined,
+                          iconColor: Colors.blue,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: ResponsiveUtils.w(context, 50),
+                                height: ResponsiveUtils.h(context, 50),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.access_time_rounded, color: Colors.blue),
+                              ),
+                              ResponsiveUtils.horizontalSpace(context, 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _job!.formattedStartTime.isNotEmpty 
+                                          ? _job!.formattedStartTime 
+                                          : 'Not yet scheduled',
+                                      style: AppTextStyles.title(context).copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.darkNavy,
+                                        fontSize: ResponsiveUtils.sp(context, 20),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        ResponsiveUtils.verticalSpace(context, 16),
+
                         // 2. Location Card
                         if (booking?.fullAddress != null)
                           _buildPremiumCard(

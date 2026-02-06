@@ -12,6 +12,7 @@ import '../utils/responsive_utils.dart';
 import '../utils/toast_utils.dart';
 import '../services/background_location_service.dart';
 import '../services/location_tracking_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EmployeeHomeScreen extends StatefulWidget {
   const EmployeeHomeScreen({Key? key}) : super(key: key);
@@ -42,9 +43,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         .where((job) => !job.isCompleted && job.status != 'cancelled')
         .toList()
       ..sort((a, b) {
-        // startTime is in HH:MM:SS format, which sorts lexicographically correctly
-        final aTime = a.timeSlot?.startTime ?? '99:99:99';
-        final bTime = b.timeSlot?.startTime ?? '99:99:99';
+        // Prioritize job's startTime, fallback to timeSlot.startTime
+        final aTime = a.startTime ?? a.timeSlot?.startTime ?? '99:99:99';
+        final bTime = b.startTime ?? b.timeSlot?.startTime ?? '99:99:99';
         return aTime.compareTo(bTime);
       });
   }
@@ -216,9 +217,132 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         setState(() {
           _isAttendanceLoading = false;
         });
+
+        // Check if already checked in - offer to check out
+        final message = result['message']?.toString().toLowerCase() ?? '';
+        if (message.contains('you are already checked in') ||
+            message.contains('already checked in') ||
+            message.contains('already check in') ||
+            message.contains('already started')) {
+          _showCheckOutDialog();
+        } else {
+          ToastUtils.showErrorToast(
+            context,
+            result['message'] ?? 'Failed to start shift',
+          );
+        }
+      }
+    }
+  }
+
+  /// Show dialog asking if user wants to check out
+  void _showCheckOutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: AppColors.primaryTeal,
+              size: ResponsiveUtils.r(context, 24),
+            ),
+            ResponsiveUtils.horizontalSpace(context, 8),
+            Expanded(
+              child: Text(
+                'Already Checked In',
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.sp(context, 18),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'You are already checked in. Would you like to check out and end your shift?',
+          style: TextStyle(
+            fontSize: ResponsiveUtils.sp(context, 14),
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: AppColors.textGray,
+                fontSize: ResponsiveUtils.sp(context, 14),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _handleCheckOut();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryTeal,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  ResponsiveUtils.r(context, 8),
+                ),
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: ResponsiveUtils.w(context, 16),
+                vertical: ResponsiveUtils.h(context, 8),
+              ),
+            ),
+            child: Text(
+              'Check Out',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.sp(context, 14),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Handle check-out API call
+  Future<void> _handleCheckOut() async {
+    final token = AuthService().token;
+    if (token == null) return;
+
+    setState(() {
+      _isAttendanceLoading = true;
+    });
+
+    final result = await ApiService().checkOut(token: token);
+
+    if (mounted) {
+      setState(() {
+        _isAttendanceLoading = false;
+      });
+
+      if (result['success'] == true) {
+        AuthService().setShiftStatus(false);
+        setState(() {
+          _isShiftStarted = false;
+        });
+
+        // Stop background tracking service
+        BackgroundLocationService.stop();
+
+        ToastUtils.showSuccessToast(
+          context,
+          'Checked out successfully. Great work today!',
+        );
+      } else {
         ToastUtils.showErrorToast(
           context,
-          result['message'] ?? 'Failed to start shift',
+          result['message'] ?? 'Failed to check out',
         );
       }
     }
@@ -560,8 +684,8 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                           ),
                       ],
                     ),
-                  ),
-                ),
+                  ), // background Container
+                ), // FlexibleSpaceBar
                 actions: [
                   Container(
                     margin: EdgeInsets.only(
@@ -587,9 +711,45 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                       ),
                     ),
                   ),
+                  if (_isShiftStarted)
+                    Container(
+                      margin: EdgeInsets.only(
+                        right: ResponsiveUtils.w(context, 12),
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade700,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        onPressed: _isAttendanceLoading
+                            ? null
+                            : _handleCheckOut,
+                        icon: _isAttendanceLoading
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.white,
+                                ),
+                              )
+                            : Icon(
+                                Icons.stop_circle_outlined,
+                                color: AppColors.white,
+                                size: ResponsiveUtils.sp(context, 24),
+                              ),
+                        tooltip: 'End Shift',
+                      ),
+                    ),
                 ],
-              ),
-
+              ), // SliverAppBar
               // 2. Main Content
               if (!_isShiftStarted)
                 SliverToBoxAdapter(child: _buildStartShiftView())
@@ -768,55 +928,50 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     }
   }
 
+  /// Build the "Start Shift" view when user is not checked in
   Widget _buildStartShiftView() {
-    return Padding(
+    return Container(
+      margin: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
       padding: EdgeInsets.all(ResponsiveUtils.w(context, 24)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ResponsiveUtils.verticalSpace(context, 40),
-
-          ScaleTransition(
-            scale: _pulseAnimation,
-            child: Container(
-              padding: EdgeInsets.all(ResponsiveUtils.w(context, 30)),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryTeal.withOpacity(0.2),
-                    blurRadius: 40,
-                    spreadRadius: 10,
-                  ),
-                  BoxShadow(
-                    color: AppColors.primaryTeal.withOpacity(0.1),
-                    blurRadius: 60,
-                    spreadRadius: 20,
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.work_outline_rounded,
-                size: ResponsiveUtils.r(context, 60),
-                color: AppColors.primaryTeal,
-              ),
-            ),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 20)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.darkNavy.withOpacity(0.1),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
-
-          ResponsiveUtils.verticalSpace(context, 40),
-
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.access_time_rounded,
+            size: ResponsiveUtils.r(context, 64),
+            color: AppColors.primaryTeal,
+          ),
+          ResponsiveUtils.verticalSpace(context, 16),
           Text(
-            'Ready to start?',
+            'Ready to start your shift?',
             style: AppTextStyles.headline(context).copyWith(
               color: AppColors.darkNavy,
-              fontSize: ResponsiveUtils.sp(context, 28),
-              fontWeight: FontWeight.w800,
+              fontSize: ResponsiveUtils.sp(context, 20),
+              fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
-          ResponsiveUtils.verticalSpace(context, 48),
-
+          ResponsiveUtils.verticalSpace(context, 8),
+          Text(
+            'Check in to view your assigned jobs for today',
+            style: AppTextStyles.body(context).copyWith(
+              color: AppColors.textGray,
+              fontSize: ResponsiveUtils.sp(context, 14),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          ResponsiveUtils.verticalSpace(context, 24),
           SizedBox(
             width: double.infinity,
             height: ResponsiveUtils.h(context, 56),
@@ -824,227 +979,131 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
               onPressed: _isAttendanceLoading ? null : _handleCheckIn,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryTeal,
-                foregroundColor: Colors.white,
-                elevation: 8,
-                shadowColor: AppColors.primaryTeal.withOpacity(0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                    ResponsiveUtils.r(context, 16),
+                    ResponsiveUtils.r(context, 12),
                   ),
                 ),
+                elevation: 0,
               ),
               child: _isAttendanceLoading
                   ? SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
                         strokeWidth: 2,
+                        color: AppColors.white,
                       ),
                     )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.play_arrow_rounded, size: 28),
-                        SizedBox(width: 8),
-                        Text(
-                          'Start Shift Now',
-                          style: TextStyle(
-                            fontSize: ResponsiveUtils.sp(context, 18),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                  : Text(
+                      'Start Shift',
+                      style: AppTextStyles.button(context).copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
             ),
           ),
-
-          ResponsiveUtils.verticalSpace(context, 32),
-
-          // Preview of upcoming work
-          if (_upcomingJobs.isNotEmpty) ...[
-            Text(
-              "Sneak peek: ${_upcomingJobs.length} jobs waiting",
-              style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.textGray,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            ResponsiveUtils.verticalSpace(context, 16),
-            // Just show the first one as a preview
-            Opacity(
-              opacity: 0.6,
-              child: _buildJobPreviewItem(_upcomingJobs.first, 0),
-            ),
-          ],
         ],
       ),
     );
   }
 
+  /// Build the Upcoming Jobs tab content
   Widget _buildUpcomingJobsTab() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_errorMessage != null) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, color: AppColors.error, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.body(
-                  context,
-                ).copyWith(color: AppColors.textGray),
+        child: CircularProgressIndicator(color: AppColors.primaryTeal),
+      );
+    }
+
+    if (_upcomingJobs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_available, size: 64, color: AppColors.lightGray),
+            ResponsiveUtils.verticalSpace(context, 16),
+            Text(
+              'No upcoming jobs',
+              style: AppTextStyles.body(context).copyWith(
+                color: AppColors.textGray,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _fetchTodaysJobs,
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+            ),
+            ResponsiveUtils.verticalSpace(context, 8),
+            Text(
+              'You have no scheduled jobs for today',
+              style: AppTextStyles.caption(
+                context,
+              ).copyWith(color: AppColors.lightGray),
+            ),
+          ],
         ),
       );
     }
-    if (_upcomingJobs.isEmpty) {
+
+    return ListView.builder(
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+      itemCount: _upcomingJobs.length,
+      itemBuilder: (context, index) {
+        final job = _upcomingJobs[index];
+        return Padding(
+          padding: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 12)),
+          child: _buildJobCardFromApi(job: job, isNextJob: index == 0),
+        );
+      },
+    );
+  }
+
+  /// Build the Completed Jobs tab content
+  Widget _buildCompletedJobsTab() {
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.primaryTeal),
+      );
+    }
+
+    if (_completedJobs.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.check_circle_outline,
-              color: AppColors.primaryTeal,
               size: 64,
+              color: AppColors.lightGray,
             ),
-            const SizedBox(height: 16),
+            ResponsiveUtils.verticalSpace(context, 16),
             Text(
-              'No upcoming jobs',
-              style: AppTextStyles.title(
-                context,
-              ).copyWith(color: AppColors.textGray),
-            ),
-          ],
-        ),
-      );
-    }
-    return ListView.separated(
-      padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-      itemCount: _upcomingJobs.length,
-      separatorBuilder: (context, index) =>
-          SizedBox(height: ResponsiveUtils.h(context, 12)),
-      itemBuilder: (context, index) {
-        // Add a slight delay for entrance animation effect if desired
-        // For now just the card
-        return _buildJobCardFromApi(
-          job: _upcomingJobs[index],
-          isNextJob: index == 0,
-        );
-      },
-    );
-  }
-
-  Widget _buildCompletedJobsTab() {
-    if (_completedJobs.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inbox_outlined, color: AppColors.lightGray, size: 64),
-            const SizedBox(height: 16),
-            Text(
-              'No completed jobs yet',
-              style: AppTextStyles.title(
-                context,
-              ).copyWith(color: AppColors.textGray),
-            ),
-          ],
-        ),
-      );
-    }
-    return ListView.separated(
-      padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-      itemCount: _completedJobs.length,
-      separatorBuilder: (context, index) =>
-          SizedBox(height: ResponsiveUtils.h(context, 12)),
-      itemBuilder: (context, index) {
-        return _buildCompletedJobCardFromApi(job: _completedJobs[index]);
-      },
-    );
-  }
-
-  /// Job preview item for the pre-shift view
-  Widget _buildJobPreviewItem(Job job, int index) {
-    final vehicle = job.booking?.vehicle;
-    final timeSlot = job.timeSlot;
-
-    return Container(
-      margin: EdgeInsets.only(
-        top: index > 0 ? ResponsiveUtils.h(context, 10) : 0,
-      ),
-      padding: EdgeInsets.all(ResponsiveUtils.w(context, 12)),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 10)),
-        border: Border.all(color: AppColors.lightGray.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(ResponsiveUtils.w(context, 8)),
-            decoration: BoxDecoration(
-              color: AppColors.primaryTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(
-                ResponsiveUtils.r(context, 8),
-              ),
-            ),
-            child: Icon(
-              Icons.directions_car,
-              color: AppColors.primaryTeal,
-              size: ResponsiveUtils.r(context, 20),
-            ),
-          ),
-          ResponsiveUtils.horizontalSpace(context, 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  vehicle?.displayName ?? 'Vehicle',
-                  style: AppTextStyles.body(context).copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkNavy,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: ResponsiveUtils.w(context, 10),
-              vertical: ResponsiveUtils.h(context, 6),
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.primaryTeal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(
-                ResponsiveUtils.r(context, 8),
-              ),
-            ),
-            child: Text(
-              timeSlot?.formattedStartTime ?? '',
-              style: AppTextStyles.caption(context).copyWith(
-                color: AppColors.primaryTeal,
+              'No completed jobs',
+              style: AppTextStyles.body(context).copyWith(
+                color: AppColors.textGray,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-        ],
-      ),
+            ResponsiveUtils.verticalSpace(context, 8),
+            Text(
+              'Jobs you complete will appear here',
+              style: AppTextStyles.caption(
+                context,
+              ).copyWith(color: AppColors.lightGray),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.all(ResponsiveUtils.w(context, 20)),
+      itemCount: _completedJobs.length,
+      itemBuilder: (context, index) {
+        final job = _completedJobs[index];
+        return Padding(
+          padding: EdgeInsets.only(bottom: ResponsiveUtils.h(context, 12)),
+          child: _buildCompletedJobCardFromApi(job: job),
+        );
+      },
     );
   }
 
@@ -1055,6 +1114,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     required String status,
     List<ServicePayload> services = const [],
     String buttonText = 'Navigate',
+    String jobId = '',
     Color bgColor = AppColors.primaryTeal,
     Color statusColor = Colors.transparent,
     Color textColor = AppColors.white,
@@ -1063,6 +1123,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     Gradient? backgroundGradient,
     VoidCallback? onNavigate,
     VoidCallback? onTap,
+    VoidCallback? onMapTap, // New callback for map button
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -1102,6 +1163,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     style: AppTextStyles.body(
                       context,
                     ).copyWith(color: textColor, fontWeight: FontWeight.bold),
+                  ),
+                  ResponsiveUtils.verticalSpace(context, 4),
+                  Text(
+                    jobId,
+                    style: AppTextStyles.caption(
+                      context,
+                    ).copyWith(color: textColor.withOpacity(0.7)),
                   ),
                   ResponsiveUtils.verticalSpace(context, 12),
                   Row(
@@ -1199,6 +1267,31 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (onMapTap != null) ...[
+                          ResponsiveUtils.horizontalSpace(context, 8),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: onMapTap,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: textColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: textColor.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.map_outlined,
+                                  size: 18,
+                                  color: textColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -1234,12 +1327,48 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   }
 
   Widget _buildCompletedJobCard({
-    required String time,
     required String car,
     required String location,
-    required String completedTime,
     List<ServicePayload> services = const [],
+    String jobId = '',
+    String? arrivedAt,
+    String? completedAt,
   }) {
+    // Parse timestamps and calculate duration
+    String startTimeDisplay = '';
+    String endTimeDisplay = '';
+    String durationDisplay = '';
+    
+    if (arrivedAt != null && arrivedAt.isNotEmpty) {
+      try {
+        final arrived = DateTime.parse(arrivedAt).toLocal();
+        final hour = arrived.hour > 12 ? arrived.hour - 12 : (arrived.hour == 0 ? 12 : arrived.hour);
+        final period = arrived.hour >= 12 ? 'PM' : 'AM';
+        startTimeDisplay = '${hour.toString().padLeft(2, '0')}:${arrived.minute.toString().padLeft(2, '0')} $period';
+      } catch (_) {}
+    }
+    
+    if (completedAt != null && completedAt.isNotEmpty) {
+      try {
+        final completed = DateTime.parse(completedAt).toLocal();
+        final hour = completed.hour > 12 ? completed.hour - 12 : (completed.hour == 0 ? 12 : completed.hour);
+        final period = completed.hour >= 12 ? 'PM' : 'AM';
+        endTimeDisplay = '${hour.toString().padLeft(2, '0')}:${completed.minute.toString().padLeft(2, '0')} $period';
+        
+        // Calculate duration
+        if (arrivedAt != null && arrivedAt.isNotEmpty) {
+          final arrived = DateTime.parse(arrivedAt).toLocal();
+          final diff = completed.difference(arrived);
+          if (diff.inMinutes < 60) {
+            durationDisplay = '${diff.inMinutes} min';
+          } else {
+            final hours = diff.inHours;
+            final mins = diff.inMinutes % 60;
+            durationDisplay = mins > 0 ? '${hours}h ${mins}m' : '${hours}h';
+          }
+        }
+      } catch (_) {}
+    }
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
@@ -1269,15 +1398,15 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header: Time and Status
+                    // Header: Job ID and Status
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          time,
+                          jobId,
                           style: AppTextStyles.caption(context).copyWith(
                             color: AppColors.textGray.withOpacity(0.8),
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -1418,22 +1547,67 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                     ),
                     ResponsiveUtils.verticalSpace(context, 12),
 
-                    // Footer: Completed Time
+                    // Footer: Start/End Time and Duration
                     Row(
                       children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 16,
-                          color: AppColors.textGray,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          completedTime,
-                          style: AppTextStyles.caption(context).copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textGray,
+                        if (startTimeDisplay.isNotEmpty) ...[
+                          Icon(
+                            Icons.login_rounded,
+                            size: 14,
+                            color: AppColors.primaryTeal,
                           ),
-                        ),
+                          SizedBox(width: 4),
+                          Text(
+                            startTimeDisplay,
+                            style: AppTextStyles.caption(context).copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryTeal,
+                            ),
+                          ),
+                        ],
+                        if (endTimeDisplay.isNotEmpty) ...[
+                          SizedBox(width: 12),
+                          Icon(
+                            Icons.logout_rounded,
+                            size: 14,
+                            color: AppColors.success,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            endTimeDisplay,
+                            style: AppTextStyles.caption(context).copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                        Spacer(),
+                        if (durationDisplay.isNotEmpty)
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.amber.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.timer_outlined,
+                                  size: 14,
+                                  color: AppColors.amber,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  durationDisplay,
+                                  style: AppTextStyles.caption(context).copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.amber,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ],
@@ -1446,6 +1620,16 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     );
   }
 
+  Future<void> _launchMap(String lat, String lng) async {
+    final googleMapsUrl =
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    if (!await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ToastUtils.showErrorToast(context, 'Could not launch maps');
+      }
+    }
+  }
+
   /// Build a job card from API Job model
   /// Dynamically changes button text and navigation based on job status
   Widget _buildJobCardFromApi({required Job job, required bool isNextJob}) {
@@ -1454,9 +1638,36 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     final booking = job.booking;
 
     final carName = vehicle?.displayName ?? 'Unknown Vehicle';
+    // Parse start_time directly to ensure we prioritize it
+    // Fallback to time slot only if start_time is not available
+    String displayTime = '';
+    if (job.startTime != null && job.startTime!.isNotEmpty) {
+      // Use the job's specific start time
+      try {
+        final parts = job.startTime!.split(':');
+        if (parts.length >= 2) {
+          int hour = int.parse(parts[0]);
+          final minute = parts[1];
+          final period = hour >= 12 ? 'PM' : 'AM';
+          if (hour > 12) hour -= 12;
+          if (hour == 0) hour = 12;
+          displayTime = '${hour.toString().padLeft(2, '0')}:$minute $period';
+        } else {
+          displayTime = job.startTime!;
+        }
+      } catch (_) {
+        displayTime = job.startTime!;
+      }
+    } else if (timeSlot != null) {
+      // Fallback to time slot range if no specific start time
+      displayTime = timeSlot.formattedStartTime;
+    } else {
+      displayTime = 'Scheduled';
+    }
+
     final timeLabel = isNextJob
-        ? 'NEXT JOB • ${timeSlot?.formattedStartTime ?? ''}'
-        : 'UPCOMING • ${timeSlot?.formattedStartTime ?? ''}';
+        ? 'NEXT JOB • $displayTime'
+        : 'UPCOMING • $displayTime';
 
     // Calculate total price from services
     double totalPrice = 0;
@@ -1520,6 +1731,32 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         navigationRoute = '/job-details';
     }
 
+    // Navigation callback
+    final VoidCallback onNavigate = () {
+      Navigator.pushNamed(
+        context,
+        navigationRoute,
+        arguments: commonArgs,
+      );
+    };
+
+    // Map Button Callback
+    VoidCallback? onMapTap;
+    final lat = job.booking?.property?.resolvedLatitude;
+    final lng = job.booking?.property?.resolvedLongitude;
+    
+    if (lat != null && lat.isNotEmpty && lng != null && lng.isNotEmpty) {
+      onMapTap = () => _launchMap(lat, lng);
+    } else if (job.booking?.property?.latitude != null && 
+               job.booking?.property?.longitude != null) {
+       // Fallback to basic lat/long if resolved is missing
+       onMapTap = () => _launchMap(
+         job.booking!.property!.latitude!, 
+         job.booking!.property!.longitude!
+       );
+    }
+
+
     final gradient = isNextJob
         ? const LinearGradient(
             colors: [Color(0xFF00334E), Color(0xFF006D77)], // Navy to Teal
@@ -1535,6 +1772,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       status: job.displayStatus,
       services: booking?.servicesPayload ?? [],
       buttonText: buttonText,
+      jobId: 'JOB-${job.id}',
       // For Next Job: use gradient and white text
       // For Normal Job: use white bg and dark text
       bgColor: isNextJob ? AppColors.primaryTeal : AppColors.white,
@@ -1543,42 +1781,28 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       textColor: isNextJob ? AppColors.white : AppColors.darkNavy,
       borderColor: isNextJob ? Colors.transparent : Colors.transparent,
       iconColor: isNextJob ? AppColors.white : AppColors.textGray,
-      onNavigate: isNextJob
-          ? () {
-              Navigator.pushNamed(
-                context,
-                navigationRoute,
-                arguments: commonArgs,
-              );
-            }
-          : null,
-      onTap: !isNextJob
-          ? () {
-              Navigator.pushNamed(
-                context,
-                navigationRoute,
-                arguments: commonArgs,
-              );
-            }
-          : null,
+      // Pass the navigation callback to both the button and the card tap
+      onNavigate: isNextJob ? onNavigate : null,
+      onTap: onNavigate,
+      onMapTap: onMapTap,
     );
   }
 
   /// Build a completed job card from API Job model
   Widget _buildCompletedJobCardFromApi({required Job job}) {
     final vehicle = job.booking?.vehicle;
-    final timeSlot = job.timeSlot;
     final booking = job.booking;
 
     final carName = vehicle?.displayName ?? 'Unknown Vehicle';
     final location = booking?.fullAddress ?? '';
 
     return _buildCompletedJobCard(
-      time: 'COMPLETED - ${timeSlot?.formattedStartTime ?? ''}',
       car: carName,
       location: location,
-      completedTime: 'Completed',
       services: booking?.servicesPayload ?? [],
+      jobId: 'JOB-${job.id}',
+      arrivedAt: job.arrivedAt,
+      completedAt: job.completedAt,
     );
   }
 

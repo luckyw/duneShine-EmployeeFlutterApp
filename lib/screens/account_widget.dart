@@ -94,54 +94,7 @@ class _AccountWidgetState extends State<AccountWidget> {
     }
   }
 
-  Future<void> _handleCheckOut() async {
-    final token = _authService.token;
-    if (token == null) return;
 
-    setState(() {
-      _isEndingShift = true;
-    });
-
-    final result = await _apiService.checkOut(token: token);
-
-    if (mounted) {
-      if (result['success'] == true) {
-        _authService.setShiftStatus(false);
-        setState(() {
-          _isShiftStarted = false;
-          _isEndingShift = false;
-        });
-        
-        // Stop background tracking service
-        BackgroundLocationService.stop();
-        
-        ToastUtils.showSuccessToast(context, 'Shift ended successfully');
-        widget.onShiftEnded?.call();
-      } else {
-        setState(() {
-          _isEndingShift = false;
-        });
-        
-        final String errorMessage = result['message']?.toString() ?? 'Failed to end shift';
-        
-        // If backend says no active session, we should just sync locally as the goal of ending the shift is achieved
-        if (errorMessage.toLowerCase().contains('no active session')) {
-          _authService.setShiftStatus(false);
-          setState(() {
-            _isShiftStarted = false;
-          });
-          
-          // Stop background tracking service
-          BackgroundLocationService.stop();
-          
-          ToastUtils.showSuccessToast(context, 'Shift status synchronized');
-          widget.onShiftEnded?.call();
-        } else {
-          ToastUtils.showErrorToast(context, errorMessage);
-        }
-      }
-    }
-  }
 
   Future<void> _performLogout() async {
     final token = _authService.token;
@@ -458,108 +411,79 @@ class _AccountWidgetState extends State<AccountWidget> {
               padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
                 child: Column(
                   children: [
-                    // End Shift button (Always show for debugging)
-                    if (widget.isShiftStarted || _isShiftStarted) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        height: ResponsiveUtils.h(context, 56),
-                        child: ElevatedButton.icon(
-                          onPressed: _isEndingShift ? null : _handleCheckOut,
-                          icon: _isEndingShift
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: AppColors.white),
-                                )
-                              : const Icon(Icons.stop_circle_outlined, color: AppColors.white),
-                          label: Text(
-                            'End Shift',
-                            style: AppTextStyles.button(context).copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange.shade700,
-                            foregroundColor: AppColors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  ResponsiveUtils.r(context, 12)),
-                            ),
-                          ),
-                        ),
-                      ),
-                      ResponsiveUtils.verticalSpace(context, 16),
-                    ],
-
                     SizedBox(
                       width: double.infinity,
                       height: ResponsiveUtils.h(context, 56),
                       child: OutlinedButton(
-                  onPressed: _isLoggingOut
-                      ? null
-                      : () {
-                          // Prevent logout if shift is active
-                          if (widget.isShiftStarted || _isShiftStarted) {
-                            ToastUtils.showErrorToast(context, 'Please end your shift before logging out');
-                            return;
-                          }
-                          
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Log Out?'),
-                              content: const Text(
-                                  'Are you sure you want to log out?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    _performLogout();
-                                  },
-                                  child: const Text('Log Out', style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red, width: 1.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                    ),
-                  ),
-                  child: _isLoggingOut
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.red,
-                            strokeWidth: 2,
+                        onPressed: _isLoggingOut
+                            ? null
+                            : () {
+                                // Prevent logout if shift is active
+                                if (widget.isShiftStarted || _isShiftStarted) {
+                                  ToastUtils.showErrorToast(
+                                      context, 'Please end your shift before logging out');
+                                  return;
+                                }
+
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Log Out?'),
+                                    content: const Text(
+                                        'Are you sure you want to log out?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('Cancel'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          _performLogout();
+                                        },
+                                        child: const Text('Log Out',
+                                            style: TextStyle(color: Colors.red)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.red, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(ResponsiveUtils.r(context, 12)),
                           ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.logout, color: Colors.red, size: ResponsiveUtils.r(context, 24)),
-                            ResponsiveUtils.horizontalSpace(context, 8),
-                            Text(
-                              'Log Out',
-                              style: AppTextStyles.button(context).copyWith(
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
                         ),
+                        child: _isLoggingOut
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.red,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.logout,
+                                      color: Colors.red,
+                                      size: ResponsiveUtils.r(context, 24)),
+                                  ResponsiveUtils.horizontalSpace(context, 8),
+                                  Text(
+                                    'Log Out',
+                                    style: AppTextStyles.button(context).copyWith(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              ],
-            ),
-            ),
 
             ResponsiveUtils.verticalSpace(context, 16),
             Text(

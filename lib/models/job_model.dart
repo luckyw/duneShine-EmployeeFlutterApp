@@ -40,6 +40,22 @@ class TimeSlot {
     } catch (_) {}
     return startTime;
   }
+
+  /// Format end time as "HH:MM AM/PM"
+  String get formattedEndTime {
+    try {
+      final parts = endTime.split(':');
+      if (parts.length >= 2) {
+        int hour = int.parse(parts[0]);
+        final minute = parts[1];
+        final period = hour >= 12 ? 'PM' : 'AM';
+        if (hour > 12) hour -= 12;
+        if (hour == 0) hour = 12;
+        return '${hour.toString().padLeft(2, '0')}:$minute $period';
+      }
+    } catch (_) {}
+    return endTime;
+  }
 }
 
 class Customer {
@@ -354,6 +370,7 @@ class Job {
   final List<String> photosAfterUrls;
   final Booking? booking;
   final TimeSlot? timeSlot;
+  final String? startTime;
   final String createdAt;
   final String updatedAt;
 
@@ -379,6 +396,7 @@ class Job {
     required this.photosAfterUrls,
     this.booking,
     this.timeSlot,
+    this.startTime,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -426,6 +444,7 @@ class Job {
       timeSlot: json['time_slot'] != null
           ? TimeSlot.fromJson(json['time_slot'] as Map<String, dynamic>)
           : null,
+      startTime: json['start_time']?.toString(),
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
     );
@@ -456,6 +475,27 @@ class Job {
     }
   }
 
+  /// Format start time as "HH:MM AM/PM"
+  String get formattedStartTime {
+    if (startTime == null || startTime!.isEmpty) {
+      if (timeSlot != null) return timeSlot!.formattedStartTime;
+      return '';
+    }
+    
+    try {
+      final parts = startTime!.split(':');
+      if (parts.length >= 2) {
+        int hour = int.parse(parts[0]);
+        final minute = parts[1];
+        final period = hour >= 12 ? 'PM' : 'AM';
+        if (hour > 12) hour -= 12;
+        if (hour == 0) hour = 12;
+        return '${hour.toString().padLeft(2, '0')}:$minute $period';
+      }
+    } catch (_) {}
+    return startTime!;
+  }
+
   /// Create a copy of this Job with optionally replaced fields
   Job copyWith({
     int? id,
@@ -479,6 +519,7 @@ class Job {
     List<String>? photosAfterUrls,
     Booking? booking,
     TimeSlot? timeSlot,
+    String? startTime,
     String? createdAt,
     String? updatedAt,
   }) {
@@ -504,6 +545,7 @@ class Job {
       photosAfterUrls: photosAfterUrls ?? this.photosAfterUrls,
       booking: booking ?? this.booking,
       timeSlot: timeSlot ?? this.timeSlot,
+      startTime: startTime ?? this.startTime,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -515,6 +557,7 @@ class Job {
     return other.copyWith(
       booking: other.booking ?? booking,
       timeSlot: other.timeSlot ?? timeSlot,
+      startTime: other.startTime ?? startTime,
     );
   }
 }

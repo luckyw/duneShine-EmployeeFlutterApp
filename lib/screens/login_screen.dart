@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pinput/pinput.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../utils/responsive_utils.dart';
@@ -23,24 +24,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final ApiService _apiService = ApiService();
   final AuthService _authService = AuthService();
 
-  // 6 OTP digit controllers and focus nodes
-  final List<TextEditingController> _otpControllers = List.generate(
-    6,
-    (index) => TextEditingController(),
-  );
-  final List<FocusNode> _otpFocusNodes = List.generate(
-    6,
-    (index) => FocusNode(),
-  );
+  final TextEditingController _otpController = TextEditingController();
+  final FocusNode _otpFocusNode = FocusNode();
 
 
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
       // Check OTP is complete
-      if (!_isOtpComplete()) {
+      if (_otpController.text.length < 6) {
         ToastUtils.showErrorToast(context, 'Please enter all 6 OTP digits');
-
         return;
       }
 
@@ -50,8 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Construct full phone number with country code
       final phoneNumber = '+971${_phoneController.text}';
-      // Combine all 6 OTP digits
-      final otp = _otpControllers.map((c) => c.text).join();
+      final otp = _otpController.text;
 
       // Call login API
       final result = await _apiService.login(
@@ -95,81 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _phoneController.dispose();
-    for (var controller in _otpControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in _otpFocusNodes) {
-      focusNode.dispose();
-    }
+    _otpController.dispose();
+    _otpFocusNode.dispose();
     super.dispose();
   }
 
-  /// Build a single OTP digit box
-  Widget _buildOtpBox(int index) {
-    return Container(
-      width: ResponsiveUtils.w(context, 46),
-      height: ResponsiveUtils.h(context, 56),
-      decoration: BoxDecoration(
-        color: AppColors.primaryTeal.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-        border: Border.all(
-          color: _otpFocusNodes[index].hasFocus
-              ? AppColors.primaryTeal
-              : AppColors.primaryTeal.withValues(alpha: 0.3),
-          width: _otpFocusNodes[index].hasFocus ? 2 : 1,
-        ),
-      ),
-      child: KeyboardListener(
-        focusNode: FocusNode(),
-        onKeyEvent: (event) {
-          // Handle backspace key press
-          if (event is KeyDownEvent && 
-              event.logicalKey == LogicalKeyboardKey.backspace) {
-            if (_otpControllers[index].text.isEmpty && index > 0) {
-              // If current box is empty and backspace pressed, go to previous box
-              _otpControllers[index - 1].clear();
-              _otpFocusNodes[index - 1].requestFocus();
-              setState(() {});
-            }
-          }
-        },
-        child: TextField(
-          controller: _otpControllers[index],
-          focusNode: _otpFocusNodes[index],
-          keyboardType: TextInputType.number,
-          textAlign: TextAlign.center,
-          maxLength: 1,
-          style: AppTextStyles.title(context).copyWith(
-            color: AppColors.primaryTeal,
-            fontSize: ResponsiveUtils.sp(context, 20),
-          ),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-          ],
-          decoration: const InputDecoration(
-            counterText: '',
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-          ),
-          onChanged: (value) {
-            if (value.isNotEmpty && index < 5) {
-              // Move to next box when digit entered
-              _otpFocusNodes[index + 1].requestFocus();
-            } else if (value.isEmpty && index > 0) {
-              // Move to previous box when deleted
-              _otpFocusNodes[index - 1].requestFocus();
-            }
-            setState(() {}); // Rebuild to update border color
-          },
-        ),
-      ),
-    );
-  }
-
-  /// Check if all OTP boxes are filled
-  bool _isOtpComplete() {
-    return _otpControllers.every((c) => c.text.isNotEmpty);
-  }
+  // Removed manual _buildOtpBox and _isOtpComplete since we use Pinput now
 
   @override
   Widget build(BuildContext context) {
@@ -338,22 +261,67 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   ResponsiveUtils.verticalSpace(context, 12),
-                  // 6 OTP boxes
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(
-                      6,
-                      (index) => _buildOtpBox(index),
+                  // Pinput OTP component
+                  Center(
+                    child: Pinput(
+                      length: 6,
+                      controller: _otpController,
+                      focusNode: _otpFocusNode,
+                      defaultPinTheme: PinTheme(
+                        width: ResponsiveUtils.w(context, 46),
+                        height: ResponsiveUtils.h(context, 56),
+                        textStyle: AppTextStyles.title(context).copyWith(
+                          color: AppColors.primaryTeal,
+                          fontSize: ResponsiveUtils.sp(context, 20),
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                          border: Border.all(
+                            color: AppColors.primaryTeal.withValues(alpha: 0.3),
+                          ),
+                        ),
+                      ),
+                      focusedPinTheme: PinTheme(
+                        width: ResponsiveUtils.w(context, 46),
+                        height: ResponsiveUtils.h(context, 56),
+                        textStyle: AppTextStyles.title(context).copyWith(
+                          color: AppColors.primaryTeal,
+                          fontSize: ResponsiveUtils.sp(context, 20),
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryTeal.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                          border: Border.all(
+                            color: AppColors.primaryTeal,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      errorPinTheme: PinTheme(
+                        width: ResponsiveUtils.w(context, 46),
+                        height: ResponsiveUtils.h(context, 56),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                          border: Border.all(color: Colors.red),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setState(() {});
+                      },
                     ),
                   ),
                   // Error message for OTP validation
-                  if (!_isOtpComplete() && _otpControllers.any((c) => c.text.isNotEmpty))
+                  if (_otpController.text.isNotEmpty && _otpController.text.length < 6)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        'Please enter all 6 digits',
-                        style: AppTextStyles.caption(context).copyWith(
-                          color: Colors.red.shade300,
+                      child: Center(
+                        child: Text(
+                          'Please enter all 6 digits',
+                          style: AppTextStyles.caption(context).copyWith(
+                            color: Colors.red.shade300,
+                          ),
                         ),
                       ),
                     ),
