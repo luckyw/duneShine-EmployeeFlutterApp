@@ -55,6 +55,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   // Profile state
   EmployeeProfileModel? _profile;
 
+  // Notification state
+  bool _hasViewedNotifications = false;
+
   @override
   void initState() {
     super.initState();
@@ -277,6 +280,13 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   ];
 
   void _showNotificationSheet(BuildContext context) {
+    // Mark notifications as viewed when opening the sheet
+    if (!_hasViewedNotifications) {
+      setState(() {
+        _hasViewedNotifications = true;
+      });
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.white,
@@ -326,16 +336,17 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
   }
 
   Widget _buildNotificationItem(NotificationModel notification) {
+    // If user has viewed notifications, treat all as read
+    final bool isRead = _hasViewedNotifications || notification.isRead;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: notification.isRead
-            ? AppColors.veryLightGray
-            : AppColors.creamBg,
+        color: isRead ? AppColors.veryLightGray : AppColors.creamBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: notification.isRead ? AppColors.lightGray : AppColors.gold,
+          color: isRead ? AppColors.lightGray : AppColors.gold,
           width: 1,
         ),
       ),
@@ -346,16 +357,14 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: notification.isRead
+              color: isRead
                   ? AppColors.lightGray.withOpacity(0.2)
                   : AppColors.gold.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              notification.isRead
-                  ? Icons.notifications_none
-                  : Icons.notifications_active,
-              color: notification.isRead ? AppColors.textGray : AppColors.gold,
+              isRead ? Icons.notifications_none : Icons.notifications_active,
+              color: isRead ? AppColors.textGray : AppColors.gold,
               size: 20,
             ),
           ),
@@ -369,9 +378,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
                   notification.title,
                   style: AppTextStyles.title(context).copyWith(
                     fontSize: 14,
-                    fontWeight: notification.isRead
-                        ? FontWeight.normal
-                        : FontWeight.bold,
+                    fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
                     color: AppColors.darkNavy,
                   ),
                 ),
@@ -1581,7 +1588,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
       items: [
         BottomNavigationBarItem(
           icon: Icon(
-            Icons.home,
+            _currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
             color: _currentIndex == 0
                 ? AppColors.primaryTeal
                 : AppColors.lightGray,
@@ -1590,7 +1597,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            Icons.calendar_today,
+            _currentIndex == 1
+                ? Icons.calendar_month_rounded
+                : Icons.calendar_today_outlined,
             color: _currentIndex == 1
                 ? AppColors.primaryTeal
                 : AppColors.lightGray,
@@ -1599,7 +1608,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         ),
         BottomNavigationBarItem(
           icon: Icon(
-            Icons.person,
+            _currentIndex == 2 ? Icons.person_rounded : Icons.person_outline,
             color: _currentIndex == 2
                 ? AppColors.primaryTeal
                 : AppColors.lightGray,

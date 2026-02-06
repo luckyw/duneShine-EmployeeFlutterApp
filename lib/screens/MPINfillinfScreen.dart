@@ -9,7 +9,6 @@ import '../utils/toast_utils.dart';
 import '../utils/responsive_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
 class JobVerificationScreen extends StatefulWidget {
   const JobVerificationScreen({Key? key}) : super(key: key);
 
@@ -18,8 +17,10 @@ class JobVerificationScreen extends StatefulWidget {
 }
 
 class _JobVerificationScreenState extends State<JobVerificationScreen> {
-  final List<TextEditingController> _pinControllers =
-      List.generate(4, (index) => TextEditingController());
+  final List<TextEditingController> _pinControllers = List.generate(
+    4,
+    (index) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
   bool _isVerifying = false;
   Job? _job;
@@ -28,10 +29,12 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_job == null) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+          {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
-        
+
         // If the job is "lean" (missing booking info), fetch full details
         if (_job!.booking == null) {
           _fetchFullJobDetails();
@@ -63,10 +66,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
   Future<void> _callCustomer() async {
     final phone = _job?.booking?.customer?.phone;
     if (phone != null && phone.isNotEmpty) {
-      final Uri launchUri = Uri(
-        scheme: 'tel',
-        path: phone,
-      );
+      final Uri launchUri = Uri(scheme: 'tel', path: phone);
       try {
         if (await canLaunchUrl(launchUri)) {
           await launchUrl(launchUri);
@@ -97,7 +97,9 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
   }
 
   bool _isPinComplete() {
-    bool complete = _pinControllers.every((controller) => controller.text.isNotEmpty);
+    bool complete = _pinControllers.every(
+      (controller) => controller.text.isNotEmpty,
+    );
     return complete;
   }
 
@@ -112,22 +114,23 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
       return;
     }
 
-    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
-    
+    final routeArgs =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+        {};
+
     if (_job == null) {
       // Fallback: navigate without API call
       debugPrint('No job object, navigating directly');
-      Navigator.pushNamed(
-        context,
-        '/job-arrival-photo',
-        arguments: routeArgs,
-      );
+      Navigator.pushNamed(context, '/job-arrival-photo', arguments: routeArgs);
       return;
     }
 
     final token = AuthService().token;
     if (token == null) {
-      ToastUtils.showErrorToast(context, 'Not authenticated. Please login again.');
+      ToastUtils.showErrorToast(
+        context,
+        'Not authenticated. Please login again.',
+      );
 
       return;
     }
@@ -153,16 +156,15 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
         Navigator.pushNamed(
           context,
           '/job-arrival-photo',
-          arguments: {
-            ...routeArgs,
-            'job': _job,
-          },
+          arguments: {...routeArgs, 'job': _job},
         );
       }
     } else {
       if (mounted) {
-        ToastUtils.showErrorToast(context, response['message'] ?? 'OTP verification failed');
-
+        ToastUtils.showErrorToast(
+          context,
+          response['message'] ?? 'OTP verification failed',
+        );
       }
     }
   }
@@ -256,7 +258,9 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(width: ResponsiveUtils.w(context, 44)), // Balance back button
+                        SizedBox(
+                          width: ResponsiveUtils.w(context, 44),
+                        ), // Balance back button
                       ],
                     ),
                   ),
@@ -274,7 +278,9 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 28)),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 28),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.08),
@@ -288,7 +294,9 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                       children: [
                         // Lock Icon
                         Container(
-                          padding: EdgeInsets.all(ResponsiveUtils.r(context, 18)),
+                          padding: EdgeInsets.all(
+                            ResponsiveUtils.r(context, 18),
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryTeal.withOpacity(0.1),
                             shape: BoxShape.circle,
@@ -320,26 +328,8 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                         // Action Buttons
                         _buildVerifyButton(),
 
-                        ResponsiveUtils.verticalSpace(context, 20),
-
-                        // Resend Option
-                        GestureDetector(
-                          onTap: () {
-                            // TODO: Implement actual resend API logic if available
-                            ToastUtils.showSuccessToast(context, 'PIN resent to customer');
-                          },
-                          child: Text(
-                            'Resend PIN',
-                            style: AppTextStyles.body(context).copyWith(
-                              color: Color(0xFF64748B),
-                              fontWeight: FontWeight.w600,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-
                         // Call Customer Section
-                        if (_job?.booking?.customer?.phone != null && 
+                        if (_job?.booking?.customer?.phone != null &&
                             _job!.booking!.customer!.phone.isNotEmpty) ...[
                           ResponsiveUtils.verticalSpace(context, 24),
                           _buildDivider(),
@@ -373,10 +363,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.2),
           borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.3),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
         ),
         child: Icon(
           Icons.arrow_back_ios_new_rounded,
@@ -431,15 +418,21 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                     ? AppColors.primaryTeal.withOpacity(0.08)
                     : Color(0xFFF1F5F9), // Slate 100
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 16),
+                  ),
                   borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 16),
+                  ),
                   borderSide: BorderSide(color: Colors.transparent),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.r(context, 16),
+                  ),
                   borderSide: BorderSide(
                     color: AppColors.primaryTeal,
                     width: 2,
@@ -460,7 +453,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
 
   Widget _buildVerifyButton() {
     bool isEnabled = _isPinComplete() && !_isVerifying;
-    
+
     return Container(
       width: double.infinity,
       height: ResponsiveUtils.h(context, 54),
@@ -472,7 +465,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                   color: AppColors.primaryTeal.withOpacity(0.4),
                   blurRadius: 15,
                   offset: Offset(0, 8),
-                )
+                ),
               ]
             : [],
       ),
@@ -511,14 +504,11 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
   Widget _buildDivider() {
     return Row(
       children: [
-        Expanded(
-          child: Container(
-            height: 1,
-            color: Color(0xFFE2E8F0),
-          ),
-        ),
+        Expanded(child: Container(height: 1, color: Color(0xFFE2E8F0))),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 12)),
+          padding: EdgeInsets.symmetric(
+            horizontal: ResponsiveUtils.w(context, 12),
+          ),
           child: Text(
             'OR',
             style: AppTextStyles.body(context).copyWith(
@@ -528,12 +518,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
             ),
           ),
         ),
-        Expanded(
-          child: Container(
-            height: 1,
-            color: Color(0xFFE2E8F0),
-          ),
-        ),
+        Expanded(child: Container(height: 1, color: Color(0xFFE2E8F0))),
       ],
     );
   }
@@ -558,7 +543,10 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
           ),
         ),
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AppColors.primaryTeal.withOpacity(0.3), width: 1.5),
+          side: BorderSide(
+            color: AppColors.primaryTeal.withOpacity(0.3),
+            width: 1.5,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 16)),
           ),

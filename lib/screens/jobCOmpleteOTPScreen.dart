@@ -8,18 +8,18 @@ import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
 import '../utils/responsive_utils.dart';
 
-
 class JobCompletionOtpScreen extends StatefulWidget {
   const JobCompletionOtpScreen({Key? key}) : super(key: key);
 
   @override
-  State<JobCompletionOtpScreen> createState() =>
-      _JobCompletionOtpScreenState();
+  State<JobCompletionOtpScreen> createState() => _JobCompletionOtpScreenState();
 }
 
 class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
-  final List<TextEditingController> _otpControllers =
-      List.generate(4, (index) => TextEditingController());
+  final List<TextEditingController> _otpControllers = List.generate(
+    4,
+    (index) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (index) => FocusNode());
   bool _isVerifying = false;
   Job? _job;
@@ -38,7 +38,9 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_job == null) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+          {};
       if (args['job'] != null && args['job'] is Job) {
         _job = args['job'] as Job;
       }
@@ -77,14 +79,17 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
       return;
     }
 
-    final routeArgs = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {};
-    
+    final routeArgs =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
+        {};
+
     // Get job ID
     int? jobId;
     if (_job != null) {
       jobId = _job!.id;
     } else {
-      final jobIdStr = routeArgs['jobId']?.toString().replaceAll('JOB-', '') ?? '';
+      final jobIdStr =
+          routeArgs['jobId']?.toString().replaceAll('JOB-', '') ?? '';
       jobId = int.tryParse(jobIdStr);
     }
 
@@ -105,7 +110,10 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
 
     final token = AuthService().token;
     if (token == null) {
-      ToastUtils.showErrorToast(context, 'Not authenticated. Please login again.');
+      ToastUtils.showErrorToast(
+        context,
+        'Not authenticated. Please login again.',
+      );
 
       return;
     }
@@ -133,9 +141,9 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
         if (jobJson != null) {
           final newJob = Job.fromJson(jobJson);
           if (_job != null) {
-             nextJob = _job!.mergeWith(newJob);
+            nextJob = _job!.mergeWith(newJob);
           } else {
-             nextJob = newJob;
+            nextJob = newJob;
           }
         }
 
@@ -143,7 +151,8 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
           context,
           '/job-completed',
           arguments: {
-            'employeeName': routeArgs['employeeName'] ?? AuthService().employeeName,
+            'employeeName':
+                routeArgs['employeeName'] ?? AuthService().employeeName,
             'earnedAmount': (routeArgs['earnedAmount'] ?? 120.0).toDouble(),
             'jobId': routeArgs['jobId'] ?? 'JOB-$jobId',
             'job': nextJob,
@@ -154,8 +163,10 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
     } else {
       // Show error snackbar
       if (mounted) {
-        ToastUtils.showErrorToast(context, response['message'] ?? 'Failed to complete job');
-
+        ToastUtils.showErrorToast(
+          context,
+          response['message'] ?? 'Failed to complete job',
+        );
       }
     }
   }
@@ -219,7 +230,9 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                             height: ResponsiveUtils.w(context, 40),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                              borderRadius: BorderRadius.circular(
+                                ResponsiveUtils.r(context, 12),
+                              ),
                             ),
                             child: Icon(
                               Icons.arrow_back_ios_new_rounded,
@@ -247,14 +260,18 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
 
                   // Content Card
                   Container(
-                    margin: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 24)),
+                    margin: EdgeInsets.symmetric(
+                      horizontal: ResponsiveUtils.w(context, 24),
+                    ),
                     padding: EdgeInsets.symmetric(
                       horizontal: ResponsiveUtils.w(context, 24),
                       vertical: ResponsiveUtils.h(context, 32),
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 24)),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.r(context, 24),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -267,7 +284,9 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                       children: [
                         // Icon
                         Container(
-                          padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
+                          padding: EdgeInsets.all(
+                            ResponsiveUtils.w(context, 16),
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryTeal.withOpacity(0.1),
                             shape: BoxShape.circle,
@@ -303,8 +322,10 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                                 focusNode: FocusNode(),
                                 onKeyEvent: (event) {
                                   if (event is KeyDownEvent &&
-                                      event.logicalKey == LogicalKeyboardKey.backspace) {
-                                    if (index > 0 && _otpControllers[index].text.isEmpty) {
+                                      event.logicalKey ==
+                                          LogicalKeyboardKey.backspace) {
+                                    if (index > 0 &&
+                                        _otpControllers[index].text.isEmpty) {
                                       _otpControllers[index - 1].clear();
                                       _focusNodes[index - 1].requestFocus();
                                     }
@@ -316,20 +337,28 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                                   textAlign: TextAlign.center,
                                   keyboardType: TextInputType.number,
                                   maxLength: 1,
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                  onChanged: (value) => _onOtpInput(index, value),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  onChanged: (value) =>
+                                      _onOtpInput(index, value),
                                   decoration: InputDecoration(
                                     counterText: '',
                                     filled: true,
-                                    fillColor: _otpControllers[index].text.isNotEmpty
+                                    fillColor:
+                                        _otpControllers[index].text.isNotEmpty
                                         ? AppColors.primaryTeal.withOpacity(0.1)
                                         : AppColors.veryLightGray,
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                      borderRadius: BorderRadius.circular(
+                                        ResponsiveUtils.r(context, 12),
+                                      ),
                                       borderSide: BorderSide.none,
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                                      borderRadius: BorderRadius.circular(
+                                        ResponsiveUtils.r(context, 12),
+                                      ),
                                       borderSide: BorderSide(
                                         color: AppColors.primaryTeal,
                                         width: 1.5,
@@ -361,10 +390,15 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                               backgroundColor: AppColors.primaryTeal,
                               foregroundColor: Colors.white,
                               elevation: 5,
-                              shadowColor: AppColors.primaryTeal.withOpacity(0.4),
-                              disabledBackgroundColor: AppColors.textGray.withOpacity(0.2),
+                              shadowColor: AppColors.primaryTeal.withOpacity(
+                                0.4,
+                              ),
+                              disabledBackgroundColor: AppColors.textGray
+                                  .withOpacity(0.2),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 14)),
+                                borderRadius: BorderRadius.circular(
+                                  ResponsiveUtils.r(context, 14),
+                                ),
                               ),
                             ),
                             child: _isVerifying
@@ -378,27 +412,14 @@ class _JobCompletionOtpScreenState extends State<JobCompletionOtpScreen> {
                                   )
                                 : Text(
                                     'Verify & Complete',
-                                    style: AppTextStyles.button(context).copyWith(
-                                      fontSize: ResponsiveUtils.sp(context, 16),
-                                    ),
+                                    style: AppTextStyles.button(context)
+                                        .copyWith(
+                                          fontSize: ResponsiveUtils.sp(
+                                            context,
+                                            16,
+                                          ),
+                                        ),
                                   ),
-                          ),
-                        ),
-
-                        ResponsiveUtils.verticalSpace(context, 20),
-
-                        // Resend
-                        GestureDetector(
-                          onTap: () {
-                            ToastUtils.showSuccessToast(context, 'OTP resent');
-                          },
-                          child: Text(
-                            'Resend OTP',
-                            style: AppTextStyles.body(context).copyWith(
-                              color: AppColors.textGray,
-                              fontSize: ResponsiveUtils.sp(context, 14),
-                              decoration: TextDecoration.underline,
-                            ),
                           ),
                         ),
                       ],
