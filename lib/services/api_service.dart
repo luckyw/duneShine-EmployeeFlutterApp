@@ -630,6 +630,78 @@ class ApiService {
     }
   }
 
+  /// Update employee profile
+  /// Allows updating name, email (backend only), and profile photo
+  /// Uses multipart form data for photo upload
+  Future<Map<String, dynamic>> updateProfile({
+    required String token,
+    required String name,
+    required String phone,
+    String? email,
+    String? profilePhotoPath,
+  }) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(ApiConstants.profileUrl),
+      );
+
+      request.headers.addAll({
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+
+      // Add form fields
+      request.fields['name'] = name;
+      request.fields['phone'] = phone;
+      if (email != null && email.isNotEmpty) {
+        request.fields['email'] = email;
+      }
+
+      // Add profile photo if provided
+      if (profilePhotoPath != null && profilePhotoPath.isNotEmpty) {
+        final file = File(profilePhotoPath);
+        final fileSize = await file.length();
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        if (fileSize > maxSize) {
+          return {
+            'success': false,
+            'message':
+                'Photo is too large (${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB). Maximum size is 10MB.',
+          };
+        }
+
+        request.files.add(
+          await http.MultipartFile.fromPath('profile_photo', profilePhotoPath),
+        );
+      }
+
+      // Send with 30 second timeout
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
+      final response = await http.Response.fromStream(
+        streamedResponse,
+      ).timeout(const Duration(seconds: 10));
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': responseData};
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to update profile',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      debugPrint('Update profile error: $e');
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
   /// MOCKED: Get customer details by phone number
   Future<Map<String, dynamic>> getCustomerDetails({
     required String phoneNumber,

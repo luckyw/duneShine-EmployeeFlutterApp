@@ -13,6 +13,7 @@ import 'equipment_support_screen.dart';
 import 'settings_screen.dart';
 import 'help_support_screen.dart';
 import 'customer_lookup_screen.dart';
+import 'edit_profile_screen.dart';
 
 import '../utils/toast_utils.dart';
 import '../services/background_location_service.dart';
@@ -238,9 +239,9 @@ class _AccountWidgetState extends State<AccountWidget> {
                                   color: AppColors.white,
                                 ),
                                 child: ClipOval(
-                                  child: _profile?.idProofImageUrl != null
+                                  child: _profile?.profilePhotoUrl != null
                                       ? Image.network(
-                                          _profile!.idProofImageUrl!,
+                                          _profile!.profilePhotoUrl!,
                                           fit: BoxFit.cover,
                                           errorBuilder: (context, error, stackTrace) =>
                                               Icon(Icons.person,
@@ -326,6 +327,22 @@ class _AccountWidgetState extends State<AccountWidget> {
               padding: EdgeInsets.symmetric(horizontal: ResponsiveUtils.w(context, 16)),
               child: Column(
                 children: [
+                  _buildMenuItem(
+                    icon: Icons.edit,
+                    title: 'Edit Profile',
+                    onTap: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const EditProfileScreen(),
+                        ),
+                      );
+                      // Refresh profile if it was updated
+                      if (result == true) {
+                        _fetchProfile();
+                      }
+                    },
+                  ),
                   _buildMenuItem(
                     icon: Icons.history,
                     title: 'Job History',

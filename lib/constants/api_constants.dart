@@ -11,7 +11,9 @@ class ApiConstants {
 
   /// Default base URL — change this single line to switch between prod and AE.
   /// CI can override via: flutter build apk --dart-define=BASE_URL=https://...
-  static const String _defaultBaseUrl = _baseUrlDev;
+  // static const String _defaultBaseUrl = _baseUrlDev;
+  static const String _defaultBaseUrl = _baseUrlProd; // Switch to production
+
   static String get baseUrl =>
       String.fromEnvironment('BASE_URL', defaultValue: _defaultBaseUrl);
 

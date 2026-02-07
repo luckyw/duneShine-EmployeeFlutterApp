@@ -117,6 +117,7 @@ class EmployeeProfileModel {
   final String? rate;
   final int? vendorId;
   final VendorModel? vendor;
+  final String? profilePhoto;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -138,6 +139,7 @@ class EmployeeProfileModel {
     this.rate,
     this.vendorId,
     this.vendor,
+    this.profilePhoto,
     this.createdAt,
     this.updatedAt,
   });
@@ -163,6 +165,7 @@ class EmployeeProfileModel {
       vendor: json['vendor'] != null
           ? VendorModel.fromJson(json['vendor'] as Map<String, dynamic>)
           : null,
+      profilePhoto: json['profile_photo'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
@@ -191,6 +194,7 @@ class EmployeeProfileModel {
       'rate': rate,
       'vendor_id': vendorId,
       'vendor': vendor?.toJson(),
+      'profile_photo': profilePhoto,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -200,6 +204,16 @@ class EmployeeProfileModel {
   String? get idProofImageUrl {
     if (idProofImage != null && idProofImage!.isNotEmpty) {
       return ApiConstants.storageUrl(idProofImage!);
+    }
+    return null;
+  }
+
+  /// Get full profile photo URL
+  /// This is the main photo field returned as a full URL from the API
+  String? get profilePhotoUrl {
+    // profile_photo comes as a full URL from the API
+    if (profilePhoto != null && profilePhoto!.isNotEmpty) {
+      return profilePhoto;
     }
     return null;
   }

@@ -126,15 +126,14 @@ class BackgroundLocationService {
       }
     });
 
-    // Start tracking loop
-    // Update every 5 minutes for general tracking to save battery
-    Timer.periodic(const Duration(minutes: 5), (timer) async {
+    // Helper function to update location
+    Future<void> updateLocation() async {
       if (employeeId == null) return;
 
       try {
         final position = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.medium, // Lower accuracy for general tracking
+            accuracy: LocationAccuracy.medium,
           ),
         );
 
@@ -179,6 +178,15 @@ class BackgroundLocationService {
       } catch (e) {
         debugPrint("Background tracking error: $e");
       }
+    }
+
+    // Run immediately on start - no wait for first interval
+    updateLocation();
+
+    // Then continue updating every 1 minute
+    Timer.periodic(const Duration(minutes: 1), (timer) async {
+      await updateLocation();
+
     });
   }
 }

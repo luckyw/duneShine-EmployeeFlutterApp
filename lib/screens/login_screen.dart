@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pinput/pinput.dart';
 import '../constants/colors.dart';
 import '../constants/text_styles.dart';
 import '../utils/responsive_utils.dart';
@@ -31,9 +30,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
-      // Check OTP is complete
-      if (_otpController.text.length < 6) {
-        ToastUtils.showErrorToast(context, 'Please enter all 6 OTP digits');
+      // Check OTP is not empty
+      if (_otpController.text.isEmpty) {
+        ToastUtils.showErrorToast(context, 'Please enter your Password');
         return;
       }
 
@@ -246,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: ResponsiveUtils.h(context, 24)),
                   // OTP Key label
                   Text(
-                    'Enter OTP Key',
+                    'Password',
                     style: AppTextStyles.body(context).copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.primaryTeal,
@@ -255,76 +254,73 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: ResponsiveUtils.h(context, 4)),
                   // Professional message about vendor OTP
                   Text(
-                    'Please enter the 6-digit OTP provided by your vendor',
+                    'Enter the Password provided by your vendor',
                     style: AppTextStyles.caption(context).copyWith(
                       color: AppColors.primaryTeal.withValues(alpha: 0.6),
                     ),
                   ),
                   ResponsiveUtils.verticalSpace(context, 12),
-                  // Pinput OTP component
-                  Center(
-                    child: Pinput(
-                      length: 6,
-                      controller: _otpController,
-                      focusNode: _otpFocusNode,
-                      defaultPinTheme: PinTheme(
-                        width: ResponsiveUtils.w(context, 46),
-                        height: ResponsiveUtils.h(context, 56),
-                        textStyle: AppTextStyles.title(context).copyWith(
-                          color: AppColors.primaryTeal,
-                          fontSize: ResponsiveUtils.sp(context, 20),
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryTeal.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                          border: Border.all(
-                            color: AppColors.primaryTeal.withValues(alpha: 0.3),
-                          ),
-                        ),
-                      ),
-                      focusedPinTheme: PinTheme(
-                        width: ResponsiveUtils.w(context, 46),
-                        height: ResponsiveUtils.h(context, 56),
-                        textStyle: AppTextStyles.title(context).copyWith(
-                          color: AppColors.primaryTeal,
-                          fontSize: ResponsiveUtils.sp(context, 20),
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryTeal.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                          border: Border.all(
-                            color: AppColors.primaryTeal,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      errorPinTheme: PinTheme(
-                        width: ResponsiveUtils.w(context, 46),
-                        height: ResponsiveUtils.h(context, 56),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
-                          border: Border.all(color: Colors.red),
-                        ),
-                      ),
-                      onChanged: (value) {
-                        setState(() {});
-                      },
+                  // OTP TextField (password style)
+                  TextFormField(
+                    controller: _otpController,
+                    focusNode: _otpFocusNode,
+                    obscureText: true,
+                    keyboardType: TextInputType.visiblePassword,
+                    style: TextStyle(
+                      color: AppColors.primaryTeal,
+                      fontSize: ResponsiveUtils.sp(context, 16),
+                      letterSpacing: 2,
                     ),
+                    decoration: InputDecoration(
+                      hintText: 'Enter your Password',
+                      hintStyle: TextStyle(
+                        color: AppColors.primaryTeal.withValues(alpha: 0.4),
+                        letterSpacing: 0,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.lock_outline_rounded,
+                        color: AppColors.primaryTeal.withValues(alpha: 0.6),
+                        size: ResponsiveUtils.r(context, 22),
+                      ),
+                      filled: true,
+                      fillColor: AppColors.primaryTeal.withValues(alpha: 0.05),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                        borderSide: BorderSide(
+                          color: AppColors.primaryTeal.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                        borderSide: BorderSide(
+                          color: AppColors.primaryTeal.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                        borderSide: const BorderSide(
+                          color: AppColors.primaryTeal,
+                          width: 2,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(ResponsiveUtils.r(context, 12)),
+                        borderSide: const BorderSide(
+                          color: Colors.red,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: ResponsiveUtils.w(context, 16),
+                        vertical: ResponsiveUtils.h(context, 16),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your Password';
+                      }
+                      return null;
+                    },
                   ),
-                  // Error message for OTP validation
-                  if (_otpController.text.isNotEmpty && _otpController.text.length < 6)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Center(
-                        child: Text(
-                          'Please enter all 6 digits',
-                          style: AppTextStyles.caption(context).copyWith(
-                            color: Colors.red.shade300,
-                          ),
-                        ),
-                      ),
-                    ),
                   ResponsiveUtils.verticalSpace(context, 40),
                   // Login button
                   SizedBox(
