@@ -81,8 +81,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     // Ensure tracking is active if shift is already started
     if (_isShiftStarted) {
       final employeeId = AuthService().employeeId;
+      final token = AuthService().token;
       if (employeeId != null) {
-        BackgroundLocationService.start(employeeId);
+        BackgroundLocationService.start(employeeId, token: token);
       }
     }
   }
@@ -209,7 +210,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
         // Start background tracking service
         final employeeId = AuthService().employeeId;
         if (employeeId != null) {
-          BackgroundLocationService.start(employeeId);
+          BackgroundLocationService.start(employeeId, token: token);
         }
 
         ToastUtils.showSuccessToast(context, 'Shift started! Good luck today!');

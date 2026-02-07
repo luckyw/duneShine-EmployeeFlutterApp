@@ -443,13 +443,14 @@ class _AvailabilityWidgetState extends State<AvailabilityWidget> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                             const Icon(Icons.check_circle_outline, size: 20),
+                             const Icon(Icons.check_circle_outline, size: 20,color: AppColors.white,),
                              const SizedBox(width: 8),
                              Text(
                               'Available',
                               style: TextStyle(
                                 fontSize: ResponsiveUtils.sp(context, 16),
                                 fontWeight: FontWeight.bold,
+                                color: AppColors.white,
                               ),
                             ),
                           ],

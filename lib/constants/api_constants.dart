@@ -28,6 +28,7 @@ class ApiConstants {
   static const String propertyDetailsEndpoint = '/api/properties'; // /{id}
   static const String checkInEndpoint = '/api/employee/attendance/check-in';
   static const String checkOutEndpoint = '/api/employee/attendance/check-out';
+  static const String updateLocationEndpoint = '/api/employee/update-location';
 
   /// Full URL helper methods
   static String get loginUrl => '$baseUrl$loginEndpoint';
@@ -45,4 +46,5 @@ class ApiConstants {
   static String completeJobUrl(int jobId) => '$baseUrl$jobDetailsEndpoint/$jobId/complete';
   static String get checkInUrl => '$baseUrl$checkInEndpoint';
   static String get checkOutUrl => '$baseUrl$checkOutEndpoint';
+  static String get updateLocationUrl => '$baseUrl$updateLocationEndpoint';
 }

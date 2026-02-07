@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
@@ -7,6 +8,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../constants/api_constants.dart';
 
 @pragma('vm:entry-point')
 class BackgroundLocationService {
@@ -52,13 +55,16 @@ class BackgroundLocationService {
     );
   }
 
-  /// Start the background service with employee ID
-  static void start(int employeeId) {
+  /// Start the background service with employee ID and auth token
+  static void start(int employeeId, {String? token}) {
     final service = FlutterBackgroundService();
     service.startService();
     // Wait a bit for service to start before sending data
     Future.delayed(const Duration(seconds: 1), () {
-      service.invoke('updateEmployeeId', {'employeeId': employeeId});
+      service.invoke('updateEmployeeData', {
+        'employeeId': employeeId,
+        'token': token,
+      });
     });
   }
 
@@ -106,10 +112,17 @@ class BackgroundLocationService {
     });
 
     String? employeeId;
-    service.on('updateEmployeeId').listen((event) {
-      if (event != null && event['employeeId'] != null) {
-        employeeId = event['employeeId'].toString();
-        debugPrint("Background Service: Received Employee ID $employeeId");
+    String? authToken;
+    service.on('updateEmployeeData').listen((event) {
+      if (event != null) {
+        if (event['employeeId'] != null) {
+          employeeId = event['employeeId'].toString();
+          debugPrint("Background Service: Received Employee ID $employeeId");
+        }
+        if (event['token'] != null) {
+          authToken = event['token'].toString();
+          debugPrint("Background Service: Received auth token");
+        }
       }
     });
 
@@ -134,6 +147,27 @@ class BackgroundLocationService {
           'updated_at': FieldValue.serverTimestamp(),
           'status': 'on_shift',
         }, SetOptions(merge: true));
+
+        // Also call the update-location API
+        if (authToken != null) {
+          try {
+            final response = await http.post(
+              Uri.parse(ApiConstants.updateLocationUrl),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer $authToken',
+              },
+              body: jsonEncode({
+                'latitude': position.latitude,
+                'longitude': position.longitude,
+              }),
+            );
+            debugPrint('Update location API response: ${response.statusCode}');
+          } catch (apiError) {
+            debugPrint('Update location API error: $apiError');
+          }
+        }
 
         // Update notification content on Android
         if (service is AndroidServiceInstance) {

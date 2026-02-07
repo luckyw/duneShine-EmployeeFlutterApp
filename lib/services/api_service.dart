@@ -592,6 +592,44 @@ class ApiService {
     }
   }
 
+  /// Update employee location during shift
+  /// Sends GPS coordinates to the backend every 300 seconds
+  Future<Map<String, dynamic>> updateLocation({
+    required double latitude,
+    required double longitude,
+    required String token,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiConstants.updateLocationUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'latitude': latitude,
+          'longitude': longitude,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': responseData};
+      } else {
+        return {
+          'success': false,
+          'message': responseData['message'] ?? 'Failed to update location',
+          'data': responseData,
+        };
+      }
+    } catch (e) {
+      debugPrint('Update location error: $e');
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
   /// MOCKED: Get customer details by phone number
   Future<Map<String, dynamic>> getCustomerDetails({
     required String phoneNumber,
