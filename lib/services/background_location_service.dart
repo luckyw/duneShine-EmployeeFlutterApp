@@ -183,8 +183,8 @@ class BackgroundLocationService {
     // Run immediately on start - no wait for first interval
     updateLocation();
 
-    // Then continue updating every 1 minute
-    Timer.periodic(const Duration(minutes: 1), (timer) async {
+    // Then continue updating every 30 seconds
+    Timer.periodic(const Duration(seconds: 30), (timer) async {
       await updateLocation();
 
     });

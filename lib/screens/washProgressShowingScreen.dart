@@ -8,6 +8,7 @@ import '../constants/text_styles.dart';
 import '../models/job_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WashProgressScreen extends StatefulWidget {
   const WashProgressScreen({Key? key}) : super(key: key);
@@ -17,15 +18,14 @@ class WashProgressScreen extends StatefulWidget {
 }
 
 class _WashProgressScreenState extends State<WashProgressScreen> {
-  late Timer _timer;
+  Timer? _timer;
   int _elapsedSeconds = 0; // Stopwatch starts from 0
-  bool _isRunning = true;
   Job? _job;
 
   @override
   void initState() {
     super.initState();
-    _startStopwatch();
+    // Timer initialization is now handled in _initializeTimer
   }
 
   @override
@@ -54,6 +54,35 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
         }
       }
     }
+    
+    // Initialize timer once checking arguments is done
+    // Only init if we haven't started timer yet and have some job info
+    if (_job != null && !_timerInitialized) {
+      _initializeTimer();
+    }
+  }
+
+  bool _timerInitialized = false;
+
+  Future<void> _initializeTimer() async {
+    if (_job == null) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'wash_start_time_${_job!.id}';
+    final savedTime = prefs.getInt(key);
+
+    int startTimeMillis;
+    if (savedTime != null) {
+      // Resume from saved time
+      startTimeMillis = savedTime;
+    } else {
+      // Start new timer
+      startTimeMillis = DateTime.now().millisecondsSinceEpoch;
+      await prefs.setInt(key, startTimeMillis);
+    }
+
+    _timerInitialized = true;
+    _startStopwatch(startTimeMillis);
   }
 
   Future<void> _fetchFullJobDetails() async {
@@ -108,6 +137,7 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
           setState(() {
             _job = Job.fromJson(jobJson);
           });
+          if (!_timerInitialized) _initializeTimer();
         }
       } else if (mounted) {
         // Show user-friendly error message
@@ -126,31 +156,29 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     }
   }
 
-  void _startStopwatch() {
+  /// Timer runs continuously and cannot be stopped until job completion
+  void _startStopwatch(int startTimeMillis) {
+    // Update immediately
+    _updateElapsed(startTimeMillis);
+    
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_isRunning) {
-        setState(() {
-          _elapsedSeconds++;
-        });
+      if (mounted) {
+        _updateElapsed(startTimeMillis);
       }
     });
   }
 
-  void _pauseStopwatch() {
+  void _updateElapsed(int startTimeMillis) {
     setState(() {
-      _isRunning = false;
-    });
-  }
-
-  void _resumeStopwatch() {
-    setState(() {
-      _isRunning = true;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      _elapsedSeconds = (now - startTimeMillis) ~/ 1000;
+      if (_elapsedSeconds < 0) _elapsedSeconds = 0;
     });
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -162,9 +190,21 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
     return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
   }
 
-  void _finishWash() {
-    // Stop the timer
-    _pauseStopwatch();
+  void _finishWash() async {
+    // Cancel the timer when finishing wash
+    _timer?.cancel();
+
+    // Clear saved start time
+    if (_job != null) {
+       try {
+         final prefs = await SharedPreferences.getInstance();
+         await prefs.remove('wash_start_time_${_job!.id}');
+       } catch (e) {
+         debugPrint('Error clearing timer: $e');
+       }
+    }
+
+    if (!mounted) return;
 
     // Navigate to photo proof screen with elapsed time
     final routeArgs =
@@ -295,59 +335,31 @@ class _WashProgressScreenState extends State<WashProgressScreen> {
                               vertical: ResponsiveUtils.h(context, 4),
                             ),
                             decoration: BoxDecoration(
-                              color: _isRunning
-                                  ? AppColors.success.withValues(alpha: 0.1)
-                                  : AppColors.gold.withValues(alpha: 0.1),
+                              color: AppColors.success.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Text(
-                              _isRunning ? 'WASHING' : 'PAUSED',
-                              style: AppTextStyles.caption(context).copyWith(
-                                color: _isRunning
-                                    ? AppColors.success
-                                    : AppColors.gold,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.2,
-                                fontSize: ResponsiveUtils.sp(context, 10),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  ResponsiveUtils.verticalSpace(context, 30),
-                  // Control Button
-                  GestureDetector(
-                    onTap: _isRunning ? _pauseStopwatch : _resumeStopwatch,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: ResponsiveUtils.w(context, 24),
-                        vertical: ResponsiveUtils.h(context, 12),
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: AppColors.white.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _isRunning
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                            color: AppColors.white,
-                            size: ResponsiveUtils.r(context, 24),
-                          ),
-                          ResponsiveUtils.horizontalSpace(context, 8),
-                          Text(
-                            _isRunning ? 'Pause Timer' : 'Resume Timer',
-                            style: AppTextStyles.subtitle(context).copyWith(
-                              color: AppColors.white,
-                              fontSize: ResponsiveUtils.sp(context, 16),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: ResponsiveUtils.r(context, 8),
+                                  height: ResponsiveUtils.r(context, 8),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.success,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                ResponsiveUtils.horizontalSpace(context, 6),
+                                Text(
+                                  'WASHING',
+                                  style: AppTextStyles.caption(context).copyWith(
+                                    color: AppColors.success,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                    fontSize: ResponsiveUtils.sp(context, 10),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

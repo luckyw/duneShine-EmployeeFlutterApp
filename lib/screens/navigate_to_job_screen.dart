@@ -268,10 +268,10 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
 
   /// Update map markers
   Future<void> _updateMarkers() async {
-    // Employee marker (Custom Car Icon)
+    // Employee marker (Home Icon - Current Location)
     if (_currentPosition != null) {
       final BitmapDescriptor employeeIcon = await _createMarkerImageFromIcon(
-        Icons.directions_car,
+        Icons.home_rounded,
         AppColors.primaryTeal,
       );
 
@@ -293,7 +293,7 @@ class _NavigateToJobScreenState extends State<NavigateToJobScreen> {
       });
     }
 
-    // Customer/Property marker
+    // Customer/Property marker (Red Location Pin - Destination)
     if (_customerLocation != null) {
       final BitmapDescriptor customerIcon = await _createMarkerImageFromIcon(
         Icons.location_on,

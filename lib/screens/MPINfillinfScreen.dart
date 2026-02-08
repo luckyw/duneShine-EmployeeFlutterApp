@@ -273,7 +273,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                       horizontal: ResponsiveUtils.w(context, 24),
                     ),
                     padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveUtils.w(context, 24),
+                      horizontal: ResponsiveUtils.w(context, 16), // Reduced padding for more space
                       vertical: ResponsiveUtils.h(context, 40),
                     ),
                     decoration: BoxDecoration(
@@ -339,7 +339,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                       ],
                     ),
                   ),
-
+                  
                   ResponsiveUtils.verticalSpace(context, 40),
                 ],
               ),
@@ -380,8 +380,8 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
       children: List.generate(
         4,
         (index) => SizedBox(
-          width: ResponsiveUtils.w(context, 52),
-          height: ResponsiveUtils.h(context, 64),
+          width: ResponsiveUtils.w(context, 68), // Increased width
+          height: ResponsiveUtils.h(context, 75), // Increased height
           child: KeyboardListener(
             focusNode: FocusNode(),
             onKeyEvent: (event) {
@@ -412,6 +412,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                 setState(() {});
               },
               decoration: InputDecoration(
+                contentPadding: EdgeInsets.zero, // Ensure content isn't clipped
                 counterText: '',
                 filled: true,
                 fillColor: _pinControllers[index].text.isNotEmpty
@@ -440,7 +441,7 @@ class _JobVerificationScreenState extends State<JobVerificationScreen> {
                 ),
               ),
               style: AppTextStyles.headline(context).copyWith(
-                fontSize: ResponsiveUtils.sp(context, 26),
+                fontSize: ResponsiveUtils.sp(context, 28), // Slightly larger font
                 color: Color(0xFF1E293B),
                 fontWeight: FontWeight.bold,
               ),
