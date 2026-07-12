@@ -341,10 +341,26 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
           'Checked out successfully. Great work today!',
         );
       } else {
-        ToastUtils.showErrorToast(
-          context,
-          result['message'] ?? 'Failed to check out',
-        );
+        final message = result['message']?.toString() ?? '';
+        if (message.contains('No active session found to check out.')) {
+          AuthService().setShiftStatus(false);
+          setState(() {
+            _isShiftStarted = false;
+          });
+
+          // Stop background tracking service
+          BackgroundLocationService.stop();
+
+          ToastUtils.showSuccessToast(
+            context,
+            'Shift was already ended. Great work today!',
+          );
+        } else {
+          ToastUtils.showErrorToast(
+            context,
+            result['message'] ?? 'Failed to check out',
+          );
+        }
       }
     }
   }

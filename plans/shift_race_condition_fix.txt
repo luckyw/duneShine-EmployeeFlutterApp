@@ -1,0 +1,21 @@
+Client-Side Fix Plan for Shift Session Race Condition
+=====================================================
+
+Scenario:
+If Device A ends the shift, Device B's UI still shows "End Shift" because it is not in sync.
+If the user on Device B tries to click "End Shift", the server returns an error (since the shift was already ended by Device A).
+Because the UI requires the shift to be ended before letting the user log out, the user gets trapped on Device B.
+
+API Response for already ended shift:
+- URL: `/api/employee/attendance/check-out`
+- Method: POST
+- Response: `{"message":"No active session found to check out."}`
+
+Proposed Client-Side Fix:
+1. When the user taps "End Shift" on Device B, the client makes the API call to check out.
+2. If the API returns an error/failure response:
+   - Check if the response message contains: "No active session found to check out."
+   - If yes (or if the response message matches this string), suppress the error popup/alert.
+   - Force update the local app state to "Shift Ended" / "Checked Out" (e.g. set `isShiftActive = false`).
+   - Trigger the normal UI changes (update "End Shift" to "Start Shift").
+3. Once the local state is updated to "Checked Out", the frontend's restriction is lifted, allowing the user to click "Logout" successfully.
