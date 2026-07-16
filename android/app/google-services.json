@@ -7,20 +7,65 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:41119840428:android:c76f7c12e9247a965fc709",
+        "mobilesdk_app_id": "1:41119840428:android:5cb1b03a20d6714c5fc709",
         "android_client_info": {
-          "package_name": "com.example.carwash"
+          "package_name": "ae.duneshine.car"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "41119840428-0ms27ashqub0o1nv47hfngu049idnaai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
+        {
+          "current_key": "AIzaSyAdVlQUfN3piVDV0LunMUoDcIr1W0dGhMM"
+        },
         {
           "current_key": "AIzaSyDVF3NMRKJl5SD0Es1HNs9KPDWQZlYl-hM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "41119840428-0ms27ashqub0o1nv47hfngu049idnaai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:41119840428:android:7b06c5440369fd9f5fc709",
+        "android_client_info": {
+          "package_name": "ae.duneshine.employeeapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "41119840428-0ms27ashqub0o1nv47hfngu049idnaai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdVlQUfN3piVDV0LunMUoDcIr1W0dGhMM"
+        },
+        {
+          "current_key": "AIzaSyDVF3NMRKJl5SD0Es1HNs9KPDWQZlYl-hM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "41119840428-0ms27ashqub0o1nv47hfngu049idnaai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -31,15 +76,28 @@
           "package_name": "com.example.employeapplication"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "41119840428-0ms27ashqub0o1nv47hfngu049idnaai.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
+        {
+          "current_key": "AIzaSyAdVlQUfN3piVDV0LunMUoDcIr1W0dGhMM"
+        },
         {
           "current_key": "AIzaSyDVF3NMRKJl5SD0Es1HNs9KPDWQZlYl-hM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "41119840428-0ms27ashqub0o1nv47hfngu049idnaai.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

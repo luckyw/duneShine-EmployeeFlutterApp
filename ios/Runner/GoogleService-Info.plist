@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyARp_K9alntuc6k2gDugUzp0hfQ9ch8Hcg</string>
+	<string>AIzaSyBmaUJqW9efFSvUmshiU9YFSgKFyqlAwAU</string>
 	<key>GCM_SENDER_ID</key>
 	<string>41119840428</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.employeapplication</string>
+	<string>ae.duneshine.employeeapp</string>
 	<key>PROJECT_ID</key>
 	<string>duneshine-f30ed</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:41119840428:ios:0960610cbc06a8395fc709</string>
+	<string>1:41119840428:ios:ef36fe93b74aa10a5fc709</string>
 </dict>
 </plist>
