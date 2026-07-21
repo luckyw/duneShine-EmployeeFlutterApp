@@ -2,16 +2,31 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'dart:math';
 import '../constants/api_constants.dart';
-import '../models/customer_subscription_model.dart';
+import 'mock_api_service.dart';
 
 /// API Service for handling HTTP requests
 class ApiService {
-  // Private constructor for singleton pattern
-  ApiService._internal();
-  static final ApiService _instance = ApiService._internal();
-  factory ApiService() => _instance;
+  // Constructor for singleton and mock subclass
+  ApiService.internal();
+
+  static ApiService? _instance;
+  static ApiService? _mockInstance;
+
+  /// Toggle mock mode via:
+  ///   flutter run --dart-define=USE_MOCK_API=true
+  /// Set to false (or omit the flag) to use the real API.
+  static const bool _useMock =
+      bool.fromEnvironment('USE_MOCK_API', defaultValue: false);
+
+  factory ApiService() {
+    if (_useMock) {
+      _mockInstance ??= MockApiService();
+      return _mockInstance!;
+    }
+    _instance ??= ApiService.internal();
+    return _instance!;
+  }
 
   /// Login with phone number and OTP
   /// Returns a map containing the response data
