@@ -494,7 +494,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
 
   Widget _buildUploadPlaceholder(BuildContext context) {
     return GestureDetector(
-      onTap: () => _showImageSourceModal(context),
+      onTap: () => _pickImage(ImageSource.camera),
       child: Container(
         height: ResponsiveUtils.h(context, 220),
         width: double.infinity,
@@ -605,7 +605,7 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
           bottom: 12,
           right: 12,
           child: GestureDetector(
-            onTap: () => _showImageSourceModal(context),
+            onTap: () => _pickImage(ImageSource.camera),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -637,92 +637,6 @@ class _JobArrivalPhotoScreenState extends State<JobArrivalPhotoScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  void _showImageSourceModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Select Photo Source',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildSourceOption(
-                  icon: Icons.camera_alt_rounded,
-                  label: 'Camera',
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                _buildSourceOption(
-                  icon: Icons.photo_library_rounded,
-                  label: 'Gallery',
-                  onTap: () {
-                    Navigator.pop(context);
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: 24),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSourceOption({required IconData icon, required String label, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.primaryTeal.withOpacity(0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 32, color: AppColors.primaryTeal),
-          ),
-          SizedBox(height: 12),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF475569),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

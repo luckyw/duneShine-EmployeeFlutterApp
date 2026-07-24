@@ -14,6 +14,8 @@ import 'settings_screen.dart';
 import 'help_support_screen.dart';
 import 'customer_lookup_screen.dart';
 import 'edit_profile_screen.dart';
+import 'contact_us_screen.dart';
+import 'user_permissions_screen.dart';
 
 import '../utils/toast_utils.dart';
 import '../services/background_location_service.dart';
@@ -406,7 +408,41 @@ class _AccountWidgetState extends State<AccountWidget> {
                   _buildMenuItem(
                     icon: Icons.info_outline,
                     title: 'About DuneShine',
-                    onTap: () => _launchURL(ApiConstants.baseUrl),
+                    onTap: () => _launchURL('https://duneshine.ae/about'),
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.phone_in_talk_outlined,
+                    title: 'Contact Us',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ContactUsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.security_outlined,
+                    title: 'User Permissions',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UserPermissionsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.policy_outlined,
+                    title: 'Privacy Policy',
+                    onTap: () => _launchURL('https://duneshine.ae/privacy-policy'),
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.description_outlined,
+                    title: 'Terms and Conditions',
+                    onTap: () => _launchURL('https://duneshine.ae/terms-and-conditions'),
                   ),
                    _buildMenuItem(
                     icon: Icons.autorenew,

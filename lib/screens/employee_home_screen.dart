@@ -12,6 +12,7 @@ import '../utils/responsive_utils.dart';
 import '../utils/toast_utils.dart';
 import '../services/background_location_service.dart';
 import '../services/location_tracking_service.dart';
+import '../services/location_permission_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EmployeeHomeScreen extends StatefulWidget {
@@ -183,15 +184,9 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
     });
 
     // Request permissions before starting shift
-    bool hasPermission = await LocationTrackingService()
-        .requestLocationPermission();
+    bool hasPermission = await LocationPermissionManager()
+        .checkAndRequestWithRationale(context);
     if (!hasPermission) {
-      if (mounted) {
-        ToastUtils.showErrorToast(
-          context,
-          'Location permission is required to start shift',
-        );
-      }
       setState(() => _isAttendanceLoading = false);
       return;
     }

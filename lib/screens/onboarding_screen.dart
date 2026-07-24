@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../utils/responsive_utils.dart';
+import '../services/location_permission_manager.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -26,16 +27,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       description:
           'Set your own availability and manage your work hours. Work when it suits you best.',
     ),
+    OnboardingData(
+      image: 'assets/images/onboarding_schedule.png',
+      title: 'We Need Your Location',
+      description:
+          'DuneShine collects precise location data to route jobs and verify arrivals. This runs in the background only when your shift is active.',
+    ),
   ];
 
-  void _nextPage() {
+  void _nextPage() async {
     if (_currentPage < _pages.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.pushReplacementNamed(context, '/login');
+      await LocationPermissionManager().showRationaleAndRequest(context);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
     }
   }
 
@@ -56,23 +66,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: EdgeInsets.all(ResponsiveUtils.w(context, 16)),
-                child: TextButton(
-                  onPressed: _skip,
-                  child: Text(
-                    'Skip',
-                    style: TextStyle(
-                      color: AppColors.white.withOpacity(0.7),
-                      fontSize: ResponsiveUtils.sp(context, 16),
-                    ),
-                  ),
-                ),
-              ),
-            ),
             // Page content
             Expanded(
               child: PageView.builder(
