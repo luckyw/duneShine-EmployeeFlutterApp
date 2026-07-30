@@ -52,8 +52,8 @@ class UserPermissionsScreen extends StatelessWidget {
             _buildPermissionItem(
               context: context,
               icon: Icons.location_on_outlined,
-              title: 'Location Services (Background & Foreground)',
-              description: 'We need your location to track your progress to customer locations, ensure you arrive on time, and enable the dispatch team to monitor active shifts. Background tracking only occurs while you are actively on a shift.',
+              title: 'Location Services (Foreground & Background)',
+              description: '• Foreground Location: Used to route jobs, verify arrivals, and let the dispatch team monitor on-shift partners while you use the app.\n\n• Background Location (Always-On): Required to track you while moving to jobs, even when the app is closed or minimized. Background tracking only occurs while you are actively on a shift.',
             ),
             
             ResponsiveUtils.verticalSpace(context, 20),

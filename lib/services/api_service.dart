@@ -33,6 +33,7 @@ class ApiService {
   Future<Map<String, dynamic>> login({
     required String phone,
     required String otp,
+    String? fcmToken,
   }) async {
     try {
       final response = await http.post(
@@ -41,7 +42,11 @@ class ApiService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: jsonEncode({'phone': phone, 'otp': otp}),
+        body: jsonEncode({
+          'phone': phone,
+          'otp': otp,
+          if (fcmToken != null) 'fcm_token': fcmToken,
+        }),
       );
 
       final responseData = jsonDecode(response.body) as Map<String, dynamic>;

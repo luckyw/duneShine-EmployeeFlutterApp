@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../utils/responsive_utils.dart';
 
-class LocationPermissionDialog extends StatelessWidget {
+class BackgroundLocationDisclosure extends StatelessWidget {
   final VoidCallback onAccept;
   final VoidCallback onDecline;
 
-  const LocationPermissionDialog({
-    Key? key,
+  const BackgroundLocationDisclosure({
+    super.key,
     required this.onAccept,
     required this.onDecline,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +25,13 @@ class LocationPermissionDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.location_on,
+              Icons.location_on_outlined,
               size: ResponsiveUtils.r(context, 48),
               color: AppColors.primaryTeal,
             ),
             ResponsiveUtils.verticalSpace(context, 16),
             Text(
-              'Location Access Required',
+              'Always-On Location Required',
               style: TextStyle(
                 fontSize: ResponsiveUtils.sp(context, 20),
                 fontWeight: FontWeight.bold,
@@ -41,7 +41,7 @@ class LocationPermissionDialog extends StatelessWidget {
             ),
             ResponsiveUtils.verticalSpace(context, 16),
             Text(
-              'DuneShine collects location data to enable job routing, verify arrivals, and let the dispatch team monitor on-shift partners even when the app is closed or not in use.',
+              'DuneShine requires background location to track you while moving to jobs, even when the app is closed or minimized.',
               style: TextStyle(
                 fontSize: ResponsiveUtils.sp(context, 14),
                 color: AppColors.textGray,
@@ -51,10 +51,11 @@ class LocationPermissionDialog extends StatelessWidget {
             ),
             ResponsiveUtils.verticalSpace(context, 8),
             Text(
-              'Location tracking stops the moment your shift ends. We do not share your data with third parties.',
+              'Tap "Allow Permission" and then select "Allow all the time" in the Settings screen that opens.',
               style: TextStyle(
                 fontSize: ResponsiveUtils.sp(context, 14),
-                color: AppColors.textGray,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryTeal,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -102,7 +103,7 @@ class LocationPermissionDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Accept',
+                      'Allow Permission',
                       style: TextStyle(
                         color: AppColors.white,
                         fontSize: ResponsiveUtils.sp(context, 16),

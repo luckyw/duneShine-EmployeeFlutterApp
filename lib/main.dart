@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'constants/colors.dart';
 import 'screens/MPINfillinfScreen.dart';
@@ -18,9 +20,61 @@ import 'screens/washProgressShowingScreen.dart';
 
 import 'services/background_location_service.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  debugPrint('Background notification: ${message.notification?.title}');
+}
+
+Future<void> _initLocalNotifications() async {
+  const AndroidInitializationSettings androidSettings =
+      AndroidInitializationSettings('@mipmap/launcher_icon');
+
+  const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'duneshine_channel',
+          'DuneShine Notifications',
+          description: 'Employee job updates and alerts',
+          importance: Importance.high,
+        ),
+      );
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  try {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    await _initLocalNotifications();
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    final token = await FirebaseMessaging.instance.getToken();
+    debugPrint('FCM Token (Employee): $token');
+  } catch (e) {
+    debugPrint('Firebase init error: $e');
+  }
+
   await BackgroundLocationService.initializeService();
   runApp(const MyApp());
 }

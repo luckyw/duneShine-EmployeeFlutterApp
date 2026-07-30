@@ -6,6 +6,7 @@ import '../utils/responsive_utils.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../utils/toast_utils.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -44,10 +45,22 @@ class _LoginScreenState extends State<LoginScreen> {
       final phoneNumber = '+971${_phoneController.text}';
       final otp = _otpController.text;
 
+      // Fetch FCM Token
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        debugPrint('====== FCM TOKEN ======');
+        debugPrint(fcmToken);
+        debugPrint('=======================');
+      } catch (e) {
+        debugPrint('Failed to get FCM token: $e');
+      }
+
       // Call login API
       final result = await _apiService.login(
         phone: phoneNumber,
         otp: otp,
+        fcmToken: fcmToken,
       );
 
       setState(() {

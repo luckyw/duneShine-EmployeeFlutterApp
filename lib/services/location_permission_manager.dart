@@ -1,79 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../screens/location_permission_dialog.dart';
+import '../screens/foreground_location_disclosure.dart';
+import '../screens/background_location_disclosure.dart';
 
 class LocationPermissionManager {
-  static final LocationPermissionManager _instance =
-      LocationPermissionManager._internal();
+  static final LocationPermissionManager _instance = LocationPermissionManager._internal();
   factory LocationPermissionManager() => _instance;
   LocationPermissionManager._internal();
 
-  static const String _rationaleShownKey = 'location_rationale_shown';
-
-  Future<bool> hasShownRationale() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_rationaleShownKey) ?? false;
-  }
-
-  Future<void> markRationaleShown() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_rationaleShownKey, true);
-  }
-
-  /// Check and request with rationale if not shown
-  Future<bool> checkAndRequestWithRationale(BuildContext context) async {
+  /// Request foreground permission with rationale if needed
+  Future<LocationPermission> requestForegroundPermission(BuildContext context) async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return false;
+    if (!serviceEnabled) {
+      return LocationPermission.denied;
+    }
 
     LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.always) {
-      await _requestNotificationPermission();
-      return true;
+    
+    if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+      return permission;
     }
 
     if (permission == LocationPermission.denied) {
-      if (!context.mounted) return false;
-      // Show our in-app disclosure dialog first
-      final userAccepted = await _showRationaleDialog(context);
-      if (!userAccepted) {
-        return false;
-      }
-      await markRationaleShown();
+      if (!context.mounted) return permission;
+      
+      bool accepted = false;
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return ForegroundLocationDisclosure(
+            onAccept: () {
+              accepted = true;
+              Navigator.of(context).pop();
+            },
+            onDecline: () {
+              accepted = false;
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
 
-      // Proceed to system request
-      permission = await Geolocator.requestPermission();
+      if (accepted) {
+        permission = await Geolocator.requestPermission();
+      }
     }
 
+    return permission;
+  }
+
+  /// Request background permission. Requires foreground to be granted first.
+  Future<bool> requestBackgroundPermission(BuildContext context) async {
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.always) {
+      return true;
+    }
+
+    // Background permission requires foreground permission first on Android 11+
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
       return false;
     }
 
-    // Now request notification permission since location is granted
-    await _requestNotificationPermission();
+    if (!context.mounted) return false;
 
-    // Now we have at least whileInUse. We might need always for background.
-    if (permission == LocationPermission.whileInUse) {
-        // Optionally request always here or guide them.
-        // For Android background location, you usually have to ask for whileInUse first,
-        // then guide to settings for 'always'.
-        // Geolocator.requestPermission() might not prompt for 'always' if requested twice depending on Android version.
-        // We'll return true if they granted any permission so they can at least start the shift.
-        return true;
-    }
-
-    return true;
-  }
-
-  Future<bool> _showRationaleDialog(BuildContext context) async {
     bool accepted = false;
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return LocationPermissionDialog(
+        return BackgroundLocationDisclosure(
           onAccept: () {
             accepted = true;
             Navigator.of(context).pop();
@@ -85,15 +84,86 @@ class LocationPermissionManager {
         );
       },
     );
-    return accepted;
+
+    if (accepted) {
+      // On Android 11+: geolocator shows a system dialog that says
+      // "This app needs background location" and guides the user directly
+      // to the Location-specific settings page (not generic app settings).
+      // On Android 10 and below: shows a single dialog with "Allow all the time" directly.
+      // Do NOT call openAppSettings() separately — that opens the wrong page.
+      permission = await Geolocator.requestPermission();
+    }
+
+    return permission == LocationPermission.always;
   }
 
-  /// Request directly without checking rationale flag. E.g. from onboarding.
-  Future<bool> showRationaleAndRequest(BuildContext context) async {
-      await markRationaleShown();
-      LocationPermission permission = await Geolocator.requestPermission();
-      await _requestNotificationPermission();
-      return permission != LocationPermission.denied && permission != LocationPermission.deniedForever;
+  /// Check and request for start shift, running the full two-step flow
+  Future<bool> checkAndRequestForStartShift(BuildContext context) async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!context.mounted) return false;
+    if (!serviceEnabled) {
+      _showSettingsDialog(context, 'Location Services Disabled', 'Please enable location services to start a shift.');
+      return false;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    
+    // Step 1: Check foreground
+    if (permission == LocationPermission.denied) {
+      permission = await requestForegroundPermission(context);
+    }
+    
+    if (!context.mounted) return false;
+    if (permission == LocationPermission.deniedForever) {
+      _showSettingsDialog(context, 'Permission Denied', 'Please go to Settings and allow location permission to start a shift.');
+      return false;
+    }
+    
+    if (permission == LocationPermission.denied) {
+       return false; // User declined foreground dialog
+    }
+
+    // Step 2: Check background
+    if (permission == LocationPermission.whileInUse) {
+      bool bgGranted = await requestBackgroundPermission(context);
+      if (!bgGranted) {
+        // Double check if it became denied forever during the process
+        permission = await Geolocator.checkPermission();
+        if (!context.mounted) return false;
+        if (permission == LocationPermission.whileInUse || permission == LocationPermission.deniedForever) {
+           _showSettingsDialog(context, 'Background Location Required', 'Please go to Settings -> Location and select "Allow all the time" to start a shift.');
+        }
+        return false;
+      }
+    }
+
+    // All good
+    await _requestNotificationPermission();
+    return true;
+  }
+
+  void _showSettingsDialog(BuildContext context, String title, String message) {
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Geolocator.openAppSettings();
+            },
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _requestNotificationPermission() async {

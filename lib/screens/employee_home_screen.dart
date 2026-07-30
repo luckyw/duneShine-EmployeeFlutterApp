@@ -185,7 +185,7 @@ class _EmployeeHomeScreenState extends State<EmployeeHomeScreen>
 
     // Request permissions before starting shift
     bool hasPermission = await LocationPermissionManager()
-        .checkAndRequestWithRationale(context);
+        .checkAndRequestForStartShift(context);
     if (!hasPermission) {
       setState(() => _isAttendanceLoading = false);
       return;
